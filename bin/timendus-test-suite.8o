@@ -1,0 +1,1322 @@
+# The program begins from 0x200 with the CHIP-8 logo image,
+# which contains the `main` label:
+
+# CHIP-8 logo ROM by Timendus, published here before:
+# https://github.com/Timendus/chip-8/blob/master/octo/CHIP-8%20logo.8o
+
+# 132 bytes, 20 cycles to show "CHIP-8" on the screen
+#
+# This ROM is simpler than the IBM logo in two ways:
+#  a) It does not use the addition instruction
+#  b) It only renders aligned sprites (all coordinates are multiples of 8)
+#
+# Uses only these five instructions:
+#  * Clear the screen
+#  * Load normal register with immediate value
+#  * Load i register with immediate value
+#  * Draw sprite to screen (only aligned)
+#  * Jump (at the end, so kinda optional)
+
+:macro show X address {
+  v0 := X
+  i := address
+  sprite v0 v1 15
+}
+
+: main
+  clear
+  v1 := 8
+  show  8 logo-part1
+  show 16 logo-part2
+  show 24 logo-part3
+  show 32 logo-part4
+  show 40 logo-part5
+  show 48 logo-part6
+  jump select-test
+
+
+
+# After that, if the user auto-started a test, run it:
+
+: select-test
+	i := 0x1FF
+	load v0
+	if v0 == 1 then jump ibm-logo
+	if v0 == 2 then jump corax89
+	if v0 == 3 then jump flags-test
+	if v0 == 4 then jump quirks-test
+	if v0 == 5 then jump keypad-test
+	if v0 == 9 then jump menu
+	jump menu-after-keypress
+
+# Include all support code:
+
+:stringmode str "$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -." {
+	:byte { 4 * VALUE }
+}
+
+:macro text X Y STR {
+	vD := X
+	vE := Y
+	i := STR
+	drawText
+}
+
+:alias x vA
+:alias y vB
+
+: waitKeyRelease
+	v0 := 0
+: -
+		if v0 key then jump -
+		v0 += 1
+		if v0 == 16 then return
+	jump -
+
+
+# A cute little menu to select a test
+
+: menu-after-keypress
+	v0 := key
+	waitKeyRelease
+: menu
+	clear
+	text  6  1 menu-header
+	text 14  7 menu-ibm
+	text 14 12 menu-corax
+	text 14 17 menu-flags
+	text 14 22 menu-quirks
+	text 14 27 menu-keypad
+
+	v1 := 10
+	v2 := 8
+	v3 := 0
+	i := menu-cursor
+	delay := v3
+	loop
+		# Blink cursor
+		v0 := delay
+		if v0 == 0 begin
+			sprite v1 v2 2
+			v0 := 10
+			delay := v0
+			v0 := 1
+			v3 ^= v0
+		end
+
+		# Use numbers to start test
+		v0 := 1   if v0 key then jump ibm-logo-after-keyrelease
+		v0 := 2   if v0 key then jump corax89-after-keyrelease
+		v0 := 3   if v0 key then jump flags-test-after-keyrelease
+		v0 := 4   if v0 key then jump quirks-test-after-keyrelease
+		v0 := 0xC if v0 key then jump quirks-test-after-keyrelease
+
+		# Select test under cursor
+		v0 := 6
+		if v0 key begin
+			waitKeyRelease
+			if v2 == 8 then jump ibm-logo
+			if v2 == 13 then jump corax89
+			if v2 == 18 then jump flags-test
+			if v2 == 23 then jump quirks-test
+			if v2 == 28 then jump keypad-test
+		end
+
+		# Move cursor
+		# Up
+		v0 := 5
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 > 8 then v2 -= 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+		# Down
+		v0 := 8
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 < 28 then v2 += 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+	again
+
+
+# Font rendering code and character data
+# Kept this very simplistic and fast
+
+:macro drawCharacter REG {
+	if REG == 0 then return
+	i := characters
+	i += REG
+	sprite vD vE 4
+	vD += 4
+}
+
+: drawText
+	load vC
+	drawCharacter v0
+	drawCharacter v1
+	drawCharacter v2
+	drawCharacter v3
+	drawCharacter v4
+	drawCharacter v5
+	drawCharacter v6
+	drawCharacter v7
+	drawCharacter v8
+	drawCharacter v9
+	drawCharacter vA
+	drawCharacter vB
+	drawCharacter vC
+	return
+
+
+
+# Include all available tests:
+
+# Disassembly of the famous "IBM logo" program, published here before:
+# https://github.com/Timendus/chip-8/blob/master/octo/IBM%20logo.8o
+
+# Annotated and converted to Octo mnemonics by Timendus, in the hope that it
+# will be useful to people trying to debug their CHIP-8 interpreters
+#
+# Original "IBM logo" MD5 hash:       2dbace8066709ac9a264d23281820d32
+# MD5 hash of binary from this code:  2dbace8066709ac9a264d23281820d32
+
+: ibm-logo-after-keyrelease
+	waitKeyRelease
+: ibm-logo
+  clear                       # Address 512 / 0x200
+
+  i := ibm-logo-part1         # Address 514 / 0x202
+  v0 := 12                    # Address 516 / 0x204
+  v1 := 8
+  sprite v0 v1 15             # Address 520 / 0x208
+
+  v0 += 9                     # Address 522 / 0x20A
+  i := ibm-logo-part2
+  sprite v0 v1 15
+
+  i := ibm-logo-part3         # Interesting mixup here, swapping the operations
+  v0 += 8
+  sprite v0 v1 15
+
+  v0 += 4
+  i := ibm-logo-part4
+  sprite v0 v1 15
+
+  v0 += 8
+  i := ibm-logo-part5
+  sprite v0 v1 15
+
+  v0 += 8
+  i := ibm-logo-part6
+  sprite v0 v1 15
+
+  jump menu-after-keypress    # Address 552 / 0x228
+
+
+# Corax89's chip8-test-rom, published here before:
+# https://github.com/corax89/chip8-test-rom
+
+# MIT License
+#
+# Copyright (c) 2019 corax89
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+:alias x0 v8
+:alias x1 v9
+:alias x2 vA
+:alias y	vB
+
+:macro drawop A B {
+	i := A
+	sprite x0 y 4
+	i := B
+	sprite x1 y 4
+}
+
+: test2X
+	#test 2x
+	i := imageok
+	sprite x2 y 4
+	return
+
+: test1x
+	i := imageok
+	sprite x2 y 4
+	jump menu-after-keypress
+
+: corax89-after-keyrelease
+	waitKeyRelease
+: corax89
+	clear
+	x0 := 1
+	x1 := 5
+	x2 := 10
+	y := 1
+	v5 := 42
+	v6 := 43
+
+	#test 3x
+	drawop im3 imX
+	i := imageok
+	if v6 != 43 then i := imagefalse
+	sprite x2 y 4
+
+	#test 4x
+	y := 6
+	drawop im4 imX
+	i := imagefalse
+	if v5 == 42 then i := imageok
+	sprite x2 y 4
+
+	#test 5x
+	y := 11
+	drawop im5 imX
+	i := imagefalse
+	if v5 != v6 then i := imageok
+	sprite x2 y 4
+
+	#test 7x
+	y := 16
+	drawop im7 imX
+	i := imagefalse
+	v6 += 255
+	if v6 == 42 then i := imageok
+	sprite x2 y 4
+
+	#test 9x
+	y := 21
+	drawop im9 imX
+	i := imagefalse
+	if v5 == v6 then i := imageok
+	sprite x2 y 4
+
+	#test "AX"
+	# Note by Timendus: I think this really tests 2NNN, not ANNN, so I changed the
+	# displayed label on this to not confuse users.
+	# See PR: https://github.com/corax89/chip8-test-rom/pull/9
+	y := 26
+	drawop im2 imX
+	test2X
+
+	#test 0E
+	x0 := 24
+	x1 := 28
+	x2 := 33
+	y := 1
+	drawop im0 imE
+	i := imageok
+	sprite x2 y 4
+
+	#test 8xy0
+	y := 6
+	drawop im8 im0
+	i := imagefalse
+	v7 := v5
+	if v7 == 42 then i := imageok
+	sprite x2 y 4
+
+	#test 8xy1
+	y := 11
+	drawop im8 im1
+	i := imagefalse
+	v7 := 42
+	v7 |= y
+	if v7 == 43 then i := imageok
+	sprite x2 y 4
+
+	#test 8xy2
+	y := 16
+	drawop im8 im2
+	i := imagefalse
+	v6 := 120
+	v7 := 31
+	v7 &= v6
+	if v7 == 24 then i := imageok
+	sprite x2 y 4
+
+	#test 8xy3
+	y := 21
+	drawop im8 im3
+	i := imagefalse
+	v6 := 120
+	v7 := 31
+	v7 ^= v6
+	if v7 == 103 then i := imageok
+	sprite x2 y 4
+
+	#test 8xy4
+	y := 26
+	drawop im8 im4
+	i := imagefalse
+	v6 := 140
+	v7 := 140
+	v7 += v6
+	if v7 == 24 then i := imageok
+	sprite x2 y 4
+
+	#test 8xy5
+	x0 := 47
+	x1 := 51
+	x2 := 56
+	y  := 1
+	drawop im8 im5
+	i := imagefalse
+	v6 := 140
+	v7 := 120
+	v7 -= v6
+	if v7 == 236 then i := imageok
+	sprite x2 y 4
+
+	#test "8xy6"
+	# Note by Timendus: This should be 8XYE, changed the label here too.
+	# See PR: https://github.com/corax89/chip8-test-rom/pull/7
+	y := 6
+	drawop im8 imE
+	i := imagefalse
+	v6 := 224
+	v6 <<= v6
+	if v6 == 192 then i := imageok
+	sprite x2 y 4
+
+	#test "8xyE"
+	# Note by Timendus: This should be 8XY6, changed the label here too.
+	# See PR: https://github.com/corax89/chip8-test-rom/pull/7
+	y := 11
+	drawop im8 im6
+	i := imagefalse
+	v6 := 15
+	v6 >>= v6
+	if v6 == 7 then i := imageok
+	sprite x2 y 4
+
+	#test Fx55,Fx65
+	y := 16
+	drawop imF im5
+	i := scratchpad
+	v0 := 0
+	v1 := 48
+	save v1
+	i := scratchpad-plus-1
+	load v0
+	i := imagefalse
+	if v0 == 48 then i := imageok
+	sprite x2 y 4
+
+	#test Fx33
+	y := 21
+	drawop imF im3
+	i := scratchpad
+	v6 := 137
+	bcd v6
+	load v2
+	i := imageok
+	if v0 != 1 then i := imagefalse
+	if v1 != 3 then i := imagefalse
+	if v2 != 7 then i := imagefalse
+	sprite x2 y 4
+
+	#test 1x
+	y := 26
+	drawop im1 imX
+	jump test1x
+
+# Image data is in text-rendering.8o, as part of the font
+
+# Flags test
+
+# This is a visual adaptation of the math tests I wrote for Silicon8
+# (https://github.com/Timendus/silicon8/tree/main/tests)
+
+:macro opcode OPC {
+  vD := OPC
+  flags-draw-opcode
+}
+
+:macro expect REG VAL {
+  i := flag-err
+  if REG == VAL then i := flag-ok
+  y += 1
+  sprite x y 3
+}
+
+:macro expect-val-flag VAL FLAG {
+  vE := vF
+  vD := FLAG
+  vC := VAL
+  flags-draw-results
+}
+
+: flags-test-after-keyrelease
+	waitKeyRelease
+: flags-test
+	clear
+
+	## Without complications
+
+	text 1 1 flags-no-carry
+	x := 23
+	y := 1
+
+	v0 := 50
+	v1 := 15
+
+	# OR
+	opcode 0x81
+	v2 := v0
+	v2 |= v1 # 63 (0x3F)
+	expect-val-flag 63 0
+
+	# AND
+	opcode 0x82
+	v2 := v0
+	v2 &= v1 # 2 (0x02)
+	expect-val-flag 2 0
+
+	# XOR
+	opcode 0x83
+	v2 := v0
+	v2 ^= v1 # 61 (0x3D)
+	expect-val-flag 61 0
+
+	# Addition (no overflow)
+	opcode 0x84
+	v2 := v0
+	v2 += v1 # 65 (0x41)
+	expect-val-flag 65 0
+
+	# Subtraction in one direction (no carry)
+	opcode 0x85
+	v2 := v0
+	v2 -= v1 # 35 (0x23)
+	expect-val-flag 35 1
+
+	# Shift right (no LSB)
+	opcode 0x86
+	v2 := v0
+	v2 >>= v2 # 25 (0x19)
+	expect-val-flag 25 0
+
+	# Subtraction in the other direction (no carry)
+	opcode 0x87
+	v2 := v1
+	v2 =- v0 # 35 (0x23)
+	expect-val-flag 35 1
+
+	# Shift left (no MSB)
+	opcode 0x8E
+	v2 := v0
+	v2 <<= v2 # 100 (0x64)
+	expect-val-flag 100 0
+
+
+	# With complications
+
+	text 1 17 flags-carry
+	x := 23
+	y := 17
+
+	v0 := 200
+	v1 := 100
+
+	# Addition (with overflow)
+	opcode 0x84
+	v2 := v0
+	v2 += v1 # 300 (0x2C)
+	expect-val-flag 0x2C 1
+
+	# Subtraction in one direction (with carry)
+	opcode 0x85
+	v2 := v1
+	v2 -= v0 # 100 - 200 = -100 = 156 (0x9C)
+	expect-val-flag 0x9C 0
+
+	# Shift right (with LSB)
+	opcode 0x86
+	v2 := 3
+	v2 >>= v2 # 1 (0x1)
+	expect-val-flag 1 1
+
+	# Subtraction in the other direction (with carry)
+	opcode 0x87
+	v2 := v0
+	v2 =- v1 # 100 - 200 = -100 = 156 (0x9C)
+	expect-val-flag 0x9C 0
+
+	# Shift left (with MSB)
+	opcode 0x8E
+	v2 := v0
+	v2 <<= v2 # 400 (0x90)
+	expect-val-flag 0x90 1
+
+	# Addition to i
+
+	text 1 28 flags-other
+	x := 23
+	y := 28
+
+	opcode 0xFE
+	i := scratchpad
+	v1 := 0x10
+	i += v1
+	v0 := 0xAA
+	save v0
+	i := scratchpad-plus-16
+	load v0
+	expect v0 0xAA
+
+	jump menu-after-keypress
+
+: flags-draw-opcode
+	i := im0
+	vE := vD
+	vF := 0xF0
+	vE &= vF
+	vE >>= vE
+	vE >>= vE
+	i += vE
+	sprite x y 4
+	x += 4
+	i := im0
+	vE := vD
+	vF := 0x0F
+	vE &= vF
+	vE <<= vE
+	vE <<= vE
+	i += vE
+	sprite x y 4
+	x += 6
+	return
+
+: flags-draw-results
+	i := flag-err
+	if v2 == vC then i := flag-ok
+	y += 1
+	sprite x y 3
+	x += 5
+	i := flag-err
+	if vE == vD then i := flag-ok
+	sprite x y 3
+	x += 7
+	y -= 1
+	if x == 67 begin
+		y += 5
+		x := 1
+	end
+	return
+
+
+# Quirks test
+
+# This is a visual adaptation of some of the tests I wrote for Silicon8
+# (https://github.com/Timendus/silicon8/tree/main/tests) and some newly written
+# tests for specific quirks.
+
+: quirks-test-after-keyrelease
+	waitKeyRelease
+: quirks-test
+	clear
+	i := 0x1FE
+	load v0
+	if v0 == 1 then jump quirks-chip8
+	if v0 == 2 then jump quirks-schip
+	if v0 == 3 then jump quirks-xochip
+
+	text  6  3 quirks-choose
+	text 16 12 quirks-str-chip8
+	text 16 17 quirks-str-schip
+	text 16 22 quirks-str-xochip
+
+	v1 := 12
+	v2 := 13
+	v3 := 0
+	i := menu-cursor
+	delay := v3
+	loop
+		# Blink cursor
+		v0 := delay
+		if v0 == 0 begin
+			sprite v1 v2 2
+			v0 := 10
+			delay := v0
+			v0 := 1
+			v3 ^= v0
+		end
+
+		# Use numbers to start test
+		v0 := 1   if v0 key then jump quirks-chip8
+		v0 := 2   if v0 key then jump quirks-schip
+		v0 := 3   if v0 key then jump quirks-xochip
+
+		# Select test under cursor
+		v0 := 6
+		if v0 key begin
+			if v2 == 13 then jump quirks-chip8
+			if v2 == 18 then jump quirks-schip
+			if v2 == 23 then jump quirks-xochip
+		end
+
+		# Move cursor
+		# Up
+		v0 := 5
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 > 13 then v2 -= 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+		# Down
+		v0 := 8
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 < 23 then v2 += 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+	again
+
+: quirks-chip8
+	i := scratchpad
+	v0 := 1
+	save v0
+	jump quirks-run-tests
+
+: quirks-schip
+	i := scratchpad
+	v0 := 2
+	save v0
+	jump quirks-run-tests
+
+: quirks-xochip
+	i := scratchpad
+	v0 := 3
+	save v0
+
+: quirks-run-tests
+	waitKeyRelease
+
+	# Determine frames per second
+	v0 := 120
+	delay := v0
+	i := quirks-values
+	load vA
+	i := quirks-image
+	loop
+		clear
+		sprite v0 v0 8
+		sprite v1 v0 8
+		sprite v2 v0 8
+		sprite v3 v0 8
+		sprite v4 v0 8
+		sprite v5 v0 8
+		sprite v6 v0 8
+		sprite v7 v0 8
+		sprite v0 v1 8
+		sprite v1 v1 8
+		sprite v2 v1 8
+		sprite v3 v1 8
+		sprite v4 v1 8
+		sprite v5 v1 8
+		sprite v6 v1 8
+		sprite v7 v1 8
+		sprite v0 v2 8
+		sprite v1 v2 8
+		sprite v2 v2 8
+		sprite v3 v2 8
+		sprite v4 v2 8
+		sprite v5 v2 8
+		sprite v6 v2 8
+		sprite v7 v2 8
+		sprite v0 v3 8
+		sprite v1 v3 8
+		sprite v2 v3 8
+		sprite v3 v3 8
+		sprite v4 v3 8
+		sprite v5 v3 8
+		sprite v6 v3 8
+		sprite v7 v3 8
+		v8 += vA
+		v9 += vF
+		vE := delay
+	if vE != 0 then again
+
+	vE := 128
+	v8 >>= v8
+	v9 >>= v9
+	if vF == 1 then v8 |= vE
+
+	v0 := 1
+	if v9 != 0 then v0 := 0
+	if v8 != 2 then v0 := 0
+	i := scratchpad-plus-1
+	save v0
+
+	# Determine if sprites get clipped
+	clear
+	i := keypad-cursor
+	v0 := 28
+	v1 := 29
+	sprite v0 v1 6
+	v0 := 22
+	v1 := 2
+	sprite v0 v1 1
+	v5 := vF
+	v0 := 34
+	sprite v0 v1 1
+	v6 := vF
+	v0 := 0
+	if v5 == 0 then v0 := 1
+	if v5 != v6 then v0 := 2
+	i := scratchpad-plus-2
+	save v0
+
+	# Present results
+
+	clear
+
+	# vfQuirk
+	# When using &, | or ^, the flags register always gets reset to 0
+	text 1 1 quirks-vf
+	v5 := 0
+	vF := 15
+	v0 &= v0
+	if vF == 0 then v5 := 1
+	v6 := 0
+	vF := 15
+	v0 |= v0
+	if vF == 0 then v6 := 1
+	v7 := 0
+	vF := 15
+	v0 ^= v0
+	if vF == 0 then v7 := 1
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 1 begin
+		# Selected CHIP-8
+		if v5 == 1 then i := flag-ok
+	else
+		# Selected SCHIP or XO-CHIP
+		if v5 == 0 then i := flag-ok
+	end
+	x := 59
+	y := 2
+	sprite x y 3
+	i := quirks-off
+	if v5 == 1 then i := quirks-on
+	if v5 != v6 then i := quirks-inconsistent
+	if v5 != v7 then i := quirks-inconsistent
+	vD := 44
+	vE := 1
+	drawText
+
+	# memQuirk
+	# When reading or writing memory, i gets incremented
+	text 1 6 quirks-mem
+	v0 := 5
+	i := scratchpad-plus-16
+	save v0
+	load v0
+	v5 := v0
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 2 begin
+		# Selected SCHIP
+		if v5 == 5 then i := flag-ok
+	else
+		# Selected CHIP-8 or XO-CHIP
+		if v5 != 5 then i := flag-ok
+	end
+	x := 59
+	y := 7
+	sprite x y 3
+	i := quirks-on
+	if v5 == 5 then i := quirks-off
+	vD := 44
+	vE := 6
+	drawText
+
+	# dispQuirk
+	# When drawing a sprite to the screen, the interpreter waits for v-blank
+	text 1 11 quirks-disp
+	i := scratchpad
+	load v1
+	i := flag-err
+	if v0 == 1 begin
+		# Selected CHIP-8
+		if v1 == 1 then i := flag-ok
+	else
+		# Selected SCHIP or XO-CHIP
+		if v1 == 0 then i := flag-ok
+	end
+	x := 59
+	y := 12
+	sprite x y 3
+	i := quirks-off
+	if v1 == 1 then i := quirks-on
+	vD := 44
+	vE := 11
+	drawText
+
+	# clipQuirk
+	# Sprites wrap to the top of the screen
+	text 1 16 quirks-clip
+	i := scratchpad
+	load v2
+	i := flag-err
+	if v0 == 3 begin
+		# Selected XO-CHIP
+		if v2 == 0 then i := flag-ok
+	else
+		# Selected CHIP-8 or SCHIP
+		if v2 == 1 then i := flag-ok
+	end
+	x := 59
+	y := 17
+	sprite x y 3
+	i := quirks-off
+	if v2 == 1 then i := quirks-on
+	if v2 == 2 then i := quirks-inconsistent
+	vD := 44
+	vE := 16
+	drawText
+
+	# shiftQuirk
+	# When shifting a register, the interpreter always shifts register X into
+	# register X (instead of shifting register Y into register X)
+	text 1 21 quirks-shift
+	v5 := 0
+	v6 := 8
+	v7 := 0
+	v8 := 32
+	v5 <<= v6
+	v7 >>= v8
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 2 begin
+		# Selected SCHIP
+		if v5 == 0 then i := flag-ok
+	else
+		# Selected CHIP-8 or XO-CHIP
+		if v5 != 0 then i := flag-ok
+	end
+	x := 59
+	y := 22
+	sprite x y 3
+	i := quirks-off
+	if v5 == 0 then i := quirks-on
+	if v5 != v7 then i := quirks-inconsistent
+	vD := 44
+	vE := 21
+	drawText
+
+	# jumpQuirk
+	# When using `jump0` (BNNN) the interpreter doesn't jump to NNN + v0 but to
+	# NNN + vX where X is the highest nibble of NNN
+	text 1 26 quirks-jump
+	v0 := 0x10
+	vE := 0x20
+	jump0 0xE00      # This jumps to one of two routines defined in index.8o (for
+: quirks-resume    # reasons of having to put them in precisely the right spot)
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 2 begin
+		# Selected SCHIP
+		if v5 != 0 then i := flag-ok
+	else
+		# Selected CHIP-8 or XO-CHIP
+		if v5 == 0 then i := flag-ok
+	end
+	x := 59
+	y := 27
+	sprite x y 3
+	i := quirks-off
+	if v5 == 1 then i := quirks-on
+	vD := 44
+	vE := 26
+	drawText
+
+	jump menu-after-keypress
+
+
+# Keypad test
+# A fresh new implementation for this test suite
+
+: keypad-test
+	clear
+	i := keypad-initial-values
+	load vF
+	i := scratchpad
+	save vF
+	text 18 3 keypad-row1
+	text 18 10 keypad-row2
+	text 18 17 keypad-row3
+	text 18 24 keypad-row4
+	vE := 0
+	loop
+		keypad-pressed
+		vE += 1
+		if vE == 16 then vE := 0
+	again
+
+: keypad-pressed
+	i := scratchpad
+	i += vE
+	load v0
+	v2 := 0
+	if vE key then v2 := 1
+	if v0 != v2 begin
+		v0 := vE
+		v0 <<= v0
+		i := keypad-coordinates
+		i += v0
+		load v1
+		i := keypad-cursor
+		sprite v0 v1 6
+		i := scratchpad
+		i += vE
+		v0 := v2
+		save v0
+	end
+	return
+
+
+
+
+: logo-part1
+  0x1f 0x3f 0x71 0xe0 0xe5 0xe0 0xe8 0xe7 0xe0 0xe0 0xe0 0xe0 0x71 0x3f 0x1f
+: logo-part2
+  0x18 0xb8 0xb8 0x38 0x38 0x3f 0xbf 0x39 0x38 0x38 0x38 0x38 0xb8 0xb8 0x38
+: logo-part3
+  0x0c 0x1d 0x1d 0x01 0x0d 0x1d 0x9d 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd
+: logo-part4
+  0xf8 0xfc 0xce 0xc6 0xc6 0xc6 0xc6 0xce 0xfc 0xf8 0xc0 0xc0 0xc0 0xc0 0xc0
+: logo-part5
+  0x00 0x01 0x03 0x03 0x03 0x01 0xf0 0xf1 0x03 0x07 0x07 0x07 0x07 0x03 0x01
+: logo-part6
+  0xfe 0xc7 0x83 0x83 0x83 0xc6 0xfc 0xce 0x87 0x03 0x03 0x03 0x87 0xfe 0xfc
+
+: scratchpad
+	0
+: scratchpad-plus-1
+	0
+: scratchpad-plus-2
+	0 0 0 0 0
+	0 0 0 0 0
+	0 0 0 0
+: scratchpad-plus-16
+  0
+
+: menu-header
+	str "TIMENDUS TEST" 0
+: menu-ibm
+	str "1 IBM LOGO" 0
+: menu-corax
+	str "2 CORAX89" 0
+: menu-flags
+	str "3 FLAGS" 0
+: menu-quirks
+	str "4 QUIRKS" 0
+: menu-keypad
+	str "5 KEYPAD" 0
+
+: menu-cursor
+	0b11000000
+	0b11000000
+
+# Positive and negative images
+: imageok
+	0xEA 0xAC 0xAA 0xEA
+: imagefalse
+	0xCE 0xAA 0xAA 0xAE
+
+: flag-ok
+	0b10100000
+	0b11000000
+	0b10000000
+: flag-err
+	0b10100000
+	0b01000000
+	0b10100000
+
+# Individual characters, some taken from Corax89' test.
+: characters
+	0 0 0 0
+: im0
+	0xE0 0xA0 0xA0 0xE0
+: im1
+	0xC0 0x40 0x40 0xE0
+: im2
+	0xE0 0x20 0xC0 0xE0
+: im3
+	0xE0 0x60 0x20 0xE0
+: im4
+	0xA0 0xE0 0x20 0x20
+: im5
+	0b11100000
+	0b11000000
+	0b00100000
+	0b11000000
+: im6
+	0xE0 0x80 0xE0 0xE0
+: im7
+	0xE0 0x20 0x20 0x20
+: im8
+	0xE0 0xE0 0xA0 0xE0
+: im9
+	0xE0 0xE0 0x20 0xE0
+: imA
+	0x40 0xA0 0xE0 0xA0
+: imB
+	0b11000000
+	0b11100000
+	0b10100000
+	0b11100000
+: imC
+	0b11100000
+	0b10000000
+	0b10000000
+	0b11100000
+: imD
+	0b11000000
+	0b10100000
+	0b10100000
+	0b11000000
+: imE
+	0xE0 0xC0 0x80 0xE0
+: imF
+	0xE0 0x80 0xC0 0x80
+: imG
+	0b01100000
+	0b10000000
+	0b10100000
+	0b01100000
+: imH
+	0b10100000
+	0b11100000
+	0b10100000
+	0b10100000
+: imI
+	0b11100000
+	0b01000000
+	0b01000000
+	0b11100000
+: imJ
+	0b01100000
+	0b00100000
+	0b00100000
+	0b11000000
+: imK
+	0b10100000
+	0b11000000
+	0b10100000
+	0b10100000
+: imL
+	0b10000000
+	0b10000000
+	0b10000000
+	0b11100000
+: imM
+	0b11100000
+	0b11100000
+	0b10100000
+	0b10100000
+: imN
+	0b11000000
+	0b10100000
+	0b10100000
+	0b10100000
+: imO
+	0b11100000
+	0b10100000
+	0b10100000
+	0b11100000
+: imP
+	0b11000000
+	0b10100000
+	0b11000000
+	0b10000000
+: imQ
+	0b01000000
+	0b10100000
+	0b11100000
+	0b01100000
+: imR
+	0b11000000
+	0b10100000
+	0b11000000
+	0b10100000
+: imS
+	0b01100000
+	0b11000000
+	0b00100000
+	0b11000000
+: imT
+	0b11100000
+	0b01000000
+	0b01000000
+	0b01000000
+: imU
+	0b10100000
+	0b10100000
+	0b10100000
+	0b01100000
+: imV
+	0b10100000
+	0b10100000
+	0b10100000
+	0b01000000
+: imW
+	0b10100000
+	0b10100000
+	0b11100000
+	0b11100000
+: imX
+	0xA0 0x40 0xA0 0xA0
+: imY
+	0b10100000
+	0b10100000
+	0b01000000
+	0b01000000
+: imZ
+	0b11100000
+	0b01100000
+	0b10000000
+	0b11100000
+: imSpace
+	0 0 0 0
+: imDash
+	0b00000000
+	0b11100000
+	0b00000000
+	0b00000000
+: imPeriod
+	0b00000000
+	0b00000000
+	0b00000000
+	0b01000000
+
+: ibm-logo-part1
+  0xFF 0x00 0xFF 0x00 0x3C 0x00 0x3C 0x00 0x3C 0x00 0x3C 0x00 0xFF 0x00 0xFF
+: ibm-logo-part2
+  0xFF 0x00 0xFF 0x00 0x38 0x00 0x3F 0x00 0x3F 0x00 0x38 0x00 0xFF 0x00 0xFF
+: ibm-logo-part3
+  0x80 0x00 0xE0 0x00 0xE0 0x00 0x80 0x00 0x80 0x00 0xE0 0x00 0xE0 0x00 0x80
+: ibm-logo-part4
+  0xF8 0x00 0xFC 0x00 0x3E 0x00 0x3F 0x00 0x3B 0x00 0x39 0x00 0xF8 0x00 0xF8
+: ibm-logo-part5
+  0x03 0x00 0x07 0x00 0x0F 0x00 0xBF 0x00 0xFB 0x00 0xF3 0x00 0xE3 0x00 0x43
+: ibm-logo-part6
+  0xE0 0x00 0xE0 0x00 0x80 0x00 0x80 0x00 0x80 0x00 0x80 0x00 0xE0 0x00 0xE0
+
+: flags-no-carry
+	str "NO C." 0
+: flags-carry
+	str "CARRY" 0
+: flags-other
+	str "OTHER" 0
+
+: quirks-choose
+	str "PICK PLATFORM" 0
+: quirks-str-chip8
+	str "1 CHIP-8" 0
+: quirks-str-schip
+	str "2 SCHIP" 0
+: quirks-str-xochip
+	str "3 XO-CHIP" 0
+
+: quirks-vf
+	str "VF RESET" 0
+: quirks-mem
+	str "MEMORY" 0
+: quirks-disp
+	str "DISP.WAIT" 0
+: quirks-clip
+	str "CLIPPING" 0
+: quirks-shift
+	str "SHIFTING" 0
+: quirks-jump
+	str "JUMPING" 0
+
+: quirks-on
+	str "ON" 0
+: quirks-off
+	str "OFF" 0
+: quirks-inconsistent
+	str "ERR" 0
+
+: quirks-values
+	0 8 16 24 32 40 48 56 0 0 1
+: quirks-image
+	0x3C 0x7E 0xFF 0xDB 0xFF 0xDB 0x66 0x3C
+
+: keypad-initial-values
+	0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0
+
+: keypad-row1
+	str "1 2 3 C" 0
+: keypad-row2
+	str "4 5 6 D" 0
+: keypad-row3
+	str "7 8 9 E" 0
+: keypad-row4
+	str "A 0 B F" 0
+
+: keypad-coordinates
+	24 23 # 0
+	16 2  # 1
+	24 2  # 2
+	32 2  # 3
+	16 9  # 4
+	24 9  # 5
+	32 9  # 6
+	16 16 # 7
+	24 16 # 8
+	32 16 # 9
+	16 23 # A
+	32 23 # B
+	40 2  # C
+	40 9  # D
+	40 16 # E
+	40 23 # F
+
+: keypad-cursor
+	0b11111110
+	0b11111110
+	0b11111110
+	0b11111110
+	0b11111110
+	0b11111110
+
+# Jump quirk targets:
+:org 0xE10
+	# We jump here when using v0 in the `jump0` quirks test
+	v5 := 0
+	jump quirks-resume
+:org 0xE20
+	# We jump here when using vE in the `jump0` quirks test
+	v5 := 1
+	jump quirks-resume
