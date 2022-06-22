@@ -3,8 +3,8 @@
 _A single ROM image containing six distinct tests that will aid you in developing
 your own CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
 
-[Download the ROM here](./bin/timendus-test-suite.ch8?raw=true), give it a spin and see
-if your interpreter is doing the right thing! 😄
+[Download the ROM here](./bin/chip8-test-suite.ch8?raw=true), give it a spin and
+see if your interpreter is doing the right thing! 😄
 
 ![The test suite running in CHIP-8 mode on Octo](./pictures/animation.gif)
 
@@ -44,11 +44,11 @@ test. It will skip waiting for a keypress and the menu entirely. To do so:
 
 ### CHIP-8 splash screen
 
-The first test is a very simple splash screen that shows "CHIP-8" on the
-display. It is very similar to the often used IBM ROM, but it is actually a bit
-easier to get running. First, it doesn't use the "add value to register" opcode
-(`7XNN`) and second it only draws aligned sprites to the screen, so you don't
-have to shift the bits of the sprite to align with your display buffer.
+The first test is a very simple splash screen. It is very similar to the often
+used IBM ROM, but it is actually a bit easier to get running. First, it doesn't
+use the "add value to register" opcode (`7XNN`) and second it only draws aligned
+sprites to the screen, so you don't have to shift the bits of the sprite to
+align with your display buffer.
 
 This first test can tell you if you're interpreting these opcodes properly:
 
@@ -57,7 +57,7 @@ This first test can tell you if you're interpreting these opcodes properly:
   * `ANNN` - Load index register with immediate value
   * `DXYN` - Draw sprite to screen (only aligned)
 
-Run the ROM for 39 cycles to see "CHIP-8" on the display:
+Run the ROM for 39 cycles to see this splash screen on the display:
 
 ![CHIP-8 logo, shown on the display](./pictures/chip-8%20logo.png)
 
