@@ -6,6 +6,9 @@ your own CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
 [Download the ROM here](./bin/chip8-test-suite.ch8?raw=true), give it a spin and
 see if your interpreter is doing the right thing! 😄
 
+Or [run the test suite in Octo](https://timendus.github.io/chip8-test-suite/) to
+see what it **should** be doing 🙄 (set to "Cosmac VIP" CHIP-8 mode)
+
 ![The test suite running in CHIP-8 mode on Octo](./pictures/animation.gif)
 
 ### Available tests:
