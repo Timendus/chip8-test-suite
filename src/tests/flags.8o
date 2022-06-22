@@ -1,0 +1,190 @@
+# Flags test
+
+# This is a visual adaptation of the math tests I wrote for Silicon8
+# (https://github.com/Timendus/silicon8/tree/main/tests)
+
+:macro opcode OPC {
+  vD := OPC
+  flags-draw-opcode
+}
+
+:macro expect REG VAL {
+  i := flag-err
+  if REG == VAL then i := flag-ok
+  y += 1
+  sprite x y 3
+}
+
+:macro expect-val-flag VAL FLAG {
+  vE := vF
+  vD := FLAG
+  vC := VAL
+  flags-draw-results
+}
+
+: flags-test-after-keyrelease
+	waitKeyRelease
+: flags-test
+	clear
+
+	## Without complications
+
+	text 1 1 flags-no-carry
+	x := 23
+	y := 1
+
+	v0 := 50
+	v1 := 15
+
+	# OR
+	opcode 0x81
+	v2 := v0
+	v2 |= v1 # 63 (0x3F)
+	expect-val-flag 63 0
+
+	# AND
+	opcode 0x82
+	v2 := v0
+	v2 &= v1 # 2 (0x02)
+	expect-val-flag 2 0
+
+	# XOR
+	opcode 0x83
+	v2 := v0
+	v2 ^= v1 # 61 (0x3D)
+	expect-val-flag 61 0
+
+	# Addition (no overflow)
+	opcode 0x84
+	v2 := v0
+	v2 += v1 # 65 (0x41)
+	expect-val-flag 65 0
+
+	# Subtraction in one direction (no carry)
+	opcode 0x85
+	v2 := v0
+	v2 -= v1 # 35 (0x23)
+	expect-val-flag 35 1
+
+	# Shift right (no LSB)
+	opcode 0x86
+	v2 := v0
+	v2 >>= v2 # 25 (0x19)
+	expect-val-flag 25 0
+
+	# Subtraction in the other direction (no carry)
+	opcode 0x87
+	v2 := v1
+	v2 =- v0 # 35 (0x23)
+	expect-val-flag 35 1
+
+	# Shift left (no MSB)
+	opcode 0x8E
+	v2 := v0
+	v2 <<= v2 # 100 (0x64)
+	expect-val-flag 100 0
+
+
+	# With complications
+
+	text 1 17 flags-carry
+	x := 23
+	y := 17
+
+	v0 := 200
+	v1 := 100
+
+	# Addition (with overflow)
+	opcode 0x84
+	v2 := v0
+	v2 += v1 # 300 (0x2C)
+	expect-val-flag 0x2C 1
+
+	# Subtraction in one direction (with carry)
+	opcode 0x85
+	v2 := v1
+	v2 -= v0 # 100 - 200 = -100 = 156 (0x9C)
+	expect-val-flag 0x9C 0
+
+	# Shift right (with LSB)
+	opcode 0x86
+	v2 := 3
+	v2 >>= v2 # 1 (0x1)
+	expect-val-flag 1 1
+
+	# Subtraction in the other direction (with carry)
+	opcode 0x87
+	v2 := v0
+	v2 =- v1 # 100 - 200 = -100 = 156 (0x9C)
+	expect-val-flag 0x9C 0
+
+	# Shift left (with MSB)
+	opcode 0x8E
+	v2 := v0
+	v2 <<= v2 # 400 (0x90)
+	expect-val-flag 0x90 1
+
+	# Addition to i
+
+	text 1 28 flags-other
+	x := 23
+	y := 28
+
+	opcode 0xFE
+	i := scratchpad
+	v1 := 0x10
+	i += v1
+	v0 := 0xAA
+	save v0
+	i := scratchpad-plus-16
+	load v0
+	expect v0 0xAA
+
+	jump menu-after-keypress
+
+: flags-draw-opcode
+	i := im0
+	vE := vD
+	vF := 0xF0
+	vE &= vF
+	vE >>= vE
+	vE >>= vE
+	i += vE
+	sprite x y 4
+	x += 4
+	i := im0
+	vE := vD
+	vF := 0x0F
+	vE &= vF
+	vE <<= vE
+	vE <<= vE
+	i += vE
+	sprite x y 4
+	x += 6
+	return
+
+: flags-draw-results
+	i := flag-err
+	if v2 == vC then i := flag-ok
+	y += 1
+	sprite x y 3
+	x += 5
+	i := flag-err
+	if vE == vD then i := flag-ok
+	sprite x y 3
+	x += 7
+	y -= 1
+	if x == 67 begin
+		y += 5
+		x := 1
+	end
+	return
+
+#data
+
+: flags-no-carry
+	str "NO C." 0
+: flags-carry
+	str "CARRY" 0
+: flags-other
+	str "OTHER" 0

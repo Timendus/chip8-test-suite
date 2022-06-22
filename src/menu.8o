@@ -1,0 +1,85 @@
+# A cute little menu to select a test
+
+: menu-after-keypress
+	v0 := key
+	waitKeyRelease
+: menu
+	clear
+	text  6  1 menu-header
+	text 14  7 menu-ibm
+	text 14 12 menu-corax
+	text 14 17 menu-flags
+	text 14 22 menu-quirks
+	text 14 27 menu-keypad
+
+	v1 := 10
+	v2 := 8
+	v3 := 0
+	i := menu-cursor
+	delay := v3
+	loop
+		# Blink cursor
+		v0 := delay
+		if v0 == 0 begin
+			sprite v1 v2 2
+			v0 := 10
+			delay := v0
+			v0 := 1
+			v3 ^= v0
+		end
+
+		# Use numbers to start test
+		v0 := 1   if v0 key then jump ibm-logo-after-keyrelease
+		v0 := 2   if v0 key then jump corax89-after-keyrelease
+		v0 := 3   if v0 key then jump flags-test-after-keyrelease
+		v0 := 4   if v0 key then jump quirks-test-after-keyrelease
+		v0 := 0xC if v0 key then jump quirks-test-after-keyrelease
+
+		# Select test under cursor
+		v0 := 6
+		if v0 key begin
+			waitKeyRelease
+			if v2 == 8 then jump ibm-logo
+			if v2 == 13 then jump corax89
+			if v2 == 18 then jump flags-test
+			if v2 == 23 then jump quirks-test
+			if v2 == 28 then jump keypad-test
+		end
+
+		# Move cursor
+		# Up
+		v0 := 5
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 > 8 then v2 -= 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+		# Down
+		v0 := 8
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 < 28 then v2 += 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+	again
+
+#data
+
+: menu-header
+	str "TIMENDUS TEST" 0
+: menu-ibm
+	str "1 IBM LOGO" 0
+: menu-corax
+	str "2 CORAX89" 0
+: menu-flags
+	str "3 FLAGS" 0
+: menu-quirks
+	str "4 QUIRKS" 0
+: menu-keypad
+	str "5 KEYPAD" 0
+
+: menu-cursor
+	0b11000000
+	0b11000000

@@ -1,0 +1,81 @@
+# Keypad test
+# A fresh new implementation for this test suite
+
+: keypad-test
+	clear
+	i := keypad-initial-values
+	load vF
+	i := scratchpad
+	save vF
+	text 18 3 keypad-row1
+	text 18 10 keypad-row2
+	text 18 17 keypad-row3
+	text 18 24 keypad-row4
+	vE := 0
+	loop
+		keypad-pressed
+		vE += 1
+		if vE == 16 then vE := 0
+	again
+
+: keypad-pressed
+	i := scratchpad
+	i += vE
+	load v0
+	v2 := 0
+	if vE key then v2 := 1
+	if v0 != v2 begin
+		v0 := vE
+		v0 <<= v0
+		i := keypad-coordinates
+		i += v0
+		load v1
+		i := keypad-cursor
+		sprite v0 v1 6
+		i := scratchpad
+		i += vE
+		v0 := v2
+		save v0
+	end
+	return
+
+#data
+
+: keypad-initial-values
+	0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0
+
+: keypad-row1
+	str "1 2 3 C" 0
+: keypad-row2
+	str "4 5 6 D" 0
+: keypad-row3
+	str "7 8 9 E" 0
+: keypad-row4
+	str "A 0 B F" 0
+
+: keypad-coordinates
+	24 23 # 0
+	16 2  # 1
+	24 2  # 2
+	32 2  # 3
+	16 9  # 4
+	24 9  # 5
+	32 9  # 6
+	16 16 # 7
+	24 16 # 8
+	32 16 # 9
+	16 23 # A
+	32 23 # B
+	40 2  # C
+	40 9  # D
+	40 16 # E
+	40 23 # F
+
+: keypad-cursor
+	0b11111110
+	0b11111110
+	0b11111110
+	0b11111110
+	0b11111110
+	0b11111110

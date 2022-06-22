@@ -1,0 +1,370 @@
+# Quirks test
+
+# This is a visual adaptation of some of the tests I wrote for Silicon8
+# (https://github.com/Timendus/silicon8/tree/main/tests) and some newly written
+# tests for specific quirks.
+
+: quirks-test-after-keyrelease
+	waitKeyRelease
+: quirks-test
+	clear
+	i := 0x1FE
+	load v0
+	if v0 == 1 then jump quirks-chip8
+	if v0 == 2 then jump quirks-schip
+	if v0 == 3 then jump quirks-xochip
+
+	text  6  3 quirks-choose
+	text 16 12 quirks-str-chip8
+	text 16 17 quirks-str-schip
+	text 16 22 quirks-str-xochip
+
+	v1 := 12
+	v2 := 13
+	v3 := 0
+	i := menu-cursor
+	delay := v3
+	loop
+		# Blink cursor
+		v0 := delay
+		if v0 == 0 begin
+			sprite v1 v2 2
+			v0 := 10
+			delay := v0
+			v0 := 1
+			v3 ^= v0
+		end
+
+		# Use numbers to start test
+		v0 := 1   if v0 key then jump quirks-chip8
+		v0 := 2   if v0 key then jump quirks-schip
+		v0 := 3   if v0 key then jump quirks-xochip
+
+		# Select test under cursor
+		v0 := 6
+		if v0 key begin
+			if v2 == 13 then jump quirks-chip8
+			if v2 == 18 then jump quirks-schip
+			if v2 == 23 then jump quirks-xochip
+		end
+
+		# Move cursor
+		# Up
+		v0 := 5
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 > 13 then v2 -= 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+		# Down
+		v0 := 8
+		if v0 key begin
+			if v3 == 1 then sprite v1 v2 2
+			if v2 < 23 then v2 += 5
+			if v3 == 1 then sprite v1 v2 2
+			waitKeyRelease
+		end
+	again
+
+: quirks-chip8
+	i := scratchpad
+	v0 := 1
+	save v0
+	jump quirks-run-tests
+
+: quirks-schip
+	i := scratchpad
+	v0 := 2
+	save v0
+	jump quirks-run-tests
+
+: quirks-xochip
+	i := scratchpad
+	v0 := 3
+	save v0
+
+: quirks-run-tests
+	waitKeyRelease
+
+	# Determine frames per second
+	v0 := 120
+	delay := v0
+	i := quirks-values
+	load vA
+	i := quirks-image
+	loop
+		clear
+		sprite v0 v0 8
+		sprite v1 v0 8
+		sprite v2 v0 8
+		sprite v3 v0 8
+		sprite v4 v0 8
+		sprite v5 v0 8
+		sprite v6 v0 8
+		sprite v7 v0 8
+		sprite v0 v1 8
+		sprite v1 v1 8
+		sprite v2 v1 8
+		sprite v3 v1 8
+		sprite v4 v1 8
+		sprite v5 v1 8
+		sprite v6 v1 8
+		sprite v7 v1 8
+		sprite v0 v2 8
+		sprite v1 v2 8
+		sprite v2 v2 8
+		sprite v3 v2 8
+		sprite v4 v2 8
+		sprite v5 v2 8
+		sprite v6 v2 8
+		sprite v7 v2 8
+		sprite v0 v3 8
+		sprite v1 v3 8
+		sprite v2 v3 8
+		sprite v3 v3 8
+		sprite v4 v3 8
+		sprite v5 v3 8
+		sprite v6 v3 8
+		sprite v7 v3 8
+		v8 += vA
+		v9 += vF
+		vE := delay
+	if vE != 0 then again
+
+	vE := 128
+	v8 >>= v8
+	v9 >>= v9
+	if vF == 1 then v8 |= vE
+
+	v0 := 1
+	if v9 != 0 then v0 := 0
+	if v8 != 2 then v0 := 0
+	i := scratchpad-plus-1
+	save v0
+
+	# Determine if sprites get clipped
+	clear
+	i := keypad-cursor
+	v0 := 28
+	v1 := 29
+	sprite v0 v1 6
+	v0 := 22
+	v1 := 2
+	sprite v0 v1 1
+	v5 := vF
+	v0 := 34
+	sprite v0 v1 1
+	v6 := vF
+	v0 := 0
+	if v5 == 0 then v0 := 1
+	if v5 != v6 then v0 := 2
+	i := scratchpad-plus-2
+	save v0
+
+	# Present results
+
+	clear
+
+	# vfQuirk
+	# When using &, | or ^, the flags register always gets reset to 0
+	text 1 1 quirks-vf
+	v5 := 0
+	vF := 15
+	v0 &= v0
+	if vF == 0 then v5 := 1
+	v6 := 0
+	vF := 15
+	v0 |= v0
+	if vF == 0 then v6 := 1
+	v7 := 0
+	vF := 15
+	v0 ^= v0
+	if vF == 0 then v7 := 1
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 1 begin
+		# Selected CHIP-8
+		if v5 == 1 then i := flag-ok
+	else
+		# Selected SCHIP or XO-CHIP
+		if v5 == 0 then i := flag-ok
+	end
+	x := 59
+	y := 2
+	sprite x y 3
+	i := quirks-off
+	if v5 == 1 then i := quirks-on
+	if v5 != v6 then i := quirks-inconsistent
+	if v5 != v7 then i := quirks-inconsistent
+	vD := 44
+	vE := 1
+	drawText
+
+	# memQuirk
+	# When reading or writing memory, i gets incremented
+	text 1 6 quirks-mem
+	v0 := 5
+	i := scratchpad-plus-16
+	save v0
+	load v0
+	v5 := v0
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 2 begin
+		# Selected SCHIP
+		if v5 == 5 then i := flag-ok
+	else
+		# Selected CHIP-8 or XO-CHIP
+		if v5 != 5 then i := flag-ok
+	end
+	x := 59
+	y := 7
+	sprite x y 3
+	i := quirks-on
+	if v5 == 5 then i := quirks-off
+	vD := 44
+	vE := 6
+	drawText
+
+	# dispQuirk
+	# When drawing a sprite to the screen, the interpreter waits for v-blank
+	text 1 11 quirks-disp
+	i := scratchpad
+	load v1
+	i := flag-err
+	if v0 == 1 begin
+		# Selected CHIP-8
+		if v1 == 1 then i := flag-ok
+	else
+		# Selected SCHIP or XO-CHIP
+		if v1 == 0 then i := flag-ok
+	end
+	x := 59
+	y := 12
+	sprite x y 3
+	i := quirks-off
+	if v1 == 1 then i := quirks-on
+	vD := 44
+	vE := 11
+	drawText
+
+	# clipQuirk
+	# Sprites wrap to the top of the screen
+	text 1 16 quirks-clip
+	i := scratchpad
+	load v2
+	i := flag-err
+	if v0 == 3 begin
+		# Selected XO-CHIP
+		if v2 == 0 then i := flag-ok
+	else
+		# Selected CHIP-8 or SCHIP
+		if v2 == 1 then i := flag-ok
+	end
+	x := 59
+	y := 17
+	sprite x y 3
+	i := quirks-off
+	if v2 == 1 then i := quirks-on
+	if v2 == 2 then i := quirks-inconsistent
+	vD := 44
+	vE := 16
+	drawText
+
+	# shiftQuirk
+	# When shifting a register, the interpreter always shifts register X into
+	# register X (instead of shifting register Y into register X)
+	text 1 21 quirks-shift
+	v5 := 0
+	v6 := 8
+	v7 := 0
+	v8 := 32
+	v5 <<= v6
+	v7 >>= v8
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 2 begin
+		# Selected SCHIP
+		if v5 == 0 then i := flag-ok
+	else
+		# Selected CHIP-8 or XO-CHIP
+		if v5 != 0 then i := flag-ok
+	end
+	x := 59
+	y := 22
+	sprite x y 3
+	i := quirks-off
+	if v5 == 0 then i := quirks-on
+	if v5 != v7 then i := quirks-inconsistent
+	vD := 44
+	vE := 21
+	drawText
+
+	# jumpQuirk
+	# When using `jump0` (BNNN) the interpreter doesn't jump to NNN + v0 but to
+	# NNN + vX where X is the highest nibble of NNN
+	text 1 26 quirks-jump
+	v0 := 0x10
+	vE := 0x20
+	jump0 0xE00      # This jumps to one of two routines defined in index.8o (for
+: quirks-resume    # reasons of having to put them in precisely the right spot)
+	i := scratchpad
+	load v0
+	i := flag-err
+	if v0 == 2 begin
+		# Selected SCHIP
+		if v5 != 0 then i := flag-ok
+	else
+		# Selected CHIP-8 or XO-CHIP
+		if v5 == 0 then i := flag-ok
+	end
+	x := 59
+	y := 27
+	sprite x y 3
+	i := quirks-off
+	if v5 == 1 then i := quirks-on
+	vD := 44
+	vE := 26
+	drawText
+
+	jump menu-after-keypress
+
+#data
+
+: quirks-choose
+	str "PICK PLATFORM" 0
+: quirks-str-chip8
+	str "1 CHIP-8" 0
+: quirks-str-schip
+	str "2 SCHIP" 0
+: quirks-str-xochip
+	str "3 XO-CHIP" 0
+
+: quirks-vf
+	str "VF RESET" 0
+: quirks-mem
+	str "MEMORY" 0
+: quirks-disp
+	str "DISP.WAIT" 0
+: quirks-clip
+	str "CLIPPING" 0
+: quirks-shift
+	str "SHIFTING" 0
+: quirks-jump
+	str "JUMPING" 0
+
+: quirks-on
+	str "ON" 0
+: quirks-off
+	str "OFF" 0
+: quirks-inconsistent
+	str "ERR" 0
+
+: quirks-values
+	0 8 16 24 32 40 48 56 0 0 1
+: quirks-image
+	0x3C 0x7E 0xFF 0xDB 0xFF 0xDB 0x66 0x3C
