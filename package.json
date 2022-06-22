@@ -1,0 +1,13 @@
+{
+  "name": "Timendus' CHIP-8 Test Suite",
+  "scripts": {
+    "build": "octopus src/index.8o bin/timendus-test-suite.8o && cat bin/timendus-test-suite.8o | pbcopy",
+    "build-all": "npm run build && npm run build-binary && npm run build-html",
+    "build-binary": "npm run build && octo bin/timendus-test-suite.8o bin/timendus-test-suite.ch8",
+    "build-html": "npm run build && octo --options octo-config.json bin/timendus-test-suite.8o docs/index.html"
+  },
+  "dependencies": {
+    "chipcode": "../../chipcode",
+    "octo-assembler": "^0.1.3"
+  }
+}
