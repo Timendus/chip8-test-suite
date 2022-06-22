@@ -1,15 +1,14 @@
 # CHIP-8 test suite
 
-A single ROM image containing six distinct tests that will aid you in developing
-your own CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator").
+_A single ROM image containing six distinct tests that will aid you in developing
+your own CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
 
-I found it hard to find reliable sources on what is the right behaviour and what
-is not, especially with the subtle differences between the original "Cosmac VIP"
-CHIP-8 and the HP84's SCHIP (or "superchip"). Now that I have written and ported
-a couple of interpreters as well as a few programs and games for the platform, I
-thought it was time to put that knowledge into code.
+[Download the ROM here](./bin/timendus-test-suite.ch8), give it a spin and see
+if your interpreter is doing the right thing! 😄
 
-#### Available tests:
+![The test suite running in CHIP-8 mode on Octo](./pictures/animation.gif)
+
+### Available tests:
 
   * CHIP-8 logo
   * IBM logo
@@ -18,14 +17,16 @@ thought it was time to put that knowledge into code.
   * A quirks test
   * A keypad test
 
-Give this ROM a spin and see if your interpreter is doing the right thing! 😄
+I found it hard to find reliable sources on what is the right behaviour and what
+is not, especially with the subtle differences between the original "Cosmac VIP"
+CHIP-8 and the HP84's SCHIP (or "superchip"). Now that I have written and ported
+a couple of interpreters as well as a few programs and games for the platform, I
+thought it was time to put that knowledge into code.
 
 If you're having issues with your interpreter, you can find help in the [EmuDev
 discord channel `#chip-8`](https://discord.gg/dkmJAes). If you discover a
 problem with this test ROM, feel free to file an issue or open a pull request.
 It's open source, licensed under the GPLv3, and you're welcome to contribute.
-
-![The test suite running in CHIP-8 mode on Octo](./pictures/animation.gif)
 
 ## Auto-starting a specific test
 
