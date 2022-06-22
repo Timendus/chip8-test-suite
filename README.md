@@ -10,12 +10,12 @@ if your interpreter is doing the right thing! 😄
 
 ### Available tests:
 
-  * CHIP-8 logo
-  * IBM logo
-  * An improved version of Corax89's opcode test
-  * A flags test
-  * A quirks test
-  * A keypad test
+  * [CHIP-8 splash screen](#chip-8-splash-screen)
+  * [IBM logo](#ibm-logo)
+  * [Corax89's opcode test](#corax89s-opcode-test) (improved version)
+  * [Flags test](#flags-test)
+  * [Quirks test](#quirks-test)
+  * [Keypad test](#keypad-test)
 
 I found it hard to find reliable sources on what is the right behaviour and what
 is not, especially with the subtle differences between the original "Cosmac VIP"
