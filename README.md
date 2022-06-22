@@ -57,7 +57,7 @@ This first test can tell you if you're interpreting these opcodes properly:
   * `ANNN` - Load index register with immediate value
   * `DXYN` - Draw sprite to screen (only aligned)
 
-Run the ROM for 20 cycles to see "CHIP-8" on the display:
+Run the ROM for 39 cycles to see "CHIP-8" on the display:
 
 ![CHIP-8 logo, shown on the display](./pictures/chip-8%20logo.png)
 
@@ -73,7 +73,7 @@ in Octo-mnemonics by my own hand, but it compiles to the exact same bytes as the
 original.
 
 To auto-start, load the value `1` into memory at `0x1FF`, load the ROM in memory
-starting from `0x200` and start your interpreter. Run the ROM for 45 cycles to
+starting from `0x200` and start your interpreter. Run the ROM for 64 cycles to
 see the IBM logo on the display.
 
 If you can see the IBM logo on the screen, you are properly interpreting these

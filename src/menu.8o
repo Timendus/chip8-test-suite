@@ -5,7 +5,7 @@
 	waitKeyRelease
 : menu
 	clear
-	text  6  1 menu-header
+	text 10  1 menu-header
 	text 14  7 menu-ibm
 	text 14 12 menu-corax
 	text 14 17 menu-flags
@@ -68,7 +68,7 @@
 #data
 
 : menu-header
-	str "TIMENDUS TEST" 0
+	str "PICK A TEST" 0
 : menu-ibm
 	str "1 IBM LOGO" 0
 : menu-corax
