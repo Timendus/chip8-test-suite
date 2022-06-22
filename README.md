@@ -3,7 +3,7 @@
 _A single ROM image containing six distinct tests that will aid you in developing
 your own CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
 
-[Download the ROM here](./bin/timendus-test-suite.ch8), give it a spin and see
+[Download the ROM here](./bin/timendus-test-suite.ch8?raw=true), give it a spin and see
 if your interpreter is doing the right thing! 😄
 
 ![The test suite running in CHIP-8 mode on Octo](./pictures/animation.gif)
