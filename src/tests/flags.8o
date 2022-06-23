@@ -8,18 +8,36 @@
   flags-draw-opcode
 }
 
-:macro expect REG VAL {
+:macro expect-v0 V0VAL {
   i := flag-err
-  if REG == VAL then i := flag-ok
+  if v0 == V0VAL then i := flag-ok
   y += 1
+  x += 4
   sprite x y 3
+  x += 9
+  y -= 1
 }
 
-:macro expect-val-flag VAL FLAG {
+:macro expect-v2-vf V2VAL VFVAL {
   vE := vF
-  vD := FLAG
-  vC := VAL
+  vD := VFVAL
+  vC := V2VAL
+  x += 2
   flags-draw-results
+  x += 3
+}
+
+:macro expect-v2-vf-v3 V2VAL VFVAL V3VAL {
+  vE := vF
+  vD := VFVAL
+  vC := V2VAL
+  flags-draw-results
+  y += 1
+  i := flag-err
+  if v3 == V3VAL then i := flag-ok
+  sprite x y 3
+  y -= 1
+  x += 5
 }
 
 : flags-test-after-keyrelease
@@ -29,106 +47,142 @@
 
   ## Without complications
 
-  text 1 1 flags-no-carry
-  x := 23
-  y := 1
+  text 0 0 flags-no-carry
+  x := 22
+  y := 0
 
   v0 := 50
   v1 := 15
 
   # OR
   opcode 0x81
+  v3 := 15
+  vF := 20
+  v3 |= vF # 31 (0x1F)
   v2 := v0
   v2 |= v1 # 63 (0x3F)
-  expect-val-flag 63 0
+  expect-v2-vf-v3 63 0 31
 
   # AND
   opcode 0x82
+  v3 := 15
+  vF := 20
+  v3 &= vF # 4 (0x04)
   v2 := v0
   v2 &= v1 # 2 (0x02)
-  expect-val-flag 2 0
+  expect-v2-vf-v3 2 0 4
+
+  y += 5
+  x := 0
 
   # XOR
   opcode 0x83
+  v3 := 15
+  vF := 20
+  v3 ^= vF # 27 (0x1B)
   v2 := v0
   v2 ^= v1 # 61 (0x3D)
-  expect-val-flag 61 0
+  expect-v2-vf-v3 61 0 27
 
   # Addition (no overflow)
   opcode 0x84
+  v3 := 15
+  vF := 20
+  v3 += vF # 35 (0x23)
   v2 := v0
   v2 += v1 # 65 (0x41)
-  expect-val-flag 65 0
+  expect-v2-vf-v3 65 0 35
 
   # Subtraction in one direction (no carry)
   opcode 0x85
+  v3 := 20
+  vF := 15
+  v3 -= vF # 5 (0x05)
   v2 := v0
   v2 -= v1 # 35 (0x23)
-  expect-val-flag 35 1
+  expect-v2-vf-v3 35 1 5
+
+  y += 5
+  x := 0
 
   # Shift right (no LSB)
   opcode 0x86
   v2 := v0
   v2 >>= v2 # 25 (0x19)
-  expect-val-flag 25 0
+  expect-v2-vf 25 0
 
   # Subtraction in the other direction (no carry)
   opcode 0x87
+  v3 := 15
+  vF := 20
+  v3 =- vF # 5 (0x05)
   v2 := v1
   v2 =- v0 # 35 (0x23)
-  expect-val-flag 35 1
+  expect-v2-vf-v3 35 1 5
 
   # Shift left (no MSB)
   opcode 0x8E
   v2 := v0
   v2 <<= v2 # 100 (0x64)
-  expect-val-flag 100 0
+  expect-v2-vf 100 0
 
 
   # With complications
 
-  text 1 17 flags-carry
-  x := 23
-  y := 17
+  text 0 16 flags-carry
+  x := 22
+  y := 16
 
   v0 := 200
   v1 := 100
 
   # Addition (with overflow)
   opcode 0x84
+  v3 := 200
+  vF := 100
+  v3 += vF # 300 (0x2C)
   v2 := v0
   v2 += v1 # 300 (0x2C)
-  expect-val-flag 0x2C 1
+  expect-v2-vf-v3 0x2C 1 0x2C
 
   # Subtraction in one direction (with carry)
   opcode 0x85
+  v3 := 15
+  vF := 20
+  v3 -= vF # -5 = 251 (0xFB)
   v2 := v1
   v2 -= v0 # 100 - 200 = -100 = 156 (0x9C)
-  expect-val-flag 0x9C 0
+  expect-v2-vf-v3 0x9C 0 0xFB
+
+  y += 5
+  x := 0
 
   # Shift right (with LSB)
   opcode 0x86
   v2 := 3
   v2 >>= v2 # 1 (0x1)
-  expect-val-flag 1 1
+  expect-v2-vf 1 1
 
   # Subtraction in the other direction (with carry)
   opcode 0x87
+  v3 := 20
+  vF := 15
+  v3 =- vF # -5 = 251 (0xFB)
   v2 := v0
   v2 =- v1 # 100 - 200 = -100 = 156 (0x9C)
-  expect-val-flag 0x9C 0
+  expect-v2-vf-v3 0x9C 0 0xFB
 
   # Shift left (with MSB)
   opcode 0x8E
   v2 := v0
   v2 <<= v2 # 400 (0x90)
-  expect-val-flag 0x90 1
+  expect-v2-vf 0x90 1
 
   # Addition to i
 
-  text 1 28 flags-other
-  x := 23
-  y := 28
+  text 0 27 flags-other
+  x := 22
+  y := 27
 
   opcode 0xFE
   i := scratchpad
@@ -138,7 +192,7 @@
   save v0
   i := scratchpad-plus-16
   load v0
-  expect v0 0xAA
+  expect-v0 0xAA
 
   jump menu-after-keypress
 
@@ -160,7 +214,7 @@
   vE <<= vE
   i += vE
   sprite x y 4
-  x += 6
+  x += 5
   return
 
 : flags-draw-results
@@ -168,22 +222,18 @@
   if v2 == vC then i := flag-ok
   y += 1
   sprite x y 3
-  x += 5
+  x += 4
   i := flag-err
   if vE == vD then i := flag-ok
   sprite x y 3
-  x += 7
+  x += 4
   y -= 1
-  if x == 67 begin
-  y += 5
-  x := 1
-  end
   return
 
 #data
 
 : flags-no-carry
-  str "NO C." 0
+  str "HAPPY" 0
 : flags-carry
   str "CARRY" 0
 : flags-other
