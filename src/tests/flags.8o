@@ -40,6 +40,40 @@
   x += 5
 }
 
+: flags-draw-opcode
+  i := im0
+  vE := vD
+  vF := 0xF0
+  vE &= vF
+  vE >>= vE
+  vE >>= vE
+  i += vE
+  sprite x y 4
+  x += 4
+  i := im0
+  vE := vD
+  vF := 0x0F
+  vE &= vF
+  vE <<= vE
+  vE <<= vE
+  i += vE
+  sprite x y 4
+  x += 5
+  return
+
+: flags-draw-results
+  i := flag-err
+  if v2 == vC then i := flag-ok
+  y += 1
+  sprite x y 3
+  x += 4
+  i := flag-err
+  if vE == vD then i := flag-ok
+  sprite x y 3
+  x += 4
+  y -= 1
+  return
+
 : flags-test-after-keyrelease
   waitKeyRelease
 : flags-test
@@ -195,40 +229,6 @@
   expect-v0 0xAA
 
   jump menu-after-keypress
-
-: flags-draw-opcode
-  i := im0
-  vE := vD
-  vF := 0xF0
-  vE &= vF
-  vE >>= vE
-  vE >>= vE
-  i += vE
-  sprite x y 4
-  x += 4
-  i := im0
-  vE := vD
-  vF := 0x0F
-  vE &= vF
-  vE <<= vE
-  vE <<= vE
-  i += vE
-  sprite x y 4
-  x += 5
-  return
-
-: flags-draw-results
-  i := flag-err
-  if v2 == vC then i := flag-ok
-  y += 1
-  sprite x y 3
-  x += 4
-  i := flag-err
-  if vE == vD then i := flag-ok
-  sprite x y 3
-  x += 4
-  y -= 1
-  return
 
 #data
 
