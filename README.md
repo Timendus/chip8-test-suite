@@ -31,12 +31,32 @@ discord channel `#chip-8`](https://discord.gg/dkmJAes). If you discover a
 problem with this test ROM, feel free to file an issue or open a pull request.
 It's open source, licensed under the GPLv3, and you're welcome to contribute.
 
+## Controls
+
+When you see the CHIP-8 splash screen, press any CHIP-8 key to get to the main
+menu:
+
+![The menu for the CHIP-8 test suite](./pictures/menu.png)
+
+In the menu, you can move the cursor up and down with CHIP-8 keys `5` and `8`
+and select an item with `6`. On a PC keyboard those generally map to `W` and `S`
+or `Up` and `Down` to move the cursor and `E` or `Space` to select.
+
+Alternatively, for tests 1-4 you can press the corresponding CHIP-8 key to jump
+to those tests immediately. Note that this doesn't work for the keypad test
+because the `5` key is already in use for moving the cursor up.
+
+I wanted to allow users with limited keys (like a game controller) to be able to
+use this ROM too, so I needed to have a cursor and I kinda had to make this
+concession. So just so you know, this is not a bug, it's a feature 😄
+
 ## Auto-starting a specific test
 
-The ROM has a graphical menu to select the test you wish to run. But if you're
-just starting out and you have very few opcodes implemented, or if you're trying
-to automate your tests, you can force the ROM to immediately start a specific
-test. It will skip waiting for a keypress and the menu entirely. To do so:
+When you're repeatedly testing the same thing, if you're just starting out and
+you have very few opcodes implemented, or if you're trying to automate your
+tests, having to use the menu gets in the way. In that case, you can force the
+ROM to immediately start a specific test by setting a magic value in RAM. It
+will then skip waiting for a keypress and the menu entirely. To do so:
 
   1. Load the ROM file in memory at address `0x200` (`512`) like you normally do
   2. Set the specific test you wish to run by loading a value between 1 and 5 in
@@ -194,6 +214,9 @@ platform by loading a value between 1 and 3 into memory at the address `0x1FE`
 
 ![Choosing a target platform in the quirks test](./pictures/quirks-platform.png)
 
+This menu works exactly the same as the main menu in terms of
+[controls](#controls).
+
 The test will now run through a couple of steps, which you will see on the
 screen as some garbage and a bunch of smiley faces. After about two seconds, you
 should see this screen:
@@ -225,17 +248,6 @@ This is an implementation of a keypad test. When you press a key, the
 corresponding value lights up on the screen. There are more implementations of
 something like this, but I thought it was a valuable addition to this suite, so
 I wrote one.
-
-Note that you can start any of the tests from the main menu by pressing the
-corresponding number on the keypad, except for this one. That's because pressing
-5 on your PC keyboard is often not mapped to any CHIP-8 keys and pressing 5 on a
-CHIP-8 keyboard is generally used as an "up" key. You can however move the
-cursor down to the item (usually `S` on PC keyboard or `8` in CHIP-8 keypad) and
-select it (usually `E` on PC keyboard or `6` on CHIP-8 keypad).
-
-I wanted to allow users with limited keys (like a game controller) to be able to
-use this ROM too, so I wanted to have the cursor and I had to make this
-concession. So just so you know, this is not a bug, it's a feature 😄
 
 To auto-start this test, load the value `5` into memory at `0x1FF`, load the ROM
 in memory starting from `0x200` and start your interpreter.
