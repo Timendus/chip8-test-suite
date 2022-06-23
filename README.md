@@ -62,7 +62,7 @@ This first test can tell you if you're interpreting these opcodes properly:
 
 Run the ROM for 39 cycles to see this splash screen on the display:
 
-![CHIP-8 logo, shown on the display](./pictures/chip-8%20logo.png)
+![CHIP-8 logo, shown on the display](./pictures/chip-8-logo.png)
 
 ### IBM logo
 
@@ -90,7 +90,7 @@ additional opcodes:
     * `7XNN` - Add immediate value to normal register
     * `DXYN` - Draw sprite to screen (un-aligned)
 
-![IBM logo, shown on the display](./pictures/ibm%20logo.png)
+![IBM logo, shown on the display](./pictures/ibm-logo.png)
 
 ### Corax89's opcode test
 
@@ -192,7 +192,7 @@ ROM in memory starting from `0x200`. Additionally, you can also force the target
 platform by loading a value between 1 and 3 into memory at the address `0x1FE`
 (`510`). Otherwise the test asks you to choose one:
 
-![Choosing a target platform in the quirks test](./pictures/quirks%20platform.png)
+![Choosing a target platform in the quirks test](./pictures/quirks-platform.png)
 
 The test will now run through a couple of steps, which you will see on the
 screen as some garbage and a bunch of smiley faces. After about two seconds, you
