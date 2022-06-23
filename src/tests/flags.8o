@@ -37,17 +37,6 @@
   x += 9
 }
 
-:macro expect-v2-vf V2VAL VFVAL {
-  vE := vF
-  vC := V2VAL
-  x += 2
-  flags-draw-result
-  v2 := vE
-  vC := VFVAL
-  flags-draw-result
-  x += 3
-}
-
 :macro expect-v2-vf-v3 V2VAL VFVAL V3VAL {
   vE := vF
   vC := V2VAL
