@@ -1,34 +1,34 @@
 :stringmode str "$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -." {
-	:byte { 4 * VALUE }
+  :byte { 4 * VALUE }
 }
 
 :macro text X Y STR {
-	vD := X
-	vE := Y
-	i := STR
-	drawText
+  vD := X
+  vE := Y
+  i := STR
+  drawText
 }
 
 :alias x vA
 :alias y vB
 
 : waitKeyRelease
-	v0 := 0
+  v0 := 0
 : -
-		if v0 key then jump -
-		v0 += 1
-		if v0 == 16 then return
-	jump -
+  if v0 key then jump -
+  v0 += 1
+  if v0 == 16 then return
+  jump -
 
 #data
 
 : scratchpad
-	0
+  0
 : scratchpad-plus-1
-	0
+  0
 : scratchpad-plus-2
-	0 0 0 0 0
-	0 0 0 0 0
-	0 0 0 0
+  0 0 0 0 0
+  0 0 0 0 0
+  0 0 0 0
 : scratchpad-plus-16
   0

@@ -8,7 +8,7 @@
 # MD5 hash of binary from this code:  2dbace8066709ac9a264d23281820d32
 
 : ibm-logo-after-keyrelease
-	waitKeyRelease
+  waitKeyRelease
 : ibm-logo
   clear                       # Address 512 / 0x200
 
