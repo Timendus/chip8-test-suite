@@ -157,10 +157,10 @@ this:
 ![The flags test](./pictures/flags.png)
 
 Each code on the screen corresponds to an opcode, and shows if the output value
-is correct (first checkmark), if the flag is correct (second checkmark, if
-present) and if the order in which the vF register is read and written to is
-correct (third checkmark, if present). If you see a cross instead of a checkmark
-in any of these spots, you have an issue in your interpreter logic.
+is correct (first checkmark), if the flag is correct (second checkmark) and if
+the order in which the vF register is read and written to is correct (third
+checkmark). If you see a cross instead of a checkmark in any of these spots, you
+have an issue in your interpreter logic.
 
 The top part (that starts with "HAPPY" for "happy path") checks the behaviour of
 the following opcodes, in the case where we **don't** expect an overflow, carry
@@ -195,9 +195,10 @@ CARRY  8XY4   8XY5
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-Finally, as an added bonus, it also checks that the opcode `FX1E` properly adds
-the value of register `vX` to the index register, on the row that starts with
-"other".
+The last row (that starts with "OTHER") checks that the opcode `FX1E` properly
+adds the value of register `vX` to the index register. For this test, only the
+value is checked as overflow of the index register is not really defined in
+CHIP-8 (and no ROMs rely on it as far as I know).
 
 ### Quirks test
 
