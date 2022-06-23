@@ -172,16 +172,17 @@ this:
 ![The flags test](./pictures/flags.png)
 
 Each code on the screen corresponds to an opcode, and shows if the output value
-is correct (first checkmark) and if the flag is correct (second checkmark). If
-you see a cross instead of a checkmark in any of these spots, you have an issue
-in your interpreter logic.
+is correct (first checkmark), if the flag is correct (second checkmark, if
+present) and if the order in which the vF register is read and written to is
+correct (third checkmark, if present). If you see a cross instead of a checkmark
+in any of these spots, you have an issue in your interpreter logic.
 
-The top part (that starts with "no c." for "no carry") checks the output values
-and flags of the following opcodes, in the case where we **don't** expect an
-overflow, carry or shifted out bit:
+The top part (that starts with "HAPPY" for "happy path") checks the behaviour of
+the following opcodes, in the case where we **don't** expect an overflow, carry
+or shifted out bit:
 
 ```
-No c.  8XY1   8XY2
+HAPPY  8XY1   8XY2
 8XY3   8XY4   8XY5
 8XY6   8XY7   8XYE
 ```
@@ -195,12 +196,11 @@ No c.  8XY1   8XY2
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-The bottom part (that starts with "carry") checks the output values and flags of
-the following opcodes, in the case that there **is** an overflow, carry or
-shifted out bit:
+The bottom part (that starts with "CARRY") checks behaviour of the following
+opcodes, in the case that there **is** an overflow, carry or shifted out bit:
 
 ```
-Carry  8XY4   8XY5
+CARRY  8XY4   8XY5
 8XY6   8XY7   8XYE
 ```
 
