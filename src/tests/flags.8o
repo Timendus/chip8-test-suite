@@ -8,38 +8,6 @@
   flags-draw-opcode
 }
 
-:macro expect-v0 V0VAL {
-  i := flag-err
-  if v0 == V0VAL then i := flag-ok
-  y += 1
-  x += 4
-  sprite x y 3
-  x += 9
-  y -= 1
-}
-
-:macro expect-v2-vf V2VAL VFVAL {
-  vE := vF
-  vD := VFVAL
-  vC := V2VAL
-  x += 2
-  flags-draw-results
-  x += 3
-}
-
-:macro expect-v2-vf-v3 V2VAL VFVAL V3VAL {
-  vE := vF
-  vD := VFVAL
-  vC := V2VAL
-  flags-draw-results
-  y += 1
-  i := flag-err
-  if v3 == V3VAL then i := flag-ok
-  sprite x y 3
-  y -= 1
-  x += 5
-}
-
 : flags-draw-opcode
   i := im0
   vE := vD
@@ -61,14 +29,42 @@
   x += 5
   return
 
-: flags-draw-results
+:macro expect-v0 V0VAL {
+  x += 4
+  v2 := v0
+  vC := V0VAL
+  flags-draw-result
+  x += 9
+}
+
+:macro expect-v2-vf V2VAL VFVAL {
+  vE := vF
+  vC := V2VAL
+  x += 2
+  flags-draw-result
+  v2 := vE
+  vC := VFVAL
+  flags-draw-result
+  x += 3
+}
+
+:macro expect-v2-vf-v3 V2VAL VFVAL V3VAL {
+  vE := vF
+  vC := V2VAL
+  flags-draw-result
+  v2 := vE
+  vC := VFVAL
+  flags-draw-result
+  v2 := v3
+  vC := V3VAL
+  flags-draw-result
+  x += 1
+}
+
+: flags-draw-result
   i := flag-err
   if v2 == vC then i := flag-ok
   y += 1
-  sprite x y 3
-  x += 4
-  i := flag-err
-  if vE == vD then i := flag-ok
   sprite x y 3
   x += 4
   y -= 1
