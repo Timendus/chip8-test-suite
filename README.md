@@ -233,8 +233,8 @@ platform (a checkmark or a cross).
   register
 * `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second
-* `Clipping` - Sprites drawn at the bottom edge of the screen wrap around to the
-  top of the screen
+* `Clipping` - Sprites drawn at the bottom edge of the screen get clipped instead
+  of wrapping around to the top of the screen
 * `Shifting` - The shift opcodes (`8XY6` and `8XYE`) only operate on `vX`
   instead of storing the shifted version of `vY` in `vX`
 * `Jumping` - The "jump to some address plus `v0`" instruction (`BNNN`) doesn't
