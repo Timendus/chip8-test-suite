@@ -3,15 +3,13 @@
 
 :macro drawCharacter REG {
   if REG == 0 then return
-  i := characters
-  i += REG
-  sprite vD vE 4
-  vD += 4
+  v0 := REG
+  drawChar
 }
 
 : drawText
   load vC
-  drawCharacter v0
+  drawChar
   drawCharacter v1
   drawCharacter v2
   drawCharacter v3
@@ -26,6 +24,13 @@
   drawCharacter vC
   return
 
+: drawChar
+  i := characters
+  i += v0
+  sprite vD vE 4
+  vD += 4
+  return
+
 #data
 
 # Positive and negative images
@@ -37,6 +42,7 @@
 : flag-ok
   0b10100000
   0b11000000
+: characters
   0b10000000
 : flag-err
   0b10100000
@@ -44,8 +50,6 @@
   0b10100000
 
 # Individual characters, some taken from Corax89' test.
-: characters
-  0 0 0 0
 : im0
   0xE0 0xA0 0xA0 0xE0
 : im1
