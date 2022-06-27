@@ -1,3 +1,6 @@
+# CHIP-8 Test Suite -- Timendus, 2022
+# https://github.com/Timendus/chip8-test-suite
+
 # The program begins from 0x200 with the CHIP-8 logo image,
 # which contains the `main` label:
 
