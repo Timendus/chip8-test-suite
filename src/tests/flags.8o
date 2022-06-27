@@ -59,8 +59,6 @@
   y -= 1
   return
 
-: flags-test-after-keyrelease
-  waitKeyRelease
 : flags-test
   clear
 
