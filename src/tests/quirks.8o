@@ -21,11 +21,6 @@
   v2 := 2
   jump menu-start
 
-: quirks-menu
-  12 13 :pointer quirks-chip8
-  12 18 :pointer quirks-schip
-  12 23 :pointer quirks-xochip
-
 : quirks-chip8
   i := scratchpad
   v0 := 1
@@ -293,6 +288,11 @@
   jump menu-after-keypress
 
 #data
+
+: quirks-menu
+  12 13 :pointer quirks-chip8
+  12 18 :pointer quirks-schip
+  12 23 :pointer quirks-xochip
 
 : quirks-choose
   str "PICK PLATFORM" 0
