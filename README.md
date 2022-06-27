@@ -3,15 +3,27 @@
 _A single ROM image containing six distinct tests that will aid you in developing
 your own CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
 
-[Download the ROM here](./bin/chip8-test-suite.ch8?raw=true), give it a spin and
+* [Download the ROM here](./bin/chip8-test-suite.ch8?raw=true), give it a spin and
 see if your interpreter is doing the right thing! 😄
-
-Or [run the test suite in Octo](https://timendus.github.io/chip8-test-suite/) to
-see what it **should** be doing 🙄 (set to "Cosmac VIP" CHIP-8 mode)
+* Or [run the test suite in Octo](https://timendus.github.io/chip8-test-suite/) to
+see what it **should** be doing 🙄 (it's set to "Cosmac VIP" CHIP-8 mode)
 
 ![The test suite running in CHIP-8 mode on Octo](./pictures/animation.gif)
 
-### Community response 😄
+## Table of contents
+
+  * [Introduction](#introduction)
+  * [Controls](#controls)
+  * [Auto-starting a specific test](#auto-starting-a-specific-test)
+  * [About the tests](#about-the-tests)
+    * [CHIP-8 splash screen](#chip-8-splash-screen)
+    * [IBM logo](#ibm-logo)
+    * [Corax89's opcode test](#corax89s-opcode-test) (improved version)
+    * [Flags test](#flags-test)
+    * [Quirks test](#quirks-test)
+    * [Keypad test](#keypad-test)
+
+## Community response 😄
 
 [![DUDE THANKS! I was writing a CHIP-8 emulator and THIS HELPED ME SO FRICKING MUCH, THANKS! / same here, this is amazing](./pictures/testimonial1.png)](https://github.com/Timendus/chip8-test-suite/issues/1)
 
@@ -21,14 +33,7 @@ see what it **should** be doing 🙄 (set to "Cosmac VIP" CHIP-8 mode)
 
 [![Really nice to have new tests (flags, quirks). Especially the quirks. Fixing some bugs in my impl as we speak thanks to that.](./pictures/testimonial4.png)](https://www.reddit.com/r/EmuDev/comments/viri5r/comment/idugp4j/?utm_source=reddit&utm_medium=web2x&context=3)
 
-### Available tests
-
-  * [CHIP-8 splash screen](#chip-8-splash-screen)
-  * [IBM logo](#ibm-logo)
-  * [Corax89's opcode test](#corax89s-opcode-test) (improved version)
-  * [Flags test](#flags-test)
-  * [Quirks test](#quirks-test)
-  * [Keypad test](#keypad-test)
+## Introduction
 
 I found it hard to find reliable sources on what is the right behaviour and what
 is not, especially with the subtle differences between the original "Cosmac VIP"
