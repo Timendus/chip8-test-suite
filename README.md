@@ -17,6 +17,10 @@ see what it **should** be doing 🙄 (set to "Cosmac VIP" CHIP-8 mode)
 
 [![Really nice to have new tests (flags, quirks). Especially the quirks. Fixing some bugs in my impl as we speak thanks to that.](./pictures/testimonial2.png)](https://www.reddit.com/r/EmuDev/comments/viri5r/i_wrote_a_chip8_test_suite/idet6in/?utm_source=reddit&utm_medium=web2x&context=3)
 
+[![Really nice to have new tests (flags, quirks). Especially the quirks. Fixing some bugs in my impl as we speak thanks to that.](./pictures/testimonial3.png)](https://www.reddit.com/r/EmuDev/comments/viri5r/i_wrote_a_chip8_test_suite/idt41f1/?utm_source=reddit&utm_medium=web2x&context=3)
+
+[![Really nice to have new tests (flags, quirks). Especially the quirks. Fixing some bugs in my impl as we speak thanks to that.](./pictures/testimonial4.png)](https://www.reddit.com/r/EmuDev/comments/viri5r/comment/idugp4j/?utm_source=reddit&utm_medium=web2x&context=3)
+
 ### Available tests
 
   * [CHIP-8 splash screen](#chip-8-splash-screen)
