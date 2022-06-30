@@ -1,3 +1,6 @@
+# CHIP-8 Test Suite -- Timendus, 2022
+# https://github.com/Timendus/chip8-test-suite
+
 # The program begins from 0x200 with the CHIP-8 logo image,
 # which contains the `main` label:
 
@@ -33,11 +36,11 @@
 #data
 
 # Jump quirk targets:
-:org 0xE10
+:org 0xE87
   # We jump here when using v0 in the `jump0` quirks test
   v5 := 0
   jump quirks-resume
-:org 0xE20
+:org 0xE8B
   # We jump here when using vE in the `jump0` quirks test
   v5 := 1
   jump quirks-resume

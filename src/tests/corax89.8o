@@ -46,8 +46,6 @@
   sprite x2 y 4
   jump menu-after-keypress
 
-: corax89-after-keyrelease
-  waitKeyRelease
 : corax89
   clear
   x0 := 1

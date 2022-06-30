@@ -53,17 +53,16 @@ menu:
 
 ![The menu for the CHIP-8 test suite](./pictures/menu.png)
 
-In the menu, you can move the cursor up and down with CHIP-8 keys `5` and `8`
-and select an item with `6`. On a PC keyboard those generally map to `W` and `S`
-or `Up` and `Down` to move the cursor and `E` or `Space` to select.
+In the menu, you can press any of the numbers 1 to 5 on the CHIP-8 keypad to
+jump to the corresponding test. Note that on a PC keyboard the keys `Q` and `W`
+generally map to 4 and 5, not the numeric keys.
 
-Alternatively, for tests 1-4 you can press the corresponding CHIP-8 key to jump
-to those tests immediately. Note that this doesn't work for the keypad test
-because the `5` key is already in use for moving the cursor up.
-
-I wanted to allow users with limited keys (like a game controller) to be able to
-use this ROM too, so I needed to have a cursor and I kinda had to make this
-concession. So just so you know, this is not a bug, it's a feature 😄
+Alternatively, you can move the cursor up and down with CHIP-8 keys `E` and `F`
+and select an item with `A`. On a PC keyboard those generally map to `F` and `V`
+to move the cursor and `Z` to select. This feature mainly exists so people
+implementing interpreters for platforms with limited input devices (like a game
+controller) can map their buttons to those CHIP-8 keys and have an intuitive
+interface too.
 
 ## Auto-starting a specific test
 
@@ -172,16 +171,17 @@ this:
 ![The flags test](./pictures/flags.png)
 
 Each code on the screen corresponds to an opcode, and shows if the output value
-is correct (first checkmark) and if the flag is correct (second checkmark). If
-you see a cross instead of a checkmark in any of these spots, you have an issue
-in your interpreter logic.
+is correct (first checkmark), if the flag is correct (second checkmark) and if
+the order in which the `vF` register is read and written to is correct (third
+checkmark). If you see a cross instead of a checkmark in any of these spots, you
+have an issue in your interpreter logic.
 
-The top part (that starts with "no c." for "no carry") checks the output values
-and flags of the following opcodes, in the case where we **don't** expect an
-overflow, carry or shifted out bit:
+The top part (that starts with "HAPPY" for "happy path") checks the behaviour of
+the following opcodes, in the case where we **don't** expect an overflow, carry
+or shifted out bit:
 
 ```
-No c.  8XY1   8XY2
+HAPPY  8XY1   8XY2
 8XY3   8XY4   8XY5
 8XY6   8XY7   8XYE
 ```
@@ -195,12 +195,11 @@ No c.  8XY1   8XY2
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-The bottom part (that starts with "carry") checks the output values and flags of
-the following opcodes, in the case that there **is** an overflow, carry or
-shifted out bit:
+The bottom part (that starts with "CARRY") checks behaviour of the following
+opcodes, in the case that there **is** an overflow, carry or shifted out bit:
 
 ```
-Carry  8XY4   8XY5
+CARRY  8XY4   8XY5
 8XY6   8XY7   8XYE
 ```
 
@@ -210,9 +209,16 @@ Carry  8XY4   8XY5
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-Finally, as an added bonus, it also checks that the opcode `FX1E` properly adds
-the value of register `vX` to the index register, on the row that starts with
-"other".
+The last row (that starts with "OTHER") checks that the opcode `FX1E` properly
+adds the value of register `vX` to the index register. For this test, only the
+value is checked as overflow of the index register is not really defined in
+CHIP-8 (and no ROMs rely on it as far as I know).
+
+A note on the third checkmark, for the `vF` order: This basically checks to see
+if something like `v0 += vF` works the same as for example `v0 += v1`. It's easy
+to make the mistake of setting the `vF` register first, and then performing the
+mathematical operation. If you do that, however, `vF` will not hold the right
+value and your maths will be off when using that register.
 
 ### Quirks test
 
@@ -248,8 +254,12 @@ platform (a checkmark or a cross).
   register
 * `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second
-* `Clipping` - Sprites drawn at the bottom edge of the screen get clipped instead
-  of wrapping around to the top of the screen
+* `Clipping` - Sprites drawn at the edges of the screen get clipped instead
+  of wrapping around to the other side of the screen. When clipping is off, the
+  test checks if sprites get rendered at the right coordinates on the other side
+  of the screen. This also tests that sprites drawn at coordinates of `x > 63`
+  and/or `y > 31` are rendered at `x % 64` and `y % 32`. If any of these checks
+  fail, the test will show `ERR`.
 * `Shifting` - The shift opcodes (`8XY6` and `8XYE`) only operate on `vX`
   instead of storing the shifted version of `vY` in `vX`
 * `Jumping` - The "jump to some address plus `v0`" instruction (`BNNN`) doesn't
@@ -259,12 +269,50 @@ Note that you need timer support for this test to run.
 
 ### Keypad test
 
-This is an implementation of a keypad test. When you press a key, the
-corresponding value lights up on the screen. There are more implementations of
-something like this, but I thought it was a valuable addition to this suite, so
-I wrote one.
+This test allows you to test all three CHIP-8 key input opcodes.
 
-To auto-start this test, load the value `5` into memory at `0x1FF`, load the ROM
-in memory starting from `0x200` and start your interpreter.
+To auto-start this test, load the value `5` into memory at `0x1FF` and load the
+ROM in memory starting from `0x200`. Additionally, you can also force the target
+opcode by loading a value between 1 and 3 into memory at the address `0x1FE`
+(510). Otherwise the test asks you to choose one:
 
-![The keypad test, when pressing keys 1 and 6](./pictures/keypad.png)
+![Choosing the opcode to test in the keypad test](./pictures/keypad-menu.png)
+
+#### 1. `EX9E DOWN`
+
+`EX9E` skips the next instruction if the key indicated in `vX` is currently
+pressed. In the test, when you press a key, the corresponding value lights up on
+the screen.
+
+![The `EX9E` keypad test, when pressing keys 1 and 6](./pictures/keypad-down.png)
+
+_Pressing keys 1 and 6_
+
+#### 2. `EXA1 UP`
+
+`EXA1` skips the next instruction if the key indicated in `vX` is currently
+**not** pressed. In the test, when you are **not** pressing a key, the
+corresponding value lights up on the screen.
+
+![The `EXA1` keypad test, when pressing keys 1 and 6](./pictures/keypad-up.png)
+
+_Pressing keys 1 and 6_
+
+#### 3. `FX0A GETKEY`
+
+`FX0A` waits for a key press and returns the pressed key in `vX`.
+
+The test asks you to press a key on the CHIP-8 keypad. When you do, it checks
+for two issues that are easy to accidentally introduce when implementing this
+opcode. If all is well, you should be seeing a checkmark and "all good" on the
+screen:
+
+![The `FX0A` keypad test, when all is good](./pictures/keypad-getkey.png)
+
+Otherwise, you can get either of these errors:
+
+* `NOT HALTING` - Your implementation immediately returns the value of any
+  currently pressed keys in `vX`, instead of halting the interpreter until a key
+  is pressed (note that this needs timer support to be accurate)
+* `NOT RELEASED` - Your implementation doesn't wait for the pressed key to be
+  released before resuming

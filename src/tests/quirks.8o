@@ -4,8 +4,6 @@
 # (https://github.com/Timendus/silicon8/tree/main/tests) and some newly written
 # tests for specific quirks.
 
-: quirks-test-after-keyrelease
-  waitKeyRelease
 : quirks-test
   clear
   i := 0x1FE
@@ -19,53 +17,9 @@
   text 16 17 quirks-str-schip
   text 16 22 quirks-str-xochip
 
-  v1 := 12
-  v2 := 13
-  v3 := 0
-  i := menu-cursor
-  delay := v3
-  loop
-    # Blink cursor
-    v0 := delay
-    if v0 == 0 begin
-      sprite v1 v2 2
-      v0 := 10
-      delay := v0
-      v0 := 1
-      v3 ^= v0
-    end
-
-    # Use numbers to start test
-    v0 := 1   if v0 key then jump quirks-chip8
-    v0 := 2   if v0 key then jump quirks-schip
-    v0 := 3   if v0 key then jump quirks-xochip
-
-    # Select test under cursor
-    v0 := 6
-    if v0 key begin
-      if v2 == 13 then jump quirks-chip8
-      if v2 == 18 then jump quirks-schip
-      if v2 == 23 then jump quirks-xochip
-    end
-
-    # Move cursor
-    # Up
-    v0 := 5
-    if v0 key begin
-      if v3 == 1 then sprite v1 v2 2
-      if v2 > 13 then v2 -= 5
-      if v3 == 1 then sprite v1 v2 2
-      waitKeyRelease
-    end
-    # Down
-    v0 := 8
-    if v0 key begin
-      if v3 == 1 then sprite v1 v2 2
-      if v2 < 23 then v2 += 5
-      if v3 == 1 then sprite v1 v2 2
-      waitKeyRelease
-    end
-  again
+  :unpack 0xA quirks-menu
+  v2 := 2
+  jump menu-start
 
 : quirks-chip8
   i := scratchpad
@@ -88,62 +42,35 @@
   waitKeyRelease
 
   # Determine frames per second
+  clear
   v0 := 120
   delay := v0
   i := quirks-values
-  load vA
+  load v4
   i := quirks-image
   loop
-    clear
-    sprite v0 v0 8
-    sprite v1 v0 8
-    sprite v2 v0 8
-    sprite v3 v0 8
-    sprite v4 v0 8
-    sprite v5 v0 8
-    sprite v6 v0 8
-    sprite v7 v0 8
-    sprite v0 v1 8
-    sprite v1 v1 8
-    sprite v2 v1 8
-    sprite v3 v1 8
-    sprite v4 v1 8
-    sprite v5 v1 8
-    sprite v6 v1 8
-    sprite v7 v1 8
-    sprite v0 v2 8
-    sprite v1 v2 8
-    sprite v2 v2 8
-    sprite v3 v2 8
-    sprite v4 v2 8
-    sprite v5 v2 8
-    sprite v6 v2 8
-    sprite v7 v2 8
-    sprite v0 v3 8
-    sprite v1 v3 8
-    sprite v2 v3 8
-    sprite v3 v3 8
-    sprite v4 v3 8
-    sprite v5 v3 8
-    sprite v6 v3 8
-    sprite v7 v3 8
-    v8 += vA
-    v9 += vF
+    v5 := 32
+    loop
+      sprite v0 v1 8
+      v5 -= 1
+    if v5 != 0 then again
+    v2 += v4
+    v3 += vF
     vE := delay
   if vE != 0 then again
 
   vE := 128
-  v8 >>= v8
-  v9 >>= v9
-  if vF == 1 then v8 |= vE
+  v2 >>= v2
+  v3 >>= v3
+  if vF == 1 then v2 |= vE
 
   v0 := 1
-  if v9 != 0 then v0 := 0
-  if v8 != 2 then v0 := 0
+  if v3 != 0 then v0 := 0
+  if v2 != 2 then v0 := 0
   i := scratchpad-plus-1
   save v0
 
-  # Determine if sprites get clipped
+  # Determine if sprites get clipped vertically
   clear
   i := keypad-cursor
   v0 := 28
@@ -151,14 +78,54 @@
   sprite v0 v1 6
   v0 := 22
   v1 := 2
-  sprite v0 v1 1
+  sprite v0 v1 2
   v5 := vF
   v0 := 34
-  sprite v0 v1 1
+  sprite v0 v1 2
   v6 := vF
+
+  # Determine if sprites get clipped horizontally
+  clear
+  i := keypad-cursor
+  v0 := 61
+  v1 := 5
+  sprite v0 v1 6
+  v0 := 3
+  v1 := 4
+  sprite v0 v1 2
+  v7 := vF
+  v1 := 10
+  sprite v0 v1 2
+  v8 := vF
+
+  # Determine if sprites get wrapped (both directions)
+  clear
+  v0 := 110
+  v1 := 50
+  sprite v0 v1 6 # Should draw at 46,18
+  v0 := 40
+  v1 := 17
+  sprite v0 v1 2
+  v9 := vF
+  v0 := 52
+  sprite v0 v1 2
+  v9 += vF
+  v1 := 23
+  sprite v0 v1 2
+  v9 += vF
+  v0 := 40
+  sprite v0 v1 2
+  v9 += vF
+
+  # Save result
   v0 := 0
+  # Clipping
   if v5 == 0 then v0 := 1
   if v5 != v6 then v0 := 2
+  if v5 != v7 then v0 := 2
+  if v5 != v8 then v0 := 2
+  # Wrapping
+  if v9 != 4 then v0 := 2
   i := scratchpad-plus-2
   save v0
 
@@ -308,8 +275,8 @@
   # When using `jump0` (BNNN) the interpreter doesn't jump to NNN + v0 but to
   # NNN + vX where X is the highest nibble of NNN
   text 1 26 quirks-jump
-  v0 := 0x10
-  vE := 0x20
+  v0 := 0x87
+  vE := 0x8B
   jump0 0xE00      # This jumps to one of two routines defined in index.8o (for
 : quirks-resume    # reasons of having to put them in precisely the right spot)
   i := scratchpad
@@ -334,6 +301,11 @@
   jump menu-after-keypress
 
 #data
+
+: quirks-menu
+  12 13 :pointer quirks-chip8
+  12 18 :pointer quirks-schip
+  12 23 :pointer quirks-xochip
 
 : quirks-choose
   str "PICK PLATFORM" 0
@@ -365,6 +337,6 @@
   str "ERR" 0
 
 : quirks-values
-  0 8 16 24 32 40 48 56 0 0 1
+  28 12 0 0 1
 : quirks-image
   0x3C 0x7E 0xFF 0xDB 0xFF 0xDB 0x66 0x3C
