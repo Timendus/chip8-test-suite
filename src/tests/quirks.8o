@@ -70,7 +70,7 @@
   i := scratchpad-plus-1
   save v0
 
-  # Determine if sprites get clipped
+  # Determine if sprites get clipped vertically
   clear
   i := keypad-cursor
   v0 := 28
@@ -78,14 +78,54 @@
   sprite v0 v1 6
   v0 := 22
   v1 := 2
-  sprite v0 v1 1
+  sprite v0 v1 2
   v5 := vF
   v0 := 34
-  sprite v0 v1 1
+  sprite v0 v1 2
   v6 := vF
+
+  # Determine if sprites get clipped horizontally
+  clear
+  i := keypad-cursor
+  v0 := 61
+  v1 := 5
+  sprite v0 v1 6
+  v0 := 3
+  v1 := 4
+  sprite v0 v1 2
+  v7 := vF
+  v1 := 10
+  sprite v0 v1 2
+  v8 := vF
+
+  # Determine if sprites get wrapped (both directions)
+  clear
+  v0 := 110
+  v1 := 50
+  sprite v0 v1 6 # Should draw at 46,18
+  v0 := 40
+  v1 := 17
+  sprite v0 v1 2
+  v9 := vF
+  v0 := 52
+  sprite v0 v1 2
+  v9 += vF
+  v1 := 23
+  sprite v0 v1 2
+  v9 += vF
+  v0 := 40
+  sprite v0 v1 2
+  v9 += vF
+
+  # Save result
   v0 := 0
+  # Clipping
   if v5 == 0 then v0 := 1
   if v5 != v6 then v0 := 2
+  if v5 != v7 then v0 := 2
+  if v5 != v8 then v0 := 2
+  # Wrapping
+  if v9 != 4 then v0 := 2
   i := scratchpad-plus-2
   save v0
 
