@@ -53,17 +53,16 @@ menu:
 
 ![The menu for the CHIP-8 test suite](./pictures/menu.png)
 
-In the menu, you can move the cursor up and down with CHIP-8 keys `5` and `8`
-and select an item with `6`. On a PC keyboard those generally map to `W` and `S`
-or `Up` and `Down` to move the cursor and `E` or `Space` to select.
+In the menu, you can press any of the numbers 1 to 5 on the CHIP-8 keypad to
+jump to the corresponding test. Note that on a PC keyboard the keys `Q` and `W`
+generally map to 4 and 5, not the numeric keys.
 
-Alternatively, for tests 1-4 you can press the corresponding CHIP-8 key to jump
-to those tests immediately. Note that this doesn't work for the keypad test
-because the `5` key is already in use for moving the cursor up.
-
-I wanted to allow users with limited keys (like a game controller) to be able to
-use this ROM too, so I needed to have a cursor and I kinda had to make this
-concession. So just so you know, this is not a bug, it's a feature 😄
+Alternatively, you can move the cursor up and down with CHIP-8 keys `E` and `F`
+and select an item with `A`. On a PC keyboard those generally map to `F` and `V`
+to move the cursor and `Z` to select. This feature mainly exists so people
+implementing interpreters for platforms with limited input devices (like a game
+controller) can map their buttons to those CHIP-8 keys and have an intuitive
+interface too.
 
 ## Auto-starting a specific test
 
