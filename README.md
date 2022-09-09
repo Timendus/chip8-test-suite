@@ -1,3 +1,5 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T0DOOWP)
+
 # CHIP-8 test suite
 
 _A single ROM image containing six distinct tests that will aid you in developing
