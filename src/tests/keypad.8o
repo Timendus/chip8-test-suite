@@ -99,7 +99,7 @@
   sprite v0 v1 3
   jump menu-after-keypress
 
-#data
+:segment data
 
 : keypad-menu
   4 13 :pointer keypad-down

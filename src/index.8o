@@ -4,7 +4,7 @@
 # The program begins from 0x200 with the CHIP-8 logo image,
 # which contains the `main` label:
 
-#include "tests/chip8-logo.8o"
+:include "tests/chip8-logo.8o"
 
 # After that, if the user auto-started a test, run it:
 
@@ -21,19 +21,19 @@
 
 # Include all support code:
 
-#include "helpers.8o"
-#include "menu.8o"
-#include "text-rendering.8o"
+:include "helpers.8o"
+:include "menu.8o"
+:include "text-rendering.8o"
 
 # Include all available tests:
 
-#include "tests/ibm-logo.8o"
-#include "tests/corax89.8o"
-#include "tests/flags.8o"
-#include "tests/quirks.8o"
-#include "tests/keypad.8o"
+:include "tests/ibm-logo.8o"
+:include "tests/corax89.8o"
+:include "tests/flags.8o"
+:include "tests/quirks.8o"
+:include "tests/keypad.8o"
 
-#data
+:segment data
 
 # Jump quirk targets:
 :org 0xE87

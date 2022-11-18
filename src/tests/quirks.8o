@@ -300,7 +300,7 @@
 
   jump menu-after-keypress
 
-#data
+:segment data
 
 : quirks-menu
   12 13 :pointer quirks-chip8

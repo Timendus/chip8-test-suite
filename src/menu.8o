@@ -112,7 +112,7 @@
 : menu-choose-jump
   0 0 # jump <item>
 
-#data
+:segment data
 
 : menu-main
   10 8  :pointer ibm-logo
