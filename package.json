@@ -7,7 +7,7 @@
     "build-html": "npm run build && octo --options octo-config.json bin/chip8-test-suite.8o docs/index.html"
   },
   "dependencies": {
-    "chipcode": "../../chipcode",
+    "@chipcode/octopus": "^0.2.1",
     "octo-assembler": "^0.1.3"
   }
 }

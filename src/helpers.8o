@@ -20,7 +20,7 @@
   if v0 == 16 then return
   jump -
 
-#data
+:segment data
 
 : scratchpad
   0

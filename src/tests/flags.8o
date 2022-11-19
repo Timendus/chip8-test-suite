@@ -228,7 +228,7 @@
 
   jump menu-after-keypress
 
-#data
+:segment data
 
 : flags-no-carry
   str "HAPPY" 0
