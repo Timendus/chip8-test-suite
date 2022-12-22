@@ -124,22 +124,23 @@ original.
 
 ![IBM logo, shown on the display](./pictures/ibm-logo.png)
 
-Run the ROM for 64 cycles to see the IBM logo on the display. If you can see the
-IBM logo, you are properly interpreting these opcodes in addition to the opcodes
-used by the [CHIP-8 splash screen](#chip-8-splash-screen):
+If the graphical menu works for you, just select "IBM LOGO" from the menu.
+Otherwise:
 
-  * To get to the IBM logo code from the CHIP-8 splash screen:
+Load the value `1` into memory at `0x1FF`, load the ROM in memory starting from
+`0x200` and start your interpreter. Run the ROM for 64 cycles to see the IBM
+logo on the display. If you can see the IBM logo, you are properly interpreting
+these opcodes in addition to the opcodes used by the [CHIP-8 splash
+screen](#chip-8-splash-screen):
+
+  * To get to the IBM logo code from the CHIP-8 splash screen using the
+    [Auto-start feature](#auto-starting-a-specific-test):
     * `1NNN` - Jump
     * `FX65` - Load register(s) from memory
     * `4XNN` - Skip next instruction if unequal
   * To show the IBM logo:
     * `7XNN` - Add immediate value to normal register
     * `DXYN` - Draw sprite to screen (un-aligned)
-
-#### Auto starting
-
-To auto-start, load the value `1` into memory at `0x1FF`, load the ROM in memory
-starting from `0x200` and start your interpreter.
 
 ### Corax89's opcode test
 
@@ -150,6 +151,10 @@ a couple of [minor issues with the
 ROM](https://github.com/corax89/chip8-test-rom/pulls) and Corax89 doesn't really
 seem to be maintaining this ROM anymore. So I've taken the liberty to include it
 in this suite, with those issues fixed and some minor cosmetic improvements.
+
+To auto-start this test, load the value `2` into memory at `0x1FF`, load the ROM
+in memory starting from `0x200` and start your interpreter. After a while you
+should be seeing this screen:
 
 ![Corax89's opcode test](./pictures/corax89.png)
 
@@ -170,11 +175,6 @@ see `NO` you can be sure that you have an issue with that opcode.
 If you are having trouble figuring out how each opcode is supposed to behave,
 check out [Tobias' guide](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#instructions).
 
-#### Auto starting
-
-To auto-start, load the value `2` into memory at `0x1FF`, load the ROM in memory
-starting from `0x200` and start your interpreter.
-
 ### Flags test
 
 This test is an adaptation of the [maths tests I
@@ -185,6 +185,10 @@ importantly: it checks to see if you set the flag register `vF` properly when
 running those opcodes, and if you don't mess up `vF` too early (when used as an
 input). This is often an issue as the flags are pretty unintuitive and fairly
 hard to debug.
+
+To auto-start this test, load the value `3` into memory at `0x1FF`, load the ROM
+in memory starting from `0x200` and start your interpreter. After a while you
+should be seeing this screen:
 
 ![The flags test](./pictures/flags.png)
 
@@ -243,11 +247,6 @@ register as an input.
 See [this article](https://laurencescotford.com/chip-8-on-the-cosmac-vip-arithmetic-and-logic-instructions/)
 or [this article](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#logical-and-arithmetic-instructions)
 for more information on the arithmetic operations and the flags.
-
-#### Auto starting
-
-To auto-start, load the value `3` into memory at `0x1FF`, load the ROM in memory
-starting from `0x200` and start your interpreter.
 
 ### Quirks test
 
