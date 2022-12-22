@@ -6,9 +6,17 @@ _A single ROM image containing six distinct tests that will aid you in developin
 your own CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
 
 * [Download the ROM here](./bin/chip8-test-suite.ch8?raw=true), give it a spin and
-see if your interpreter is doing the right thing! 😄
+see if your interpreter is doing the right thing<sup>[1]</sup>! 😄
 * Or [run the test suite in Octo](https://timendus.github.io/chip8-test-suite/) to
 see what it **should** be doing 🙄 (it's set to "Cosmac VIP" CHIP-8 mode)
+
+<sup>[1]</sup> If you've only just started developing your interpreter, please
+see the chapter on [Auto-starting a specific
+test](#auto-starting-a-specific-test) on how you can bypass the menu and
+immediately jump to specific tests! If your interpreter has been fully
+implemented correctly, you should expect to be able to navigate all the tests
+through a graphical menu, and see them all pass, like in the animated screenshot
+below:
 
 ![The test suite running in CHIP-8 mode on Octo](./pictures/animation.gif)
 
@@ -59,16 +67,27 @@ interface too.
 
 ## Auto-starting a specific test
 
-When you're repeatedly testing the same thing, if you're just starting out and
-you have very few opcodes implemented, or if you're trying to automate your
-tests, having to use the menu gets in the way. In that case, you can force the
-ROM to immediately start a specific test by setting a magic value in RAM. It
-will then skip waiting for a keypress and the menu entirely. To do so:
+If you're just starting out and you have very few opcodes implemented, or if you
+want to repeat a test often or even automate them, having to use the graphical
+menu and the keys often just gets in the way.
+
+In that case, you can force the ROM to immediately start a specific test by
+setting a magic value in RAM. It will then skip waiting for a keypress and the
+menu entirely. To do so:
 
   1. Load the ROM file in memory at address `0x200` (`512`) like you normally do
-  2. Set the specific test you wish to run by loading a value between 1 and 5 in
-     memory at address `0x1FF` (`511`)
+  2. Set the specific test you wish to run by loading a value between `1` and
+     `5` in memory at address `0x1FF` (`511`)
   3. Start execution of the ROM from address `0x200` like you normally do
+
+Note that your interpreter needs to support at least these opcodes for this
+feature to succeed in starting the requested test:
+
+  * `ANNN` - Load index register with immediate value
+  * `FX65` - Load register(s) from memory _(only `F065`, if that makes things
+    easier for you)_
+  * `4XNN` - Skip next instruction if unequal _(again, only `40NN` in practice)_
+  * `1NNN` - Jump
 
 ## About the tests
 
@@ -111,7 +130,7 @@ used by the [CHIP-8 splash screen](#chip-8-splash-screen):
 
   * To get to the IBM logo code from the CHIP-8 splash screen:
     * `1NNN` - Jump
-    * `FX65` - Load register from memory
+    * `FX65` - Load register(s) from memory
     * `4XNN` - Skip next instruction if unequal
   * To show the IBM logo:
     * `7XNN` - Add immediate value to normal register
