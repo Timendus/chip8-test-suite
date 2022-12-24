@@ -182,9 +182,9 @@ wrote](https://github.com/Timendus/silicon8/tree/main/tests) for my interpreter
 [Silicon8](https://github.com/Timendus/silicon8). It checks to see if your math
 operations function properly on some given set of input values. But more
 importantly: it checks to see if you set the flag register `vF` properly when
-running those opcodes, and if you don't mess up `vF` too early (when used as an
-input). This is often an issue as the flags are pretty unintuitive and fairly
-hard to debug.
+running those opcodes, and if you don't mess up `vF` too early (when `vF` is
+used as one of the operands). This is often an issue as the flags are pretty
+unintuitive and fairly hard to debug.
 
 To auto-start this test, load the value `3` into memory at `0x1FF`, load the ROM
 in memory starting from `0x200` and start your interpreter. After a while you
@@ -198,6 +198,13 @@ flag is correct (second checkmark) and if the order in which the `vF` register
 is read and written to is correct (third checkmark). If you see a cross instead
 of a checkmark in any of these spots, you have an issue in your interpreter
 logic.
+
+First, a note on the third checkmark, for the `vF` order: This checks to see if
+an instruction where `vF` is one of the operands (like `v0 += vF` / `0x80F4`)
+works as expected. It's easy to make the mistake of setting the `vF` register
+first, and then performing the mathematical operation. If you do that, however,
+`vF` will not hold the right value anymore at calculation time and your maths
+will be off when using that register as an input.
 
 The top part (that starts with "HAPPY" for "happy path") checks the behaviour of
 the following opcodes, in the case where we **don't** expect an overflow, carry
@@ -236,13 +243,6 @@ The last row (that starts with "OTHER") checks that the opcode `FX1E` properly
 adds the value of register `vX` to the index register. For this test, only the
 value is checked as overflow of the index register is not really defined in
 CHIP-8 (and no ROMs rely on it as far as I know).
-
-A note on the third checkmark, for the `vF` order: This basically checks to see
-if something like `v0 += vF` works as expected (the value of `vF` gets added to
-`v0`). It's easy to make the mistake of setting the `vF` register first, and
-then performing the mathematical operation. If you do that, however, `vF` will
-not hold the right value anymore and your maths will be off when using that
-register as an input.
 
 See [this article](https://laurencescotford.com/chip-8-on-the-cosmac-vip-arithmetic-and-logic-instructions/)
 or [this article](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#logical-and-arithmetic-instructions)
@@ -296,6 +296,9 @@ platform (a checkmark or a cross).
 
 Note that you need timer support for this test to run.
 
+See this [excellent
+table](https://games.gulrak.net/cadmium/chip8-opcode-table.html) by Gulrak for
+an overview of all the known quirks for the relatively popular CHIP-8 versions.
 See [this website](https://chip-8.github.io/extensions/) for a lot more
 information about all the historical versions of the platform and the different
 quirks among them.
