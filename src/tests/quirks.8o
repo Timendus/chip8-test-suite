@@ -41,32 +41,30 @@
 : quirks-run-tests
   waitKeyRelease
 
-  # Determine frames per second
+  # Determine frames per second for dispQuirk
   clear
-  v0 := 120
-  delay := v0
   i := quirks-values
   load v4
   i := quirks-image
+  vF := 120
+  delay := vF
   loop
-    v5 := 32
+    v5 := 30
     loop
-      sprite v0 v1 8
+      sprite v0 v1 1
       v5 -= 1
-    if v5 != 0 then again
+      if v5 != 0 then
+    again
     v2 += v4
     v3 += vF
     vE := delay
   if vE != 0 then again
 
-  vE := 128
-  v2 >>= v2
-  v3 >>= v3
-  if vF == 1 then v2 |= vE
-
+  # We expect the inner loop with 30 `sprite`s to have been able to run four
+  # times in the timespan of 120 interrupts
   v0 := 1
   if v3 != 0 then v0 := 0
-  if v2 != 2 then v0 := 0
+  if v2 != 4 then v0 := 0
   i := scratchpad-plus-1
   save v0
 
@@ -337,6 +335,6 @@
   str "ERR" 0
 
 : quirks-values
-  28 12 0 0 1
+  32 12 0 0 1
 : quirks-image
-  0x3C 0x7E 0xFF 0xDB 0xFF 0xDB 0x66 0x3C
+  0b10000000
