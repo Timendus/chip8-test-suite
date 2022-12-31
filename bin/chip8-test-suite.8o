@@ -30,23 +30,22 @@
   clear
 
   v1 := 1
-  show  8 logo-part1
-  show 16 logo-part2
-  show 24 logo-part3
-  show 32 logo-part4
-  show 40 logo-part5
-  show 48 logo-part6
+  show  8 splash-0-0
+  show 16 splash-1-0
+  show 24 splash-2-0
+  show 32 splash-3-0
+  show 40 splash-4-0
+  show 48 splash-5-0
 
   v1 := 16
-  show  8 logo-part7
-  show 16 logo-part8
-  show 24 logo-part9
-  show 32 logo-part10
-  show 40 logo-part11
-  show 48 logo-part12
+  show  8 splash-0-1
+  show 16 splash-1-1
+  show 24 splash-2-1
+  show 32 splash-3-1
+  show 40 splash-4-1
+  show 48 splash-5-1
 
   jump select-test
-
 
 
 # After that, if the user auto-started a test, run it:
@@ -85,7 +84,6 @@
   v0 += 1
   if v0 == 16 then return
   jump -
-
 
 # A cute little menu to select a test
 
@@ -201,7 +199,6 @@
 : menu-choose-jump
   0 0 # jump <item>
 
-
 # Font rendering code and character data
 # Kept this very simplistic and fast
 
@@ -234,7 +231,6 @@
   sprite vD vE 4
   vD += 4
   return
-
 
 
 # Include all available tests:
@@ -277,7 +273,6 @@
   sprite v0 v1 15
 
   jump menu-after-keypress    # Address 552 / 0x228
-
 
 # Corax89's chip8-test-rom, published here before:
 # https://github.com/corax89/chip8-test-rom
@@ -690,12 +685,12 @@
 
   # Shift right (with LSB)
   opcode 0x86
-  vF := 7
-  vF >>= vF # 3 (0x3), but should be overwritten by flag, so 1
+  vF := 27
+  vF >>= vF # 13 (0xD), but should be overwritten by flag, so 1
   v3 := vF
-  v2 := 3
-  v2 >>= v2 # 1 (0x1)
-  expect-v2-vf-v3 1 1 1
+  v2 := 27
+  v2 >>= v2 # 13 (0xD)
+  expect-v2-vf-v3 13 1 1
 
   # Subtraction in the other direction (with carry)
   opcode 0x87
@@ -732,7 +727,6 @@
   expect-v0 0xAA
 
   jump menu-after-keypress
-
 
 # Quirks test
 
@@ -777,32 +771,30 @@
 : quirks-run-tests
   waitKeyRelease
 
-  # Determine frames per second
+  # Determine frames per second for dispQuirk
   clear
-  v0 := 120
-  delay := v0
   i := quirks-values
   load v4
   i := quirks-image
+  vF := 120
+  delay := vF
   loop
-    v5 := 32
+    v5 := 30
     loop
-      sprite v0 v1 8
+      sprite v0 v1 1
       v5 -= 1
-    if v5 != 0 then again
+      if v5 != 0 then
+    again
     v2 += v4
     v3 += vF
     vE := delay
   if vE != 0 then again
 
-  vE := 128
-  v2 >>= v2
-  v3 >>= v3
-  if vF == 1 then v2 |= vE
-
+  # We expect the inner loop with 30 `sprite`s to have been able to run four
+  # times in the timespan of 120 interrupts
   v0 := 1
   if v3 != 0 then v0 := 0
-  if v2 != 2 then v0 := 0
+  if v2 != 4 then v0 := 0
   i := scratchpad-plus-1
   save v0
 
@@ -1036,7 +1028,6 @@
 
   jump menu-after-keypress
 
-
 # Keypad test
 # A fresh new implementation for this test suite
 
@@ -1138,33 +1129,32 @@
   sprite v0 v1 3
   jump menu-after-keypress
 
-
-
-
-: logo-part1
+: splash-0-0
   0x0f 0x02 0x02 0x02 0x02 0x02 0x00 0x00 0x1f 0x3f 0x71 0xe0 0xe5 0xe0 0xe8
-: logo-part2
+: splash-1-0
   0xa0 0x0d 0x2a 0x28 0x28 0x28 0x00 0x00 0x18 0xb8 0xb8 0x38 0x38 0x3f 0xbf
-: logo-part3
+: splash-2-0
   0x00 0x19 0xa5 0xbd 0xa1 0x9d 0x00 0x00 0x0c 0x1d 0x1d 0x01 0x0d 0x1d 0x9d
-: logo-part4
+: splash-3-0
   0x01 0xc7 0x29 0x29 0x29 0x27 0x00 0x00 0xf8 0xfc 0xce 0xc6 0xc6 0xc6 0xc6
-: logo-part5
+: splash-4-0
   0x00 0x49 0x4a 0x49 0x48 0x3b 0x00 0x00 0x00 0x01 0x03 0x03 0x03 0x01 0xf0
-: logo-part6
+: splash-5-0
   0x30 0x90 0x00 0x00 0x80 0x00 0x00 0x00 0xfe 0xc7 0x83 0x83 0x83 0xc6 0xfc
-: logo-part7
+: splash-0-1
   0xe7 0xe0 0xe0 0xe0 0xe0 0x71 0x3f 0x1f 0x00 0x00 0x07 0x02 0x02 0x02 0x02
-: logo-part8
+: splash-1-1
   0x39 0x38 0x38 0x38 0x38 0xb8 0xb8 0x38 0x00 0x00 0x31 0x4a 0x79 0x40 0x3b
-: logo-part9
+: splash-2-1
   0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0x00 0x00 0xa0 0x38 0x20 0xa0 0x18
-: logo-part10
+: splash-3-1
   0xce 0xfc 0xf8 0xc0 0xc0 0xca 0xca 0xc4 0x00 0x00 0x30 0x44 0x24 0x14 0x63
-: logo-part11
-  0xf1 0x03 0x07 0xc7 0x27 0x47 0x83 0xe1 0x00 0x00 0x28 0x8e 0xa8 0xa8 0xa6
-: logo-part12
+: splash-4-1
+  0xf1 0x03 0x07 0xc7 0x27 0x47 0x23 0xc1 0x00 0x00 0x28 0x8e 0xa8 0xa8 0xa6
+: splash-5-1
   0xce 0x87 0x03 0x03 0x03 0x87 0xfe 0xfc 0x00 0x00 0x60 0x90 0xf0 0x80 0x70
+
+
 
 : scratchpad
   0
@@ -1176,6 +1166,7 @@
   0 0 0 0
 : scratchpad-plus-16
   0
+
 
 : menu-main
   10 8  :pointer ibm-logo
@@ -1200,6 +1191,7 @@
 : menu-cursor
   0b11000000
   0b11000000
+
 
 # Positive and negative images
 : imageok
@@ -1372,6 +1364,7 @@
   0b00000000
   0b01000000
 
+
 : ibm-logo-part1
   0xFF 0x00 0xFF 0x00 0x3C 0x00 0x3C 0x00 0x3C 0x00 0x3C 0x00 0xFF 0x00 0xFF
 : ibm-logo-part2
@@ -1385,12 +1378,14 @@
 : ibm-logo-part6
   0xE0 0x00 0xE0 0x00 0x80 0x00 0x80 0x00 0x80 0x00 0x80 0x00 0xE0 0x00 0xE0
 
+
 : flags-no-carry
   str "HAPPY" 0
 : flags-carry
   str "CARRY" 0
 : flags-other
   str "OTHER" 0
+
 
 : quirks-menu
   12 13 :pointer quirks-chip8
@@ -1427,9 +1422,10 @@
   str "ERR" 0
 
 : quirks-values
-  28 12 0 0 1
+  32 12 0 0 1
 : quirks-image
-  0x3C 0x7E 0xFF 0xDB 0xFF 0xDB 0x66 0x3C
+  0b10000000
+
 
 : keypad-menu
   4 13 :pointer keypad-down
@@ -1492,6 +1488,7 @@
   0b11111110
   0b11111110
   0b11111110
+
 
 # Jump quirk targets:
 :org 0xE87
