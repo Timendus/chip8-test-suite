@@ -185,12 +185,12 @@
 
   # Shift right (with LSB)
   opcode 0x86
-  vF := 7
-  vF >>= vF # 3 (0x3), but should be overwritten by flag, so 1
+  vF := 27
+  vF >>= vF # 13 (0xD), but should be overwritten by flag, so 1
   v3 := vF
-  v2 := 3
-  v2 >>= v2 # 1 (0x1)
-  expect-v2-vf-v3 1 1 1
+  v2 := 27
+  v2 >>= v2 # 13 (0xD)
+  expect-v2-vf-v3 13 1 1
 
   # Subtraction in the other direction (with carry)
   opcode 0x87
