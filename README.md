@@ -32,6 +32,7 @@ below:
     * [Flags test](#flags-test)
     * [Quirks test](#quirks-test)
     * [Keypad test](#keypad-test)
+  * [Contributing](#contributing)
   * [Community response 😄](#community-response-)
 
 ## Introduction
