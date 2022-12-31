@@ -264,7 +264,7 @@ This menu works exactly the same as the main menu in terms of
 [controls](#controls).
 
 The test will now run through a couple of steps, which you will see on the
-screen as some garbage and a bunch of smiley faces. After about two seconds, you
+screen as some garbage and a flickering pixel. After about two seconds, you
 should see this screen:
 
 ![Showing the active quirks](./pictures/quirks.png)
@@ -366,6 +366,33 @@ To auto-start this test, load the value `5` into memory at `0x1FF` and load the
 ROM in memory starting from `0x200`. Additionally, you can also force the target
 opcode by loading a value between 1 and 3 into memory at the address `0x1FE`
 (510).
+
+## Contributing
+
+Do you find an issue in this test suite that you think you can fix? Feel free to
+submit a PR! Here's how to build the project, assuming you have Nodejs and NPM
+installed:
+
+```bash
+git clone git@github.com:Timendus/chip8-test-suite.git
+cd chip8-test-suite
+npm install
+```
+```bash
+npm run build         # Build the source to `bin/chip8-test-suite.8o`
+npm run build-binary  # Build the above plus the binary `bin/chip8-test-suite.ch8`
+npm run build-html    # Build `bin/chip8-test-suite.8o` and `docs/index.html`
+npm run build-all     # Build all of the above
+```
+
+Note that the `npm run build*` scripts use the MacOS command `pbcopy` to copy
+the resulting Octo source file to the clipboard. Depending on your OS this may
+not work properly. Edit `package.json` and remove this part from `scripts` ->
+`build` if you get errors:
+
+```
+ && cat bin/chip8-test-suite.8o | pbcopy
+```
 
 ## Community response 😄
 
