@@ -50,6 +50,22 @@
   x += 1
 }
 
+:macro expect-v2-vf-v3-v4 V2VAL VFVAL V3VAL V4VAL {
+  vE := vF
+  vC := V2VAL
+  flags-draw-result
+  v2 := vE
+  vC := VFVAL
+  flags-draw-result
+  v2 := v3
+  vC := V3VAL
+  flags-draw-result
+  v2 := v4  
+  vC := V4VAL
+  flags-draw-result
+  x += 1
+}
+
 : flags-draw-result
   i := flag-err
   if v2 == vC then i := flag-ok
@@ -156,7 +172,7 @@
   # With complications
 
   text 0 16 flags-carry
-  x := 22
+  x := 14
   y := 16
 
   v0 := 200
@@ -166,19 +182,25 @@
   opcode 0x84
   v3 := 200
   vF := 100
+  vF += v3 # 300 (0x2C), but should be overwritten by flag, so 1
+  v4 := vF
+  vF := 100
   v3 += vF # 300 (0x2C)
   v2 := v0
   v2 += v1 # 300 (0x2C)
-  expect-v2-vf-v3 0x2C 1 0x2C
+  expect-v2-vf-v3-v4 0x2C 1 0x2C 1
 
   # Subtraction in one direction (with carry)
   opcode 0x85
   v3 := 15
   vF := 20
+  vF -= v3 # 5 (0x5), but should be overwritten by flag, so 1
+  v4 := vF
+  vF := 20
   v3 -= vF # -5 = 251 (0xFB)
   v2 := v1
   v2 -= v0 # 100 - 200 = -100 = 156 (0x9C)
-  expect-v2-vf-v3 0x9C 0 0xFB
+  expect-v2-vf-v3-v4 0x9C 0 0xFB 1
 
   y += 5
   x := 0
@@ -196,10 +218,16 @@
   opcode 0x87
   v3 := 20
   vF := 15
+  vF =- v3 # 5 (0x5), but should be overwritten by flag, so 1
+  v4 := vF
+  vF := 15
   v3 =- vF # -5 = 251 (0xFB)
   v2 := v0
   v2 =- v1 # 100 - 200 = -100 = 156 (0x9C)
-  expect-v2-vf-v3 0x9C 0 0xFB
+  expect-v2-vf-v3-v4 0x9C 0 0xFB 1
+
+  y += 5
+  x := 0
 
   # Shift left (with MSB)
   opcode 0x8E
@@ -212,8 +240,8 @@
 
   # Addition to i
 
-  text 0 27 flags-other
-  x := 22
+  text 22 27 flags-other
+  x := 44
   y := 27
 
   opcode 0xFE
@@ -233,6 +261,6 @@
 : flags-no-carry
   str "HAPPY" 0
 : flags-carry
-  str "CARRY" 0
+  str "CRY" 0
 : flags-other
   str "OTHER" 0

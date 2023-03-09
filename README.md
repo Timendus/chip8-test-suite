@@ -196,11 +196,11 @@ should be seeing this screen:
 You should see the above on your screen. Each code on the screen corresponds to
 an opcode, and shows if the output value is correct (first checkmark), if the
 flag is correct (second checkmark) and if the order in which the `vF` register
-is read and written to is correct (third checkmark). If you see a cross instead
+is read and written to is correct (third and fourth checkmarks). If you see a cross instead
 of a checkmark in any of these spots, you have an issue in your interpreter
 logic.
 
-First, a note on the third checkmark, for the `vF` order: This checks to see if
+First, a note on the third and fourth checkmarks, for the `vF` order: This checks to see if
 an instruction where `vF` is one of the operands (like `v0 += vF` / `0x80F4`)
 works as expected. It's easy to make the mistake of setting the `vF` register
 first, and then performing the mathematical operation. If you do that, however,
@@ -226,12 +226,13 @@ HAPPY  8XY1   8XY2
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-The bottom part (that starts with "CARRY") checks behaviour of the following
+The bottom part (that starts with "CRY" for "carry") checks behaviour of the following
 opcodes, in the case that there **is** an overflow, carry or shifted out bit:
 
 ```
-CARRY  8XY4   8XY5
-8XY6   8XY7   8XYE
+CRY  8XY4   8XY5
+8XY6     8XY7
+8XYE
 ```
 
 * `8XY4` - `vX += vY`
@@ -240,7 +241,7 @@ CARRY  8XY4   8XY5
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-The last row (that starts with "OTHER") checks that the opcode `FX1E` properly
+The second half of the last row (from "OTHER") checks that the opcode `FX1E` properly
 adds the value of register `vX` to the index register. For this test, only the
 value is checked as overflow of the index register is not really defined in
 CHIP-8 (and no ROMs rely on it as far as I know).

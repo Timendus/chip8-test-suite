@@ -550,6 +550,22 @@
   x += 1
 }
 
+:macro expect-v2-vf-v3-v4 V2VAL VFVAL V3VAL V4VAL {
+  vE := vF
+  vC := V2VAL
+  flags-draw-result
+  v2 := vE
+  vC := VFVAL
+  flags-draw-result
+  v2 := v3
+  vC := V3VAL
+  flags-draw-result
+  v2 := v4  
+  vC := V4VAL
+  flags-draw-result
+  x += 1
+}
+
 : flags-draw-result
   i := flag-err
   if v2 == vC then i := flag-ok
@@ -656,7 +672,7 @@
   # With complications
 
   text 0 16 flags-carry
-  x := 22
+  x := 14
   y := 16
 
   v0 := 200
@@ -666,19 +682,25 @@
   opcode 0x84
   v3 := 200
   vF := 100
+  vF += v3 # 300 (0x2C), but should be overwritten by flag, so 1
+  v4 := vF
+  vF := 100
   v3 += vF # 300 (0x2C)
   v2 := v0
   v2 += v1 # 300 (0x2C)
-  expect-v2-vf-v3 0x2C 1 0x2C
+  expect-v2-vf-v3-v4 0x2C 1 0x2C 1
 
   # Subtraction in one direction (with carry)
   opcode 0x85
   v3 := 15
   vF := 20
+  vF -= v3 # 5 (0x5), but should be overwritten by flag, so 1
+  v4 := vF
+  vF := 20
   v3 -= vF # -5 = 251 (0xFB)
   v2 := v1
   v2 -= v0 # 100 - 200 = -100 = 156 (0x9C)
-  expect-v2-vf-v3 0x9C 0 0xFB
+  expect-v2-vf-v3-v4 0x9C 0 0xFB 1
 
   y += 5
   x := 0
@@ -696,10 +718,16 @@
   opcode 0x87
   v3 := 20
   vF := 15
+  vF =- v3 # 5 (0x5), but should be overwritten by flag, so 1
+  v4 := vF
+  vF := 15
   v3 =- vF # -5 = 251 (0xFB)
   v2 := v0
   v2 =- v1 # 100 - 200 = -100 = 156 (0x9C)
-  expect-v2-vf-v3 0x9C 0 0xFB
+  expect-v2-vf-v3-v4 0x9C 0 0xFB 1
+
+  y += 5
+  x := 0
 
   # Shift left (with MSB)
   opcode 0x8E
@@ -712,8 +740,8 @@
 
   # Addition to i
 
-  text 0 27 flags-other
-  x := 22
+  text 22 27 flags-other
+  x := 44
   y := 27
 
   opcode 0xFE
@@ -1003,8 +1031,8 @@
   # When using `jump0` (BNNN) the interpreter doesn't jump to NNN + v0 but to
   # NNN + vX where X is the highest nibble of NNN
   text 1 26 quirks-jump
-  v0 := 0x87
-  vE := 0x8B
+  v0 := 0xC7
+  vE := 0xCB
   jump0 0xE00      # This jumps to one of two routines defined in index.8o (for
 : quirks-resume    # reasons of having to put them in precisely the right spot)
   i := scratchpad
@@ -1129,7 +1157,7 @@
   sprite v0 v1 3
   jump menu-after-keypress
 
-: splash-0-0
+: splash-0-0
   0x0f 0x02 0x02 0x02 0x02 0x02 0x00 0x00 0x1f 0x3f 0x71 0xe0 0xe5 0xe0 0xe8
 : splash-1-0
   0xa0 0x0d 0x2a 0x28 0x28 0x28 0x00 0x00 0x18 0xb8 0xb8 0x38 0x38 0x3f 0xbf
@@ -1148,9 +1176,9 @@
 : splash-2-1
   0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0x00 0x00 0xa0 0x38 0x20 0xa0 0x18
 : splash-3-1
-  0xce 0xfc 0xf8 0xc0 0xc0 0xca 0xca 0xc4 0x00 0x00 0x30 0x44 0x24 0x14 0x63
+  0xce 0xfc 0xf8 0x83 0x80 0xa9 0xa8 0x93 0x00 0x00 0x30 0x44 0x24 0x14 0x63
 : splash-4-1
-  0xf1 0x03 0x07 0xc7 0x27 0x47 0x23 0xc1 0x00 0x00 0x28 0x8e 0xa8 0xa8 0xa6
+  0xf1 0x01 0x03 0x8b 0x9b 0x0b 0x89 0x28 0x00 0x00 0x28 0x8e 0xa8 0xa8 0xa6
 : splash-5-1
   0xce 0x87 0x03 0x03 0x03 0x87 0xfe 0xfc 0x00 0x00 0x60 0x90 0xf0 0x80 0x70
 
@@ -1382,7 +1410,7 @@
 : flags-no-carry
   str "HAPPY" 0
 : flags-carry
-  str "CARRY" 0
+  str "CRY" 0
 : flags-other
   str "OTHER" 0
 
@@ -1491,11 +1519,11 @@
 
 
 # Jump quirk targets:
-:org 0xE87
+:org 0xEC7
   # We jump here when using v0 in the `jump0` quirks test
   v5 := 0
   jump quirks-resume
-:org 0xE8B
+:org 0xECB
   # We jump here when using vE in the `jump0` quirks test
   v5 := 1
   jump quirks-resume
