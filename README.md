@@ -226,7 +226,7 @@ HAPPY  8XY1   8XY2
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-The bottom part (that starts with "CRY" for "carry") checks behaviour of the following
+The bottom part (that starts with "CARRY" for "carry path") checks behaviour of the following
 opcodes, in the case that there **is** an overflow, carry or shifted out bit:
 
 ```
@@ -240,7 +240,7 @@ CARRY  8XY4   8XY5
 * `8XY7` - `vY =- vX`
 * `8XYE` - `vY <<= vX` or `vX <<= vX` depending on version
 
-The second half of the last row (from "OTHER") checks that the opcode `FX1E` properly
+The last row (that starts with "OTHER") checks that the opcode `FX1E` properly
 adds the value of register `vX` to the index register. For this test, only the
 value is checked as overflow of the index register is not really defined in
 CHIP-8 (and no ROMs rely on it as far as I know).
