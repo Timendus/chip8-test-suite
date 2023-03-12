@@ -36,11 +36,11 @@
 :segment data
 
 # Jump quirk targets:
-:org 0xE97
+:org 0xE98
   # We jump here when using v0 in the `jump0` quirks test
   v5 := 0
   jump quirks-resume
-:org 0xE9B
+:org 0xE9C
   # We jump here when using vE in the `jump0` quirks test
   v5 := 1
   jump quirks-resume
