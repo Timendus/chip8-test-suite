@@ -230,9 +230,8 @@ The bottom part (that starts with "CRY" for "carry") checks behaviour of the fol
 opcodes, in the case that there **is** an overflow, carry or shifted out bit:
 
 ```
-CRY  8XY4   8XY5
-8XY6     8XY7
-8XYE
+CARRY  8XY4   8XY5
+8XY6   8XY7   8XYE
 ```
 
 * `8XY4` - `vX += vY`
