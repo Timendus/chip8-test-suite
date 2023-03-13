@@ -468,8 +468,8 @@
   # When using `jump0` (BNNN) the interpreter doesn't jump to NNN + v0 but to
   # NNN + vX where X is the highest nibble of NNN
   text 1 26 quirks-jump
-  v0 := 0x87
-  vE := 0x8B
+  v0 := 0x98
+  vE := 0x9C
   jump0 0xE00      # This jumps to one of two routines defined in index.8o (for
 : quirks-resume    # reasons of having to put them in precisely the right spot)
   i := scratchpad
@@ -762,11 +762,11 @@
 
 
 # Jump quirk targets:
-:org 0xE87
+:org 0xE98
   # We jump here when using v0 in the `jump0` quirks test
   v5 := 0
   jump quirks-resume
-:org 0xE8B
+:org 0xE9C
   # We jump here when using vE in the `jump0` quirks test
   v5 := 1
   jump quirks-resume
