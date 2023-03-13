@@ -1,21 +1,5 @@
 # A cute little menu to select a test
 
-: menu-after-keypress
-  v0 := key
-  waitKeyRelease
-: menu
-  clear
-  text 10  1 menu-header
-  text 14  7 menu-ibm
-  text 14 12 menu-corax
-  text 14 17 menu-flags
-  text 14 22 menu-quirks
-  text 14 27 menu-keypad
-
-  :unpack 0xA menu-main
-  v2 := 4
-  #jump menu-start
-
 # Input:
 #  * v0 v1 point to 0xA + menu struct
 #  * v2 holds the length (zero-indexed)
@@ -113,26 +97,6 @@
   0 0 # jump <item>
 
 :segment data
-
-: menu-main
-  10 8  :pointer ibm-logo
-  10 13 :pointer corax89
-  10 18 :pointer flags-test
-  10 23 :pointer quirks-test
-  10 28 :pointer keypad-test
-
-: menu-header
-  str "PICK A TEST" 0
-: menu-ibm
-  str "1 IBM LOGO" 0
-: menu-corax
-  str "2 CORAX89" 0
-: menu-flags
-  str "3 FLAGS" 0
-: menu-quirks
-  str "4 QUIRKS" 0
-: menu-keypad
-  str "5 KEYPAD" 0
 
 : menu-cursor
   0b11000000

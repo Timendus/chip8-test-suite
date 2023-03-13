@@ -36,18 +36,25 @@
 }
 
 : test2X
-  #test 2x
-  i := imageok
+  i := image-ok
   sprite x2 y 4
   return
 
 : test1x
-  i := imageok
+  i := image-ok
   sprite x2 y 4
-  jump menu-after-keypress
+  loop again
 
-: corax89
+: main
   clear
+  x0 := 50
+  y := 26
+  i := version-0-0
+  sprite x0 y 4
+  x0 := 58
+  i := version-1-0
+  sprite x0 y 4
+
   x0 := 1
   x1 := 5
   x2 := 10
@@ -57,37 +64,37 @@
 
   #test 3x
   drawop im3 imX
-  i := imageok
-  if v6 != 43 then i := imagefalse
+  i := image-ok
+  if v6 != 43 then i := image-no
   sprite x2 y 4
 
   #test 4x
   y := 6
   drawop im4 imX
-  i := imagefalse
-  if v5 == 42 then i := imageok
+  i := image-no
+  if v5 == 42 then i := image-ok
   sprite x2 y 4
 
   #test 5x
   y := 11
   drawop im5 imX
-  i := imagefalse
-  if v5 != v6 then i := imageok
+  i := image-no
+  if v5 != v6 then i := image-ok
   sprite x2 y 4
 
   #test 7x
   y := 16
   drawop im7 imX
-  i := imagefalse
+  i := image-no
   v6 += 255
-  if v6 == 42 then i := imageok
+  if v6 == 42 then i := image-ok
   sprite x2 y 4
 
   #test 9x
   y := 21
   drawop im9 imX
-  i := imagefalse
-  if v5 == v6 then i := imageok
+  i := image-no
+  if v5 == v6 then i := image-ok
   sprite x2 y 4
 
   #test "AX"
@@ -99,72 +106,72 @@
   test2X
 
   #test 0E
-  x0 := 24
-  x1 := 28
-  x2 := 33
+  x0 := 16
+  x1 := 20
+  x2 := 25
   y := 1
   drawop im0 imE
-  i := imageok
+  i := image-ok
   sprite x2 y 4
 
   #test 8xy0
   y := 6
   drawop im8 im0
-  i := imagefalse
+  i := image-no
   v7 := v5
-  if v7 == 42 then i := imageok
+  if v7 == 42 then i := image-ok
   sprite x2 y 4
 
   #test 8xy1
   y := 11
   drawop im8 im1
-  i := imagefalse
+  i := image-no
   v7 := 42
   v7 |= y
-  if v7 == 43 then i := imageok
+  if v7 == 43 then i := image-ok
   sprite x2 y 4
 
   #test 8xy2
   y := 16
   drawop im8 im2
-  i := imagefalse
+  i := image-no
   v6 := 120
   v7 := 31
   v7 &= v6
-  if v7 == 24 then i := imageok
+  if v7 == 24 then i := image-ok
   sprite x2 y 4
 
   #test 8xy3
   y := 21
   drawop im8 im3
-  i := imagefalse
+  i := image-no
   v6 := 120
   v7 := 31
   v7 ^= v6
-  if v7 == 103 then i := imageok
+  if v7 == 103 then i := image-ok
   sprite x2 y 4
 
   #test 8xy4
   y := 26
   drawop im8 im4
-  i := imagefalse
+  i := image-no
   v6 := 140
   v7 := 140
   v7 += v6
-  if v7 == 24 then i := imageok
+  if v7 == 24 then i := image-ok
   sprite x2 y 4
 
   #test 8xy5
-  x0 := 47
-  x1 := 51
-  x2 := 56
+  x0 := 31
+  x1 := 35
+  x2 := 40
   y  := 1
   drawop im8 im5
-  i := imagefalse
+  i := image-no
   v6 := 140
   v7 := 120
   v7 -= v6
-  if v7 == 236 then i := imageok
+  if v7 == 236 then i := image-ok
   sprite x2 y 4
 
   #test "8xy6"
@@ -172,10 +179,10 @@
   # See PR: https://github.com/corax89/chip8-test-rom/pull/7
   y := 6
   drawop im8 imE
-  i := imagefalse
+  i := image-no
   v6 := 224
   v6 <<= v6
-  if v6 == 192 then i := imageok
+  if v6 == 192 then i := image-ok
   sprite x2 y 4
 
   #test "8xyE"
@@ -183,10 +190,10 @@
   # See PR: https://github.com/corax89/chip8-test-rom/pull/7
   y := 11
   drawop im8 im6
-  i := imagefalse
+  i := image-no
   v6 := 15
   v6 >>= v6
-  if v6 == 7 then i := imageok
+  if v6 == 7 then i := image-ok
   sprite x2 y 4
 
   #test Fx55,Fx65
@@ -198,8 +205,8 @@
   save v1
   i := scratchpad-plus-1
   load v0
-  i := imagefalse
-  if v0 == 48 then i := imageok
+  i := image-no
+  if v0 == 48 then i := image-ok
   sprite x2 y 4
 
   #test Fx33
@@ -209,15 +216,125 @@
   v6 := 137
   bcd v6
   load v2
-  i := imageok
-  if v0 != 1 then i := imagefalse
-  if v1 != 3 then i := imagefalse
-  if v2 != 7 then i := imagefalse
+  i := image-ok
+  if v0 != 1 then i := image-no
+  if v1 != 3 then i := image-no
+  if v2 != 7 then i := image-no
   sprite x2 y 4
 
   #test 1x
   y := 26
   drawop im1 imX
   jump test1x
+  loop again
 
-# Image data is in text-rendering.8o, as part of the font
+: scratchpad
+  0
+: scratchpad-plus-1
+  0 0
+
+# Positive and negative images
+: image-ok
+  0b00000000
+  0b10100000
+  0b11000000
+  0b10000000
+: image-no
+  0b00000000
+  0b10100000
+  0b01000000
+  0b10100000
+
+# Individual characters, some taken from Corax89' test.
+: im0
+  0b11100000
+  0b10100000
+  0b10100000
+  0b11100000
+: im1
+  0b11000000
+  0b01000000
+  0b01000000
+  0b11100000
+: im2
+  0b11100000
+  0b00100000
+  0b11000000
+  0b11100000
+: im3
+  0b11100000
+  0b01100000
+  0b00100000
+  0b11100000
+: im4
+  0b10100000
+  0b11100000
+  0b00100000
+  0b00100000
+: im5
+  0b11100000
+  0b11000000
+  0b00100000
+  0b11000000
+: im6
+  0b01100000
+  0b10000000
+  0b11100000
+  0b11100000
+: im7
+  0b11100000
+  0b00100000
+  0b01000000
+  0b01000000
+: im8
+  0b11100000
+  0b11100000
+  0b10100000
+  0b11100000
+: im9
+  0b11100000
+  0b11100000
+  0b00100000
+  0b11000000
+: imA
+  0b01000000
+  0b10100000
+  0b11100000
+  0b10100000
+: imB
+  0b11000000
+  0b11100000
+  0b10100000
+  0b11100000
+: imC
+  0b11100000
+  0b10000000
+  0b10000000
+  0b11100000
+: imD
+  0b11000000
+  0b10100000
+  0b10100000
+  0b11000000
+: imE
+  0b11100000
+  0b11000000
+  0b10000000
+  0b11100000
+: imF
+  0b11100000
+  0b10000000
+  0b11000000
+  0b10000000
+: imX
+  0b10100000
+  0b01000000
+  0b10100000
+  0b10100000
+
+: version
+: version-0-0
+  0x0a 0xae 0xa2 0x42
+: version-1-0
+  0x38 0x28 0x28 0xb8
+

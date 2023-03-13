@@ -4,18 +4,37 @@
 # (https://github.com/Timendus/silicon8/tree/main/tests) and some newly written
 # tests for specific quirks.
 
-: quirks-test
+:include "../utils/helpers.8o"
+:include "../utils/menu.8o"
+:include "../utils/text-rendering.8o"
+
+:macro show X address {
+  v0 := X
+  i := address
+  sprite v0 v1 15
+}
+
+: main
   clear
-  i := 0x1FE
+  i := 0x1FF
   load v0
   if v0 == 1 then jump quirks-chip8
   if v0 == 2 then jump quirks-schip
   if v0 == 3 then jump quirks-xochip
 
-  text  6  3 quirks-choose
-  text 16 12 quirks-str-chip8
-  text 16 17 quirks-str-schip
-  text 16 22 quirks-str-xochip
+  text  6  2 quirks-choose
+  text 16 10 quirks-str-chip8
+  text 16 15 quirks-str-schip
+  text 16 20 quirks-str-xochip
+
+  # Show version number in bottom right corner
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
 
   :unpack 0xA quirks-menu
   v2 := 2
@@ -43,6 +62,23 @@
 
   # Determine frames per second for dispQuirk
   clear
+
+  v1 := 1
+  show  8 splash-0-0
+  show 16 splash-1-0
+  show 24 splash-2-0
+  show 32 splash-3-0
+  show 40 splash-4-0
+  show 48 splash-5-0
+
+  v1 := 16
+  show  8 splash-0-1
+  show 16 splash-1-1
+  show 24 splash-2-1
+  show 32 splash-3-1
+  show 40 splash-4-1
+  show 48 splash-5-1
+
   i := quirks-values
   load v4
   i := quirks-image
@@ -70,7 +106,7 @@
 
   # Determine if sprites get clipped vertically
   clear
-  i := keypad-cursor
+  i := cursor
   v0 := 28
   v1 := 29
   sprite v0 v1 6
@@ -84,7 +120,7 @@
 
   # Determine if sprites get clipped horizontally
   clear
-  i := keypad-cursor
+  i := cursor
   v0 := 61
   v1 := 5
   sprite v0 v1 6
@@ -296,14 +332,16 @@
   vE := 26
   drawText
 
-  jump menu-after-keypress
+  v0 := key
+  waitKeyRelease
+  jump main
 
 :segment data
 
 : quirks-menu
-  12 13 :pointer quirks-chip8
-  12 18 :pointer quirks-schip
-  12 23 :pointer quirks-xochip
+  12 11 :pointer quirks-chip8
+  12 16 :pointer quirks-schip
+  12 21 :pointer quirks-xochip
 
 : quirks-choose
   str "PICK PLATFORM" 0
@@ -338,3 +376,24 @@
   32 12 0 0 1
 : quirks-image
   0b10000000
+
+: cursor
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+
+:include "../../pictures/version.png"
+:include "../../pictures/splash.png"
+
+# Jump quirk targets:
+:org 0xE98
+  # We jump here when using v0 in the `jump0` quirks test
+  v5 := 0
+  jump quirks-resume
+:org 0xE9C
+  # We jump here when using vE in the `jump0` quirks test
+  v5 := 1
+  jump quirks-resume

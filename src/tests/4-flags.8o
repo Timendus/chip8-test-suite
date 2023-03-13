@@ -3,6 +3,9 @@
 # This is a visual adaptation of the math tests I wrote for Silicon8
 # (https://github.com/Timendus/silicon8/tree/main/tests)
 
+:include "../utils/helpers.8o"
+:include "../utils/text-rendering.8o"
+
 :alias 15_in_a_register v1
 :alias 100_in_a_register v1
 
@@ -63,8 +66,15 @@
   y -= 1
   return
 
-: flags-test
+: main
   clear
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
 
   ## Without complications
 
@@ -274,7 +284,7 @@
   # load v0
   # expect-v0 0x55
 
-  jump menu-after-keypress
+  loop again
 
 :segment data
 
@@ -284,3 +294,5 @@
   str "CARRY" 0
 : flags-other
   str "OTHER" 0
+
+:include "../../pictures/version.png"

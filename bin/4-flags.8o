@@ -1,0 +1,484 @@
+# Flags test
+
+# This is a visual adaptation of the math tests I wrote for Silicon8
+# (https://github.com/Timendus/silicon8/tree/main/tests)
+
+:stringmode str "$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -." {
+  :byte { 4 * VALUE }
+}
+
+:macro text X Y STR {
+  vD := X
+  vE := Y
+  i := STR
+  drawText
+}
+
+:alias x vA
+:alias y vB
+
+: waitKeyRelease
+  v0 := 0
+: -
+  if v0 key then jump -
+  v0 += 1
+  if v0 == 16 then return
+  jump -
+
+# Font rendering code and character data
+# Kept this very simplistic and fast
+
+:macro drawCharacter REG {
+  if REG == 0 then return
+  v0 := REG
+  drawChar
+}
+
+: drawText
+  load vC
+  drawChar
+  drawCharacter v1
+  drawCharacter v2
+  drawCharacter v3
+  drawCharacter v4
+  drawCharacter v5
+  drawCharacter v6
+  drawCharacter v7
+  drawCharacter v8
+  drawCharacter v9
+  drawCharacter vA
+  drawCharacter vB
+  drawCharacter vC
+  return
+
+: drawChar
+  i := characters
+  i += v0
+  sprite vD vE 4
+  vD += 4
+  return
+
+
+:macro opcode OPC {
+  vD := OPC
+  flags-draw-opcode
+}
+
+: flags-draw-opcode
+  i := im0
+  vE := vD
+  vF := 0xF0
+  vE &= vF
+  vE >>= vE
+  vE >>= vE
+  i += vE
+  sprite x y 4
+  x += 4
+  i := im0
+  vE := vD
+  vF := 0x0F
+  vE &= vF
+  vE <<= vE
+  vE <<= vE
+  i += vE
+  sprite x y 4
+  x += 5
+  return
+
+:macro expect-v0 V0VAL {
+  x += 4
+  v2 := v0
+  vC := V0VAL
+  flags-draw-result
+  x += 9
+}
+
+:macro expect-v2-vf-v3 V2VAL VFVAL V3VAL {
+  vE := vF
+  vC := V2VAL
+  flags-draw-result
+  v2 := vE
+  vC := VFVAL
+  flags-draw-result
+  v2 := v3
+  vC := V3VAL
+  flags-draw-result
+  x += 1
+}
+
+: flags-draw-result
+  i := flag-err
+  if v2 == vC then i := flag-ok
+  y += 1
+  sprite x y 3
+  x += 4
+  y -= 1
+  return
+
+: main
+  clear
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
+
+  ## Without complications
+
+  text 0 0 flags-no-carry
+  x := 22
+  y := 0
+
+  v0 := 50
+  v1 := 15
+
+  # OR
+  opcode 0x81
+  v3 := 15
+  vF := 20
+  v3 |= vF # 31 (0x1F)
+  vF := 0
+  v2 := v0
+  v2 |= v1 # 63 (0x3F)
+  expect-v2-vf-v3 63 0 31
+
+  # AND
+  opcode 0x82
+  v3 := 15
+  vF := 20
+  v3 &= vF # 4 (0x04)
+  vF := 0
+  v2 := v0
+  v2 &= v1 # 2 (0x02)
+  expect-v2-vf-v3 2 0 4
+
+  y += 5
+  x := 0
+
+  # XOR
+  opcode 0x83
+  v3 := 15
+  vF := 20
+  v3 ^= vF # 27 (0x1B)
+  vF := 0
+  v2 := v0
+  v2 ^= v1 # 61 (0x3D)
+  expect-v2-vf-v3 61 0 27
+
+  # Addition (no overflow)
+  opcode 0x84
+  v3 := 15
+  vF := 20
+  v3 += vF # 35 (0x23)
+  v2 := v0
+  v2 += v1 # 65 (0x41)
+  expect-v2-vf-v3 65 0 35
+
+  # Subtraction in one direction (no carry)
+  opcode 0x85
+  v3 := 20
+  vF := 15
+  v3 -= vF # 5 (0x05)
+  v2 := v0
+  v2 -= v1 # 35 (0x23)
+  expect-v2-vf-v3 35 1 5
+
+  y += 5
+  x := 0
+
+  # Shift right (no LSB)
+  opcode 0x86
+  vF := v0
+  vF >>= vF # 25 (0x19), but should be overwritten by flag, so 0
+  v3 := vF
+  v2 := v0
+  v2 >>= v2 # 25 (0x19)
+  expect-v2-vf-v3 25 0 0
+
+  # Subtraction in the other direction (no carry)
+  opcode 0x87
+  v3 := 15
+  vF := 20
+  v3 =- vF # 5 (0x05)
+  v2 := v1
+  v2 =- v0 # 35 (0x23)
+  expect-v2-vf-v3 35 1 5
+
+  # Shift left (no MSB)
+  opcode 0x8E
+  vF := v0
+  vF <<= vF # 100 (0x64), but should be overwritten by flag, so 0
+  v3 := vF
+  v2 := v0
+  v2 <<= v2 # 100 (0x64)
+  expect-v2-vf-v3 100 0 0
+
+
+  # With complications
+
+  text 0 16 flags-carry
+  x := 22
+  y := 16
+
+  v0 := 200
+  v1 := 100
+
+  # Addition (with overflow)
+  opcode 0x84
+  v3 := 200
+  vF := 100
+  v3 += vF # 300 (0x2C)
+  v2 := v0
+  v2 += v1 # 300 (0x2C)
+  expect-v2-vf-v3 0x2C 1 0x2C
+
+  # Subtraction in one direction (with carry)
+  opcode 0x85
+  v3 := 15
+  vF := 20
+  v3 -= vF # -5 = 251 (0xFB)
+  v2 := v1
+  v2 -= v0 # 100 - 200 = -100 = 156 (0x9C)
+  expect-v2-vf-v3 0x9C 0 0xFB
+
+  y += 5
+  x := 0
+
+  # Shift right (with LSB)
+  opcode 0x86
+  vF := 27
+  vF >>= vF # 13 (0xD), but should be overwritten by flag, so 1
+  v3 := vF
+  v2 := 27
+  v2 >>= v2 # 13 (0xD)
+  expect-v2-vf-v3 13 1 1
+
+  # Subtraction in the other direction (with carry)
+  opcode 0x87
+  v3 := 20
+  vF := 15
+  v3 =- vF # -5 = 251 (0xFB)
+  v2 := v0
+  v2 =- v1 # 100 - 200 = -100 = 156 (0x9C)
+  expect-v2-vf-v3 0x9C 0 0xFB
+
+  # Shift left (with MSB)
+  opcode 0x8E
+  vF := v0
+  vF <<= vF # 400 (0x90), but should be overwritten by flag, so 1
+  v3 := vF
+  v2 := v0
+  v2 <<= v2 # 400 (0x90)
+  expect-v2-vf-v3 0x90 1 1
+
+  # Addition to i
+
+  text 0 27 flags-other
+  x := 22
+  y := 27
+
+  opcode 0xFE
+  i := scratchpad
+  v1 := 0x10
+  i += v1
+  v0 := 0xAA
+  save v0
+  i := scratchpad-plus-16
+  load v0
+  expect-v0 0xAA
+
+  loop again
+
+: scratchpad
+  0
+: scratchpad-plus-1
+  0
+: scratchpad-plus-2
+  0 0 0 0 0
+  0 0 0 0 0
+  0 0 0 0
+: scratchpad-plus-16
+  0
+
+
+# Positive and negative images
+: flag-ok
+  0b10100000
+  0b11000000
+: characters
+  0b10000000
+: flag-err
+  0b10100000
+  0b01000000
+  0b10100000
+
+# Individual characters, some taken from Corax89' test.
+: im0
+  0xE0 0xA0 0xA0 0xE0
+: im1
+  0xC0 0x40 0x40 0xE0
+: im2
+  0xE0 0x20 0xC0 0xE0
+: im3
+  0xE0 0x60 0x20 0xE0
+: im4
+  0xA0 0xE0 0x20 0x20
+: im5
+  0b11100000
+  0b11000000
+  0b00100000
+  0b11000000
+: im6
+  0xE0 0x80 0xE0 0xE0
+: im7
+  0xE0 0x20 0x20 0x20
+: im8
+  0xE0 0xE0 0xA0 0xE0
+: im9
+  0xE0 0xE0 0x20 0xE0
+: imA
+  0x40 0xA0 0xE0 0xA0
+: imB
+  0b11000000
+  0b11100000
+  0b10100000
+  0b11100000
+: imC
+  0b11100000
+  0b10000000
+  0b10000000
+  0b11100000
+: imD
+  0b11000000
+  0b10100000
+  0b10100000
+  0b11000000
+: imE
+  0xE0 0xC0 0x80 0xE0
+: imF
+  0xE0 0x80 0xC0 0x80
+: imG
+  0b01100000
+  0b10000000
+  0b10100000
+  0b01100000
+: imH
+  0b10100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imI
+  0b11100000
+  0b01000000
+  0b01000000
+  0b11100000
+: imJ
+  0b01100000
+  0b00100000
+  0b00100000
+  0b11000000
+: imK
+  0b10100000
+  0b11000000
+  0b10100000
+  0b10100000
+: imL
+  0b10000000
+  0b10000000
+  0b10000000
+  0b11100000
+: imM
+  0b11100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imN
+  0b11000000
+  0b10100000
+  0b10100000
+  0b10100000
+: imO
+  0b11100000
+  0b10100000
+  0b10100000
+  0b11100000
+: imP
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10000000
+: imQ
+  0b01000000
+  0b10100000
+  0b11100000
+  0b01100000
+: imR
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10100000
+: imS
+  0b01100000
+  0b11000000
+  0b00100000
+  0b11000000
+: imT
+  0b11100000
+  0b01000000
+  0b01000000
+  0b01000000
+: imU
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01100000
+: imV
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01000000
+: imW
+  0b10100000
+  0b10100000
+  0b11100000
+  0b11100000
+: imX
+  0xA0 0x40 0xA0 0xA0
+: imY
+  0b10100000
+  0b10100000
+  0b01000000
+  0b01000000
+: imZ
+  0b11100000
+  0b01100000
+  0b10000000
+  0b11100000
+: imSpace
+  0 0 0 0
+: imDash
+  0b00000000
+  0b11100000
+  0b00000000
+  0b00000000
+: imPeriod
+  0b00000000
+  0b00000000
+  0b00000000
+  0b01000000
+
+
+: flags-no-carry
+  str "HAPPY" 0
+: flags-carry
+  str "CARRY" 0
+: flags-other
+  str "OTHER" 0
+
+: version-0-0
+  0x0a 0xae 0xa2 0x42
+: version-1-0
+  0x38 0x28 0x28 0xb8
+

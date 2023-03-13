@@ -34,11 +34,6 @@
 :segment data
 
 # Positive and negative images
-: imageok
-  0xEA 0xAC 0xAA 0xEA
-: imagefalse
-  0xCE 0xAA 0xAA 0xAE
-
 : flag-ok
   0b10100000
   0b11000000
