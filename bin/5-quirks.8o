@@ -213,7 +213,7 @@
   # Determine frames per second for dispQuirk
   clear
 
-  v1 := 1
+  v1 := 0
   show  8 splash-0-0
   show 16 splash-1-0
   show 24 splash-2-0
@@ -221,7 +221,7 @@
   show 40 splash-4-0
   show 48 splash-5-0
 
-  v1 := 16
+  v1 := 15
   show  8 splash-0-1
   show 16 splash-1-1
   show 24 splash-2-1
@@ -230,14 +230,20 @@
   show 48 splash-5-1
 
   i := quirks-values
-  load v4
+  load v6
   i := quirks-image
-  vF := 120
-  delay := vF
+  delay := v5
   loop
     v5 := 30
     loop
       sprite v0 v1 1
+      if vF == 0 begin
+        v0 := 54
+        v6 := delay
+        v6 >>= v6
+        v6 >>= v6
+        v0 -= v6
+      end
       v5 -= 1
       if v5 != 0 then
     again
@@ -246,11 +252,12 @@
     vE := delay
   if vE != 0 then again
 
-  # We expect the inner loop with 30 `sprite`s to have been able to run four
-  # times in the timespan of 120 interrupts
+  # We expect the inner loop with 30 `sprite`s to have been able to run six
+  # times in the timespan of 180 interrupts
   v0 := 1
   if v3 != 0 then v0 := 0
-  if v2 != 4 then v0 := 0
+  if v2 > 6 then v0 := 0
+  if v2 < 6 then v0 := 2
   i := scratchpad-plus-1
   save v0
 
@@ -309,7 +316,7 @@
   if v5 != v7 then v0 := 2
   if v5 != v8 then v0 := 2
   # Wrapping
-  if v9 != 4 then v0 := 2
+  if v9 != 4 then v0 := 3
   i := scratchpad-plus-2
   save v0
 
@@ -347,8 +354,8 @@
   sprite x y 3
   i := quirks-off
   if v5 == 1 then i := quirks-on
-  if v5 != v6 then i := quirks-inconsistent
-  if v5 != v7 then i := quirks-inconsistent
+  if v5 != v6 then i := quirks-inconsistent-1
+  if v5 != v7 then i := quirks-inconsistent-2
   vD := 44
   vE := 1
   drawText
@@ -398,6 +405,7 @@
   sprite x y 3
   i := quirks-off
   if v1 == 1 then i := quirks-on
+  if v1 == 2 then i := quirks-low
   vD := 44
   vE := 11
   drawText
@@ -420,7 +428,8 @@
   sprite x y 3
   i := quirks-off
   if v2 == 1 then i := quirks-on
-  if v2 == 2 then i := quirks-inconsistent
+  if v2 == 2 then i := quirks-inconsistent-1
+  if v2 == 3 then i := quirks-inconsistent-2
   vD := 44
   vE := 16
   drawText
@@ -450,7 +459,7 @@
   sprite x y 3
   i := quirks-off
   if v5 == 0 then i := quirks-on
-  if v5 != v7 then i := quirks-inconsistent
+  if v5 != v7 then i := quirks-inconsistent-1
   vD := 44
   vE := 21
   drawText
@@ -701,11 +710,15 @@
   str "ON" 0
 : quirks-off
   str "OFF" 0
-: quirks-inconsistent
-  str "ERR" 0
+: quirks-inconsistent-1
+  str "E1" 0
+: quirks-inconsistent-2
+  str "E2" 0
+: quirks-low
+  str "LOW" 0
 
 : quirks-values
-  32 12 0 0 1
+  10 31 0 0 1 180 0
 : quirks-image
   0b10000000
 
