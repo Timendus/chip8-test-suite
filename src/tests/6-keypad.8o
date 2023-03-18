@@ -93,6 +93,7 @@
   v1 := 9
   sprite v0 v1 3
   text 16 17 keypad-str-good
+  waitKeyRelease
   v0 := key
   waitKeyRelease
   jump main
@@ -112,6 +113,7 @@
   v0 := 30
   v1 := 9
   sprite v0 v1 3
+  waitKeyRelease
   v0 := key
   waitKeyRelease
   jump main
