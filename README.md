@@ -11,7 +11,7 @@ CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
   * [Available tests](#available-tests)
     * [CHIP-8 splash screen](#chip-8-splash-screen)
     * [IBM logo](#ibm-logo)
-    * [Corax+ opcode test](#corax+-opcode-test)
+    * [Corax+ opcode test](#corax-opcode-test)
     * [Flags test](#flags-test)
     * [Quirks test](#quirks-test)
     * [Keypad test](#keypad-test)
@@ -37,8 +37,8 @@ the GPLv3, and you're welcome to [contribute](#contributing).
 
 ## CHIP-8 splash screen
 
-* [Download ROM](./bin/1-chip8-logo.ch8) (source code available
-  [here](./src/tests/1-chip8-logo.8o))
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/1-chip8-logo.ch8)
+  (source code available [here](./src/tests/1-chip8-logo.8o))
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/1-chip8-logo.html)
   to see what's supposed to happen
 
@@ -66,8 +66,8 @@ that also works as expected, you've also correctly interpreted the jump opcode:
 
 ## IBM logo
 
-* [Download ROM](./bin/2-ibm-logo.ch8) (source code available
-  [here](./src/tests/2-ibm-logo.8o))
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/2-ibm-logo.ch8)
+  (source code available [here](./src/tests/2-ibm-logo.8o))
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/2-ibm-logo.html)
   to see what's supposed to happen
 
@@ -99,8 +99,8 @@ that also works as expected, you've also correctly interpreted the jump opcode:
 
 ## Corax+ opcode test
 
-* [Download ROM](./bin/3-corax+.ch8) (source code available
-  [here](./src/tests/3-corax+.8o))
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/3-corax+.ch8)
+  (source code available [here](./src/tests/3-corax+.8o))
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/3-corax+.html)
   to see what's supposed to happen
 
@@ -165,8 +165,8 @@ references](https://chip8.gulrak.net/reference/opcodes/).
 
 ## Flags test
 
-* [Download ROM](./bin/4-flags.ch8) (source code available
-  [here](./src/tests/4-flags.8o))
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/4-flags.ch8)
+  (source code available [here](./src/tests/4-flags.8o))
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/4-flags.html)
   to see what's supposed to happen
 
@@ -238,8 +238,8 @@ for more information on the arithmetic operations and the flags.
 
 ## Quirks test
 
-* [Download ROM](./bin/5-quirks.ch8) (source code available
-  [here](./src/tests/5-quirks.8o))
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/5-quirks.ch8)
+  (source code available [here](./src/tests/5-quirks.8o))
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/5-quirks.html)
   to see what's supposed to happen
 
@@ -309,8 +309,8 @@ quirks among them.
 
 ## Keypad test
 
-* [Download ROM](./bin/6-keypad.ch8) (source code available
-  [here](./src/tests/6-keypad.8o))
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/6-keypad.ch8)
+  (source code available [here](./src/tests/6-keypad.8o))
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/6-keypad.html)
   to see what's supposed to happen
 
@@ -327,7 +327,7 @@ and select an item with `A`. This feature mainly exists so people implementing
 interpreters for platforms with limited input devices (like a game controller)
 can map their buttons to those CHIP-8 keys and have an intuitive interface too.
 
-#### 1. `EX9E DOWN`
+### 1. `EX9E DOWN`
 
 `EX9E` skips the next instruction if the key indicated in `vX` is currently
 pressed. In the test, when you press a key, the corresponding value lights up on
@@ -337,7 +337,7 @@ the screen.
 
 _Pressing keys 1 and 6_
 
-#### 2. `EXA1 UP`
+### 2. `EXA1 UP`
 
 `EXA1` skips the next instruction if the key indicated in `vX` is currently
 **not** pressed. In the test, when you are **not** pressing a key, the
@@ -347,7 +347,7 @@ corresponding value lights up on the screen.
 
 _Pressing keys 1 and 6_
 
-#### 3. `FX0A GETKEY`
+### 3. `FX0A GETKEY`
 
 `FX0A` waits for a key press and returns the pressed key in `vX`.
 
