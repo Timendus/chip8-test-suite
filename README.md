@@ -55,14 +55,14 @@ Run the ROM for 39 cycles to see this splash screen on the display. This first
 test can tell you if you're interpreting these opcodes properly:
 
   * `00E0` - Clear the screen
-  * `6XNN` - Load normal register with immediate value
-  * `ANNN` - Load index register with immediate value
-  * `DXYN` - Draw sprite to screen (only aligned)
+  * `6xnn` - Load normal register with immediate value
+  * `Annn` - Load index register with immediate value
+  * `Dxyn` - Draw sprite to screen (only aligned)
 
 If you run the ROM for more than 39 cycles, it will enter an endless loop. If
 that also works as expected, you've also correctly interpreted the jump opcode:
 
-  * `1NNN` - Jump
+  * `1nnn` - Jump
 
 ## IBM logo
 
@@ -87,15 +87,15 @@ IBM logo, you are properly interpreting these opcodes:
 
 
   * `00E0` - Clear the screen
-  * `6XNN` - Load normal register with immediate value
-  * `ANNN` - Load index register with immediate value
-  * `7XNN` - Add immediate value to normal register
-  * `DXYN` - Draw sprite to screen (un-aligned)
+  * `6xnn` - Load normal register with immediate value
+  * `Annn` - Load index register with immediate value
+  * `7xnn` - Add immediate value to normal register
+  * `Dxyn` - Draw sprite to screen (un-aligned)
 
 If you run the ROM for more than 20 cycles, it will enter an endless loop. If
 that also works as expected, you've also correctly interpreted the jump opcode:
 
-  * `1NNN` - Jump
+  * `1nnn` - Jump
 
 ## Corax+ opcode test
 
@@ -141,14 +141,14 @@ Here's a rough description of what these opcodes should do to pass the tests:
 * `2nnn` - `call nnn` (subroutine)
 * `00EE` - `return` from subroutine
 * `8xy0` - `vX = vY`
-* `8XY1` - `vX |= vY`
-* `8XY2` - `vX &= vY`
-* `8XY3` - `vX ^= vY`
-* `8XY4` - `vX += vY`
-* `8XY5` - `vX -= vY`
-* `8XY7` - `vX = vY - vX`
-* `8XY6` - `vY >>= vX` or `vX >>= vX` depending on quirks
-* `8XYE` - `vY <<= vX` or `vX <<= vX` depending on quirks
+* `8xy1` - `vX |= vY`
+* `8xy2` - `vX &= vY`
+* `8xy3` - `vX ^= vY`
+* `8xy4` - `vX += vY`
+* `8xy5` - `vX -= vY`
+* `8xy7` - `vX = vY - vX`
+* `8xy6` - `vY >>= vX` or `vX >>= vX` depending on quirks
+* `8xyE` - `vY <<= vX` or `vX <<= vX` depending on quirks
 * `Fx65` - load registers `v0` - `vX` from memory starting at `i`
 * `Fx55` - save registers `v0` - `vX` to memory starting at `i`
 * `Fx33` - store binary-coded decimal representation of `vX` to memory at `i`,
@@ -197,39 +197,39 @@ the following opcodes, in the case where we **don't** expect an overflow, carry
 or shifted out bit:
 
 ```
-HAPPY  8XY1   8XY2
-8XY3   8XY4   8XY5
-8XY6   8XY7   8XYE
+HAPPY  8xy1   8xy2
+8xy3   8xy4   8xy5
+8xy6   8xy7   8xyE
 ```
 
-* `8XY1` - `vX |= vY`
-* `8XY2` - `vX &= vY`
-* `8XY3` - `vX ^= vY`
-* `8XY4` - `vX += vY`
-* `8XY5` - `vX -= vY`
-* `8XY6` - `vY >>= vX` or `vX >>= vX` depending on quirks
-* `8XY7` - `vX = vY - vX`
-* `8XYE` - `vY <<= vX` or `vX <<= vX` depending on quirks
+* `8xy1` - `vX |= vY`
+* `8xy2` - `vX &= vY`
+* `8xy3` - `vX ^= vY`
+* `8xy4` - `vX += vY`
+* `8xy5` - `vX -= vY`
+* `8xy6` - `vY >>= vX` or `vX >>= vX` depending on quirks
+* `8xy7` - `vX = vY - vX`
+* `8xyE` - `vY <<= vX` or `vX <<= vX` depending on quirks
 
 The bottom part (that starts with "CARRY") checks behaviour of the following
 opcodes, in the case that there **is** an overflow, carry or shifted out bit:
 
 ```
-CARRY  8XY4   8XY5
-8XY6   8XY7   8XYE
+CARRY  8xy4   8xy5
+8xy6   8xy7   8xyE
 ```
 
-* `8XY4` - `vX += vY`
-* `8XY5` - `vX -= vY`
-* `8XY6` - `vY >>= vX` or `vX >>= vX` depending on quirks
-* `8XY7` - `vX = vY - vX`
-* `8XYE` - `vY <<= vX` or `vX <<= vX` depending on quirks
+* `8xy4` - `vX += vY`
+* `8xy5` - `vX -= vY`
+* `8xy6` - `vY >>= vX` or `vX >>= vX` depending on quirks
+* `8xy7` - `vX = vY - vX`
+* `8xyE` - `vY <<= vX` or `vX <<= vX` depending on quirks
 
-The last row (that starts with "OTHER") checks that the opcode `FX1E` (`i +=
+The last row (that starts with "OTHER") checks that the opcode `Fx1E` (`i +=
 vX`) properly adds the value of register `vX` to the index register, first for a
 regular register and then when using `vF` as the `vX` input register. For this
-test, only the value is checked as overflow of the index register is not really
-defined in CHIP-8 and this opcode is not supposed to influence the flag
+test, only the value is checked because overflow of the index register is not
+really defined in CHIP-8 and this opcode is not supposed to influence the flag
 register.
 
 See [this article](https://laurencescotford.com/chip-8-on-the-cosmac-vip-arithmetic-and-logic-instructions/)
@@ -249,6 +249,8 @@ your interpreter implements, and if those quirks match the platform you're
 trying to target. This is one of the hardest parts to "get right" and often a
 reason why "some games work, but some don't".
 
+### The menu
+
 The test asks you to choose the platform you are targeting:
 
 ![Choosing a target platform in the quirks test](./pictures/quirks-platform.png)
@@ -261,6 +263,13 @@ and select an item with `A`. This feature mainly exists so people implementing
 interpreters for platforms with limited input devices (like a game controller)
 can map their buttons to those CHIP-8 keys and have an intuitive interface too.
 
+If you want to repeat a test often or even automate them, having to use the
+graphical menu just gets in the way. In that case, you can force this ROM to
+select a specific platform by loading a value between `1` and `3` into memory at
+the address `0x1FF` (`512`).
+
+### The test
+
 The test will now run through a couple of steps, which you will see on the
 screen as a loading progress bar followed by some artifacts. After about three
 seconds, you should see this screen:
@@ -271,10 +280,10 @@ The screen shows you if the following quirks are detected as active ("on", "off"
 or an error) and if that matches your chosen target platform (a checkmark or a
 cross).
 
-* `vF reset` - The AND, OR and XOR opcodes (`8XY1`, `8XY2` and `8XY3`) reset the
+* `vF reset` - The AND, OR and XOR opcodes (`8xy1`, `8xy2` and `8xy3`) reset the
   flags register to zero. Test will show `E1` if the AND and OR tests don't
   behave the same and `E2` if the AND and XOR tests don't behave the same.
-* `Memory` - The save and load opcodes (`FX55` and `FX65`) increment the index
+* `Memory` - The save and load opcodes (`Fx55` and `Fx65`) increment the index
   register. More information [here](https://laurencescotford.com/chip-8-on-the-cosmac-vip-loading-and-saving-variables/) and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
 * `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second. More information
@@ -291,11 +300,11 @@ cross).
   Test will show `E1` if the clipping is inconsistent in different dimensions or
   wrapping to the wrong coordinates and `E2` if sprites don't wrap around as
   expected.
-* `Shifting` - The shift opcodes (`8XY6` and `8XYE`) only operate on `vX`
+* `Shifting` - The shift opcodes (`8xy6` and `8xyE`) only operate on `vX`
   instead of storing the shifted version of `vY` in `vX` (more information
   [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#8xy6-and-8xye-shift)). Test will show `E1` if the shift opcodes behave differently.
-* `Jumping` - The "jump to some address plus `v0`" instruction (`BNNN`) doesn't
-  use `v0`, but `vX` instead where `X` is the highest nibble of `NNN` (more
+* `Jumping` - The "jump to some address plus `v0`" instruction (`Bnnn`) doesn't
+  use `v0`, but `vX` instead where `X` is the highest nibble of `nnn` (more
   information [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#bnnn-jump-with-offset))
 
 Note that you need timer support for this test to run.
@@ -327,36 +336,41 @@ and select an item with `A`. This feature mainly exists so people implementing
 interpreters for platforms with limited input devices (like a game controller)
 can map their buttons to those CHIP-8 keys and have an intuitive interface too.
 
-### 1. `EX9E DOWN`
+If you want to repeat a test often or even automate them, having to use the
+graphical menu just gets in the way. In that case, you can force this ROM to
+select a specific platform by loading a value between `1` and `3` into memory at
+the address `0x1FF` (`512`).
 
-`EX9E` skips the next instruction if the key indicated in `vX` is currently
+### 1. `Ex9E DOWN`
+
+`Ex9E` skips the next instruction if the key indicated in `vX` is currently
 pressed. In the test, when you press a key, the corresponding value lights up on
 the screen.
 
-![The `EX9E` keypad test, when pressing keys 1 and 6](./pictures/keypad-down.png)
+![The `Ex9E` keypad test, when pressing keys 1 and 6](./pictures/keypad-down.png)
 
 _Pressing keys 1 and 6_
 
-### 2. `EXA1 UP`
+### 2. `ExA1 UP`
 
-`EXA1` skips the next instruction if the key indicated in `vX` is currently
+`ExA1` skips the next instruction if the key indicated in `vX` is currently
 **not** pressed. In the test, when you are **not** pressing a key, the
 corresponding value lights up on the screen.
 
-![The `EXA1` keypad test, when pressing keys 1 and 6](./pictures/keypad-up.png)
+![The `ExA1` keypad test, when pressing keys 1 and 6](./pictures/keypad-up.png)
 
 _Pressing keys 1 and 6_
 
-### 3. `FX0A GETKEY`
+### 3. `Fx0A GETKEY`
 
-`FX0A` waits for a key press and returns the pressed key in `vX`.
+`Fx0A` waits for a key press and returns the pressed key in `vX`.
 
 The test asks you to press a key on the CHIP-8 keypad. When you do, it checks
 for two issues that are easy to accidentally introduce when implementing this
 opcode. If all is well, you should be seeing a checkmark and "all good" on the
 screen:
 
-![The `FX0A` keypad test, when all is good](./pictures/keypad-getkey.png)
+![The `Fx0A` keypad test, when all is good](./pictures/keypad-getkey.png)
 
 Otherwise, you can get either of these errors:
 
@@ -365,8 +379,6 @@ Otherwise, you can get either of these errors:
   is pressed (note that this needs timer support to be accurate)
 * `NOT RELEASED` - Your implementation doesn't wait for the pressed key to be
   released before resuming
-
-Note that you need timer support for this test to run properly.
 
 See [this
 article](https://laurencescotford.com/chip-8-on-the-cosmac-vip-keyboard-input/)
