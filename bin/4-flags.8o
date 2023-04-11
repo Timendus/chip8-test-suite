@@ -3,6 +3,62 @@
 # This is a visual adaptation of the math tests I wrote for Silicon8
 # (https://github.com/Timendus/silicon8/tree/main/tests)
 
+:stringmode str "$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -." {
+  :byte { 4 * VALUE }
+}
+
+:macro text X Y STR {
+  vD := X
+  vE := Y
+  i := STR
+  drawText
+}
+
+:alias x vA
+:alias y vB
+
+: waitKeyRelease
+  v0 := 0
+: -
+  if v0 key then jump -
+  v0 += 1
+  if v0 == 16 then return
+  jump -
+
+# Font rendering code and character data
+# Kept this very simplistic and fast
+
+:macro drawCharacter REG {
+  if REG == 0 then return
+  v0 := REG
+  drawChar
+}
+
+: drawText
+  load vC
+  drawChar
+  drawCharacter v1
+  drawCharacter v2
+  drawCharacter v3
+  drawCharacter v4
+  drawCharacter v5
+  drawCharacter v6
+  drawCharacter v7
+  drawCharacter v8
+  drawCharacter v9
+  drawCharacter vA
+  drawCharacter vB
+  drawCharacter vC
+  return
+
+: drawChar
+  i := characters
+  i += v0
+  sprite vD vE 4
+  vD += 4
+  return
+
+
 :alias 15_in_a_register v1
 :alias 100_in_a_register v1
 
@@ -63,8 +119,15 @@
   y -= 1
   return
 
-: flags-test
+: main
   clear
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
 
   ## Without complications
 
@@ -143,7 +206,7 @@
   vF := 60
   vF >>= vF # 30 (0x1E), but should be overwritten by flag, so 0
   v3 := vF
-  # vF := 0xAA
+  vF := 0xAA
   v2 := 60
   v2 >>= v2 # 30 (0x1E)
   expect-v2-vf-v3 30 0 0
@@ -157,7 +220,7 @@
   v3 := 15
   vF := 20
   v3 =- vF # 5 (0x05)
-  # vF := 0xAA
+  vF := 0xAA
   v2 := 15
   v1 := 50
   v2 =- v1 # 35 (0x23)
@@ -169,7 +232,7 @@
   vF := 50
   vF <<= vF # 100 (0x64), but should be overwritten by flag, so 0
   v3 := vF
-  # vF := 0xAA
+  vF := 0xAA
   v2 := 50
   v2 <<= v2 # 100 (0x64)
   expect-v2-vf-v3 100 0 0
@@ -189,7 +252,7 @@
   v3 := 100
   vF := 200
   v3 += vF # 300 (0x2C)
-  # vF := 0xAA
+  vF := 0xAA
   v2 := 200
   v2 += 100_in_a_register # 300, but overflows so 44 (0x2C)
   expect-v2-vf-v3-v4 44 1 44 1
@@ -216,7 +279,7 @@
   vF := 61
   vF >>= vF # 30 (0x1E), but should be overwritten by flag, so 1
   v3 := vF
-  # vF := 0xAA
+  vF := 0xAA
   v2 := 61
   v2 >>= v2 # 30 (0x1E)
   expect-v2-vf-v3 30 1 1
@@ -230,7 +293,7 @@
   v3 := 105
   vF := 100
   v3 =- vF # -5 = 251 (0xFB)
-  # vF := 0xAA
+  vF := 0xAA
   v2 := 105
   v2 =- 100_in_a_register # -5 = 251 (0xFB)
   expect-v2-vf-v3-v4 -5 0 -5 0
@@ -241,7 +304,7 @@
   vF := 188
   vF <<= vF # 376 (0x178), but should be overwritten by flag, so 1
   v3 := vF
-  # vF := 0xAA
+  vF := 0xAA
   v2 := 188
   v2 <<= v2 # 376 (0x178), but overflows so 120 (0x78)
   expect-v2-vf-v3 120 1 1
@@ -265,18 +328,195 @@
   load v0
   expect-v0 0xAA
 
-  # i := scratchpad
-  # vF := 16
-  # i += vF
-  # v0 := 0x55
-  # save v0
-  # i := scratchpad-plus-16
-  # load v0
-  # expect-v0 0x55
+  i := scratchpad
+  vF := 16
+  i += vF
+  v0 := 0x55
+  save v0
+  i := scratchpad-plus-16
+  load v0
+  expect-v0 0x55
 
-  jump menu-after-keypress
+  loop again
 
-:segment data
+: scratchpad
+  0
+: scratchpad-plus-1
+  0
+: scratchpad-plus-2
+  0 0 0 0 0
+  0 0 0 0 0
+  0 0 0 0
+: scratchpad-plus-16
+  0
+
+
+# Positive and negative images
+: flag-ok
+  0b10100000
+  0b11000000
+: characters
+  0b10000000
+: flag-err
+  0b10100000
+  0b01000000
+  0b10100000
+
+# Individual characters, some taken from Corax89' test.
+: im0
+  0xE0 0xA0 0xA0 0xE0
+: im1
+  0xC0 0x40 0x40 0xE0
+: im2
+  0xE0 0x20 0xC0 0xE0
+: im3
+  0xE0 0x60 0x20 0xE0
+: im4
+  0xA0 0xE0 0x20 0x20
+: im5
+  0b11100000
+  0b11000000
+  0b00100000
+  0b11000000
+: im6
+  0xE0 0x80 0xE0 0xE0
+: im7
+  0xE0 0x20 0x20 0x20
+: im8
+  0xE0 0xE0 0xA0 0xE0
+: im9
+  0xE0 0xE0 0x20 0xE0
+: imA
+  0x40 0xA0 0xE0 0xA0
+: imB
+  0b11000000
+  0b11100000
+  0b10100000
+  0b11100000
+: imC
+  0b11100000
+  0b10000000
+  0b10000000
+  0b11100000
+: imD
+  0b11000000
+  0b10100000
+  0b10100000
+  0b11000000
+: imE
+  0xE0 0xC0 0x80 0xE0
+: imF
+  0xE0 0x80 0xC0 0x80
+: imG
+  0b01100000
+  0b10000000
+  0b10100000
+  0b01100000
+: imH
+  0b10100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imI
+  0b11100000
+  0b01000000
+  0b01000000
+  0b11100000
+: imJ
+  0b01100000
+  0b00100000
+  0b00100000
+  0b11000000
+: imK
+  0b10100000
+  0b11000000
+  0b10100000
+  0b10100000
+: imL
+  0b10000000
+  0b10000000
+  0b10000000
+  0b11100000
+: imM
+  0b11100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imN
+  0b11000000
+  0b10100000
+  0b10100000
+  0b10100000
+: imO
+  0b11100000
+  0b10100000
+  0b10100000
+  0b11100000
+: imP
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10000000
+: imQ
+  0b01000000
+  0b10100000
+  0b11100000
+  0b01100000
+: imR
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10100000
+: imS
+  0b01100000
+  0b11000000
+  0b00100000
+  0b11000000
+: imT
+  0b11100000
+  0b01000000
+  0b01000000
+  0b01000000
+: imU
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01100000
+: imV
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01000000
+: imW
+  0b10100000
+  0b10100000
+  0b11100000
+  0b11100000
+: imX
+  0xA0 0x40 0xA0 0xA0
+: imY
+  0b10100000
+  0b10100000
+  0b01000000
+  0b01000000
+: imZ
+  0b11100000
+  0b01100000
+  0b10000000
+  0b11100000
+: imSpace
+  0 0 0 0
+: imDash
+  0b00000000
+  0b11100000
+  0b00000000
+  0b00000000
+: imPeriod
+  0b00000000
+  0b00000000
+  0b00000000
+  0b01000000
+
 
 : flags-no-carry
   str "HAPPY" 0
@@ -284,3 +524,9 @@
   str "CARRY" 0
 : flags-other
   str "OTHER" 0
+
+: version-0-0
+  0x0a 0xae 0xa2 0x42
+: version-1-0
+  0x38 0x28 0x28 0xb8
+

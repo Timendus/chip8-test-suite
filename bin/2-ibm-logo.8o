@@ -1,0 +1,62 @@
+# Disassembly of the famous "IBM logo" program, published here before:
+# https://github.com/Timendus/chip-8/blob/master/octo/IBM%20logo.8o
+
+# Annotated and converted to Octo mnemonics by Timendus, in the hope that it
+# will be useful to people trying to debug their CHIP-8 interpreters
+#
+# Original "IBM logo" MD5 hash:       2dbace8066709ac9a264d23281820d32
+# MD5 hash of binary from this code:  2dbace8066709ac9a264d23281820d32
+#
+# Unfortunately adding the version number to the image data changed the MD5
+# hash of the final binary, but functionally absolutely nothing changed.
+
+: main
+  clear                       # Address 512 / 0x200
+
+  i := ibm-0-0                # Address 514 / 0x202
+  v0 := 12                    # Address 516 / 0x204
+  v1 := 8
+  sprite v0 v1 15             # Address 520 / 0x208
+
+  v0 += 9                     # Address 522 / 0x20A
+  i := ibm-1-0
+  sprite v0 v1 15
+
+  i := ibm-2-0                # Interesting mixup here, swapping the operations
+  v0 += 8
+  sprite v0 v1 15
+
+  v0 += 4
+  i := ibm-3-0
+  sprite v0 v1 15
+
+  v0 += 8
+  i := ibm-4-0
+  sprite v0 v1 15
+
+  v0 += 8
+  i := ibm-5-0
+  sprite v0 v1 15
+
+  loop again                  # Address 552 / 0x228
+
+# What's interesting about this image data is that the author could have
+# precisely stored the full image in 5 by 15 bytes. Yet they have chosen a way
+# to pack the image which needs 6 by 15 bytes. The most obvious explanation for
+# this that I can come up with is that they approached the challenge one letter
+# at a time. Maybe it was easier to do the conversions from bits to hexadecimal
+# this way.
+
+: ibm-0-0
+  0xff 0x00 0xff 0x00 0x3c 0x00 0x3c 0x00 0x3c 0x00 0x3c 0x00 0xff 0x00 0xff
+: ibm-1-0
+  0xff 0x00 0xff 0x00 0x38 0x00 0x3f 0x00 0x3f 0x00 0x38 0x00 0xff 0x00 0xff
+: ibm-2-0
+  0x80 0x00 0xe0 0x00 0xe0 0x00 0x80 0x00 0x80 0x00 0xe0 0x00 0xe0 0x00 0x80
+: ibm-3-0
+  0xf8 0x00 0xfc 0x00 0x3e 0x00 0x3f 0x00 0x3b 0x00 0x39 0x00 0xf8 0x00 0xf8
+: ibm-4-0
+  0x03 0x00 0x07 0x00 0x0f 0x00 0xbf 0x00 0xfb 0x00 0xf3 0x00 0xe3 0x00 0x43
+: ibm-5-0
+  0xe5 0x05 0xe2 0x00 0x85 0x07 0x81 0x01 0x80 0x02 0x80 0x07 0xe5 0x05 0xe7
+

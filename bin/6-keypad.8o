@@ -1,0 +1,521 @@
+# Keypad test
+# A fresh new implementation for this test suite
+
+:stringmode str "$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -." {
+  :byte { 4 * VALUE }
+}
+
+:macro text X Y STR {
+  vD := X
+  vE := Y
+  i := STR
+  drawText
+}
+
+:alias x vA
+:alias y vB
+
+: waitKeyRelease
+  v0 := 0
+: -
+  if v0 key then jump -
+  v0 += 1
+  if v0 == 16 then return
+  jump -
+
+# A cute little menu to select a test
+
+# Input:
+#  * v0 v1 point to 0xA + menu struct
+#  * v2 holds the length (zero-indexed)
+: menu-start
+  :alias cursorX v0
+  :alias cursorY v1
+  :alias numItems v2
+  :alias showing v3
+  :alias temp v4
+  :alias currentItem v5
+  :alias selectedItem v6
+
+  currentItem := 0
+  i := menu-draw-cursor
+  save v1
+  i := menu-choose-load
+  save v1
+  jump menu-draw-cursor
+: menu-move-cursor
+  if showing == 1 then sprite cursorX cursorY 2 # i should still be correct
+  waitKeyRelease
+: menu-draw-cursor
+  0 0 # i := <menu>
+  i += currentItem
+  i += currentItem
+  i += currentItem
+  i += currentItem
+  load cursorY # and cursorX
+  showing := 0
+  delay := showing
+
+  loop
+    # Blink cursor
+    temp := delay
+    if temp == 0 begin
+      i := menu-cursor
+      sprite cursorX cursorY 2
+      temp := 10
+      delay := temp
+      temp := 1
+      showing ^= temp
+    end
+
+    # Move cursor up
+    temp := 0xE
+    if temp key begin
+      if currentItem != 0 begin
+        currentItem -= 1
+        jump menu-move-cursor
+      end
+    end
+    # Move cursor down
+    temp := 0xF
+    if temp key begin
+      if currentItem != numItems begin
+        currentItem += 1
+        jump menu-move-cursor
+      end
+    end
+    # Start test under cursor
+    selectedItem := currentItem
+    temp := 0xA
+    if temp key then jump menu-choose
+
+    # Use numbers to jump to tests directly
+    temp := 0
+    numItems += 1
+    loop
+      temp += 1
+      if temp key begin
+        selectedItem := temp
+        selectedItem -= 1
+        jump menu-choose
+      end
+    if temp != numItems then again
+    numItems -= 1
+  again
+
+: menu-choose
+  waitKeyRelease
+: menu-choose-load
+  0 0 # i := <menu>
+  i += selectedItem
+  i += selectedItem
+  i += selectedItem
+  i += selectedItem
+  temp := 2
+  i += temp
+  load v1
+  temp := 0x10
+  v0 |= temp
+  i := menu-choose-jump
+  save v1
+: menu-choose-jump
+  0 0 # jump <item>
+
+# Font rendering code and character data
+# Kept this very simplistic and fast
+
+:macro drawCharacter REG {
+  if REG == 0 then return
+  v0 := REG
+  drawChar
+}
+
+: drawText
+  load vC
+  drawChar
+  drawCharacter v1
+  drawCharacter v2
+  drawCharacter v3
+  drawCharacter v4
+  drawCharacter v5
+  drawCharacter v6
+  drawCharacter v7
+  drawCharacter v8
+  drawCharacter v9
+  drawCharacter vA
+  drawCharacter vB
+  drawCharacter vC
+  return
+
+: drawChar
+  i := characters
+  i += v0
+  sprite vD vE 4
+  vD += 4
+  return
+
+
+: main
+  clear
+  i := 0x1FF
+  load v0
+  if v0 == 1 then jump keypad-down
+  if v0 == 2 then jump keypad-up
+  if v0 == 3 then jump keypad-getkey
+
+  text 10  2 keypad-choose
+  text  8 10 keypad-str-key-down
+  text  8 15 keypad-str-key-up
+  text  8 20 keypad-str-getkey
+
+  # Show version number in bottom right corner
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
+
+  :unpack 0xA keypad-menu
+  v2 := 2
+  jump menu-start
+
+: keypad-down
+  v1 := 0x9E
+  jump keypad-skip-if-key-test
+: keypad-up
+  v1 := 0xA1
+: keypad-skip-if-key-test
+  v0 := 0xEE
+  i := keypad-opcode
+  save v1
+  clear
+  i := keypad-initial-values
+  load vF
+  i := scratchpad
+  save vF
+  text 18 3 keypad-row1
+  text 18 10 keypad-row2
+  text 18 17 keypad-row3
+  text 18 24 keypad-row4
+  vE := 0
+  loop
+  keypad-pressed
+  vE += 1
+  if vE == 16 then vE := 0
+  again
+
+: keypad-pressed
+  i := scratchpad
+  i += vE
+  load v0
+  v2 := 1
+: keypad-opcode
+  if vE key then v2 := 0
+  if v0 != v2 begin
+    v0 := vE
+    v0 <<= v0
+    i := keypad-coordinates
+    i += v0
+    load v1
+    i := keypad-cursor
+    sprite v0 v1 6
+    i := scratchpad
+    i += vE
+    v0 := v2
+    save v0
+  end
+  return
+
+: keypad-getkey
+  clear
+  text 6 13 keypad-str-press-key
+  v0 := 3
+  delay := v0
+  v0 := key
+  v1 := delay
+  if v1 != 0 then jump keypad-getkey-no-halt
+  if v0 key then jump keypad-getkey-no-release-wait
+  clear
+  i := flag-ok
+  v0 := 30
+  v1 := 9
+  sprite v0 v1 3
+  text 16 17 keypad-str-good
+  waitKeyRelease
+  v0 := key
+  waitKeyRelease
+  jump main
+
+: keypad-getkey-no-halt
+  vD := 10
+  i := keypad-str-no-halt
+  jump keypad-getkey-error
+: keypad-getkey-no-release-wait
+  vD := 8
+  i := keypad-str-no-release-wait
+: keypad-getkey-error
+  clear
+  vE := 17
+  drawText
+  i := flag-err
+  v0 := 30
+  v1 := 9
+  sprite v0 v1 3
+  waitKeyRelease
+  v0 := key
+  waitKeyRelease
+  jump main
+
+: scratchpad
+  0
+: scratchpad-plus-1
+  0
+: scratchpad-plus-2
+  0 0 0 0 0
+  0 0 0 0 0
+  0 0 0 0
+: scratchpad-plus-16
+  0
+
+
+: menu-cursor
+  0b11000000
+  0b11000000
+
+
+# Positive and negative images
+: flag-ok
+  0b10100000
+  0b11000000
+: characters
+  0b10000000
+: flag-err
+  0b10100000
+  0b01000000
+  0b10100000
+
+# Individual characters, some taken from Corax89' test.
+: im0
+  0xE0 0xA0 0xA0 0xE0
+: im1
+  0xC0 0x40 0x40 0xE0
+: im2
+  0xE0 0x20 0xC0 0xE0
+: im3
+  0xE0 0x60 0x20 0xE0
+: im4
+  0xA0 0xE0 0x20 0x20
+: im5
+  0b11100000
+  0b11000000
+  0b00100000
+  0b11000000
+: im6
+  0xE0 0x80 0xE0 0xE0
+: im7
+  0xE0 0x20 0x20 0x20
+: im8
+  0xE0 0xE0 0xA0 0xE0
+: im9
+  0xE0 0xE0 0x20 0xE0
+: imA
+  0x40 0xA0 0xE0 0xA0
+: imB
+  0b11000000
+  0b11100000
+  0b10100000
+  0b11100000
+: imC
+  0b11100000
+  0b10000000
+  0b10000000
+  0b11100000
+: imD
+  0b11000000
+  0b10100000
+  0b10100000
+  0b11000000
+: imE
+  0xE0 0xC0 0x80 0xE0
+: imF
+  0xE0 0x80 0xC0 0x80
+: imG
+  0b01100000
+  0b10000000
+  0b10100000
+  0b01100000
+: imH
+  0b10100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imI
+  0b11100000
+  0b01000000
+  0b01000000
+  0b11100000
+: imJ
+  0b01100000
+  0b00100000
+  0b00100000
+  0b11000000
+: imK
+  0b10100000
+  0b11000000
+  0b10100000
+  0b10100000
+: imL
+  0b10000000
+  0b10000000
+  0b10000000
+  0b11100000
+: imM
+  0b11100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imN
+  0b11000000
+  0b10100000
+  0b10100000
+  0b10100000
+: imO
+  0b11100000
+  0b10100000
+  0b10100000
+  0b11100000
+: imP
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10000000
+: imQ
+  0b01000000
+  0b10100000
+  0b11100000
+  0b01100000
+: imR
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10100000
+: imS
+  0b01100000
+  0b11000000
+  0b00100000
+  0b11000000
+: imT
+  0b11100000
+  0b01000000
+  0b01000000
+  0b01000000
+: imU
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01100000
+: imV
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01000000
+: imW
+  0b10100000
+  0b10100000
+  0b11100000
+  0b11100000
+: imX
+  0xA0 0x40 0xA0 0xA0
+: imY
+  0b10100000
+  0b10100000
+  0b01000000
+  0b01000000
+: imZ
+  0b11100000
+  0b01100000
+  0b10000000
+  0b11100000
+: imSpace
+  0 0 0 0
+: imDash
+  0b00000000
+  0b11100000
+  0b00000000
+  0b00000000
+: imPeriod
+  0b00000000
+  0b00000000
+  0b00000000
+  0b01000000
+
+
+: keypad-menu
+  4 11 :pointer keypad-down
+  4 16 :pointer keypad-up
+  4 21 :pointer keypad-getkey
+
+: keypad-choose
+  str "PICK OPCODE" 0
+: keypad-str-key-down
+  str "1 EX9E DOWN" 0
+: keypad-str-key-up
+  str "2 EXA1 UP" 0
+: keypad-str-getkey
+  str "3 FX0A GETKEY" 0
+
+: keypad-str-press-key
+  str "PRESS ANY KEY" 0
+: keypad-str-good
+  str "ALL GOOD" 0
+: keypad-str-no-halt
+  str "NOT HALTING" 0
+: keypad-str-no-release-wait
+  str "NOT RELEASED" 0
+
+: keypad-initial-values
+  0 0 0 0 0 0 0 0
+  0 0 0 0 0 0 0 0
+
+: keypad-row1
+  str "1 2 3 C" 0
+: keypad-row2
+  str "4 5 6 D" 0
+: keypad-row3
+  str "7 8 9 E" 0
+: keypad-row4
+  str "A 0 B F" 0
+
+: keypad-coordinates
+  24 23 # 0
+  16 2  # 1
+  24 2  # 2
+  32 2  # 3
+  16 9  # 4
+  24 9  # 5
+  32 9  # 6
+  16 16 # 7
+  24 16 # 8
+  32 16 # 9
+  16 23 # A
+  32 23 # B
+  40 2  # C
+  40 9  # D
+  40 16 # E
+  40 23 # F
+
+: keypad-cursor
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+
+: version-0-0
+  0x0a 0xae 0xa2 0x42
+: version-1-0
+  0x38 0x28 0x28 0xb8
+

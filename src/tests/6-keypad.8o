@@ -1,18 +1,31 @@
 # Keypad test
 # A fresh new implementation for this test suite
 
-: keypad-test
+:include "../utils/helpers.8o"
+:include "../utils/menu.8o"
+:include "../utils/text-rendering.8o"
+
+: main
   clear
-  i := 0x1FE
+  i := 0x1FF
   load v0
   if v0 == 1 then jump keypad-down
   if v0 == 2 then jump keypad-up
   if v0 == 3 then jump keypad-getkey
 
-  text 10  3 keypad-choose
-  text  8 12 keypad-str-key-down
-  text  8 17 keypad-str-key-up
-  text  8 22 keypad-str-getkey
+  text 10  2 keypad-choose
+  text  8 10 keypad-str-key-down
+  text  8 15 keypad-str-key-up
+  text  8 20 keypad-str-getkey
+
+  # Show version number in bottom right corner
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
 
   :unpack 0xA keypad-menu
   v2 := 2
@@ -80,7 +93,10 @@
   v1 := 9
   sprite v0 v1 3
   text 16 17 keypad-str-good
-  jump menu-after-keypress
+  waitKeyRelease
+  v0 := key
+  waitKeyRelease
+  jump main
 
 : keypad-getkey-no-halt
   vD := 10
@@ -97,14 +113,17 @@
   v0 := 30
   v1 := 9
   sprite v0 v1 3
-  jump menu-after-keypress
+  waitKeyRelease
+  v0 := key
+  waitKeyRelease
+  jump main
 
 :segment data
 
 : keypad-menu
-  4 13 :pointer keypad-down
-  4 18 :pointer keypad-up
-  4 23 :pointer keypad-getkey
+  4 11 :pointer keypad-down
+  4 16 :pointer keypad-up
+  4 21 :pointer keypad-getkey
 
 : keypad-choose
   str "PICK OPCODE" 0
@@ -162,3 +181,5 @@
   0b11111110
   0b11111110
   0b11111110
+
+:include "../../pictures/version.png"

@@ -1,0 +1,298 @@
+# Flags test
+
+# This is a visual adaptation of the math tests I wrote for Silicon8
+# (https://github.com/Timendus/silicon8/tree/main/tests)
+
+:include "../utils/helpers.8o"
+:include "../utils/text-rendering.8o"
+
+:alias 15_in_a_register v1
+:alias 100_in_a_register v1
+
+:macro opcode-digit OPC {
+  vD := OPC
+  flags-draw-opcode-digit
+}
+
+: flags-draw-opcode-digit
+  i := im0
+  vE := vD
+  vE <<= vE
+  vE <<= vE
+  i += vE
+  sprite x y 4
+  x += 5
+  return
+
+:macro expect-v0 V0VAL {
+  v2 := v0
+  vC := V0VAL
+  flags-draw-result
+}
+
+:macro expect-v2-vf-v3 V2VAL VFVAL V3VAL {
+  vE := vF
+  vC := V2VAL
+  flags-draw-result
+  v2 := vE
+  vC := VFVAL
+  flags-draw-result
+  v2 := v3
+  vC := V3VAL
+  flags-draw-result  
+}
+
+:macro expect-v2-vf-v3-v4 V2VAL VFVAL V3VAL V4VAL {
+  vE := vF
+  vC := V2VAL
+  flags-draw-result
+  v2 := vE
+  vC := VFVAL
+  flags-draw-result
+  v2 := v3
+  vC := V3VAL
+  flags-draw-result
+  v2 := v4  
+  vC := V4VAL
+  flags-draw-result
+}
+
+: flags-draw-result
+  i := flag-err
+  if v2 == vC then i := flag-ok
+  y += 1
+  sprite x y 3
+  x += 4
+  y -= 1
+  return
+
+: main
+  clear
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
+
+  ## Without complications
+
+  text 0 0 flags-no-carry
+  x := 22
+  y := 0
+  15_in_a_register := 15
+
+  # OR
+  opcode-digit 1 # 0x81
+  v3 := 15
+  vF := 20
+  v3 |= vF # 31 (0x1F)
+  vF := 0 # vF will not be reset if that quirk is not active
+  v2 := 50
+  v2 |= 15_in_a_register # 63 (0x3F)
+  expect-v2-vf-v3 63 0 31
+  x += 5
+
+  # AND
+  opcode-digit 2 # 0x82
+  v3 := 15
+  vF := 20
+  v3 &= vF # 4 (0x04)
+  vF := 0 # vF will not be reset if that quirk is not active
+  v2 := 50
+  v2 &= 15_in_a_register # 2 (0x02)
+  expect-v2-vf-v3 2 0 4
+  
+  y += 5
+  x := 0
+
+  # XOR
+  opcode-digit 0x3 # 0x83
+  v3 := 15
+  vF := 20
+  v3 ^= vF # 27 (0x1B)
+  vF := 0 # vF will not be reset if that quirk is not active
+  v2 := 50
+  v2 ^= 15_in_a_register # 61 (0x3D)
+  expect-v2-vf-v3 61 0 27
+  x += 5
+
+  # Addition (no overflow)
+  opcode-digit 0x4 # 0x84
+  vF := 20
+  vF += 15_in_a_register # 35 (0x23), but should be overwritten by flag, so 0
+  v4 := vF
+  v3 := 15
+  vF := 20
+  v3 += vF # 35 (0x23)
+  vF := 0xAA
+  v2 := 50
+  v2 += 15_in_a_register # 65 (0x41)
+  expect-v2-vf-v3-v4 65 0 35 0
+  x += 1
+
+  # Subtraction in one direction (no carry)
+  opcode-digit 0x5 # 0x85
+  vF := 20
+  vF -= 15_in_a_register # 5 (0x05), but should be overwritten by flag, so 1
+  v4 := vF
+  v3 := 20
+  vF := 15 
+  v3 -= vF # 5 (0x05)
+  vF := 0xAA
+  v2 := 50
+  v2 -= 15_in_a_register # 35 (0x23)
+  expect-v2-vf-v3-v4 35 1 5 1
+
+  y += 5
+  x := 0
+
+  # Shift right (no LSB)
+  opcode-digit 0x6 # 0x86
+  vF := 60
+  vF >>= vF # 30 (0x1E), but should be overwritten by flag, so 0
+  v3 := vF
+  vF := 0xAA
+  v2 := 60
+  v2 >>= v2 # 30 (0x1E)
+  expect-v2-vf-v3 30 0 0
+  x += 5
+
+  # Subtraction in the other direction (no carry)
+  opcode-digit 0x7 # 0x87
+  vF := 10
+  vF =- 15_in_a_register # 5 (0x5), but should be overwritten by flag, so 1
+  v4 := vF
+  v3 := 15
+  vF := 20
+  v3 =- vF # 5 (0x05)
+  vF := 0xAA
+  v2 := 15
+  v1 := 50
+  v2 =- v1 # 35 (0x23)
+  expect-v2-vf-v3-v4 35 1 5 1
+  x += 1
+
+  # Shift left (no MSB)
+  opcode-digit 0xE # 0x8E
+  vF := 50
+  vF <<= vF # 100 (0x64), but should be overwritten by flag, so 0
+  v3 := vF
+  vF := 0xAA
+  v2 := 50
+  v2 <<= v2 # 100 (0x64)
+  expect-v2-vf-v3 100 0 0
+
+  # With complications
+
+  text 0 16 flags-carry
+  x := 22
+  y := 16
+  100_in_a_register := 100
+
+  # Addition (with overflow)
+  opcode-digit 0x4 # 0x84
+  vF := 200
+  vF += 100_in_a_register # 300 (0x2C), but should be overwritten by flag, so 1
+  v4 := vF
+  v3 := 100
+  vF := 200
+  v3 += vF # 300 (0x2C)
+  vF := 0xAA
+  v2 := 200
+  v2 += 100_in_a_register # 300, but overflows so 44 (0x2C)
+  expect-v2-vf-v3-v4 44 1 44 1
+  x += 1
+
+  # Subtraction in one direction (with carry)
+  opcode-digit 0x5 # 0x85
+  vF := 95
+  vF -= 100_in_a_register # -5 = 251 (0xFB), but should be overwritten by flag, so 0
+  v4 := vF
+  v3 := 95
+  vF := 100
+  v3 -= vF # -5 = 251 (0xFB)
+  vF := 0xAA
+  v2 := 95
+  v2 -= 100_in_a_register # -5 = 251 (0xFB)
+  expect-v2-vf-v3-v4 -5 0 -5 0
+
+  y += 5
+  x := 0
+
+  # Shift right (with LSB)
+  opcode-digit 0x6 # 0x86
+  vF := 61
+  vF >>= vF # 30 (0x1E), but should be overwritten by flag, so 1
+  v3 := vF
+  vF := 0xAA
+  v2 := 61
+  v2 >>= v2 # 30 (0x1E)
+  expect-v2-vf-v3 30 1 1
+  x += 5
+
+  # Subtraction in the other direction (with carry)
+  opcode-digit 0x7 # 0x87
+  vF := 105
+  vF =- 100_in_a_register # -5 = 251 (0xFB), but should be overwritten by flag, so 0
+  v4 := vF
+  v3 := 105
+  vF := 100
+  v3 =- vF # -5 = 251 (0xFB)
+  vF := 0xAA
+  v2 := 105
+  v2 =- 100_in_a_register # -5 = 251 (0xFB)
+  expect-v2-vf-v3-v4 -5 0 -5 0
+  x += 1
+  
+  # Shift left (with MSB)
+  opcode-digit 0xE # 0x8E
+  vF := 188
+  vF <<= vF # 376 (0x178), but should be overwritten by flag, so 1
+  v3 := vF
+  vF := 0xAA
+  v2 := 188
+  v2 <<= v2 # 376 (0x178), but overflows so 120 (0x78)
+  expect-v2-vf-v3 120 1 1
+
+  # Addition to i
+
+  text 0 27 flags-other
+  x := 22
+  y := 27
+
+  opcode-digit 0xF # This block
+  x -= 1           # draws
+  opcode-digit 0xE # opcode 0xFE
+
+  i := scratchpad
+  v1 := 16
+  i += v1
+  v0 := 0xAA
+  save v0
+  i := scratchpad-plus-16
+  load v0
+  expect-v0 0xAA
+
+  i := scratchpad
+  vF := 16
+  i += vF
+  v0 := 0x55
+  save v0
+  i := scratchpad-plus-16
+  load v0
+  expect-v0 0x55
+
+  loop again
+
+:segment data
+
+: flags-no-carry
+  str "HAPPY" 0
+: flags-carry
+  str "CARRY" 0
+: flags-other
+  str "OTHER" 0
+
+:include "../../pictures/version.png"

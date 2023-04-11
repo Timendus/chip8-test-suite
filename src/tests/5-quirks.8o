@@ -4,18 +4,37 @@
 # (https://github.com/Timendus/silicon8/tree/main/tests) and some newly written
 # tests for specific quirks.
 
-: quirks-test
+:include "../utils/helpers.8o"
+:include "../utils/menu.8o"
+:include "../utils/text-rendering.8o"
+
+:macro show X address {
+  v0 := X
+  i := address
+  sprite v0 v1 15
+}
+
+: main
   clear
-  i := 0x1FE
+  i := 0x1FF
   load v0
   if v0 == 1 then jump quirks-chip8
   if v0 == 2 then jump quirks-schip
   if v0 == 3 then jump quirks-xochip
 
-  text  6  3 quirks-choose
-  text 16 12 quirks-str-chip8
-  text 16 17 quirks-str-schip
-  text 16 22 quirks-str-xochip
+  text  6  2 quirks-choose
+  text 16 10 quirks-str-chip8
+  text 16 15 quirks-str-schip
+  text 16 20 quirks-str-xochip
+
+  # Show version number in bottom right corner
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
 
   :unpack 0xA quirks-menu
   v2 := 2
@@ -43,15 +62,38 @@
 
   # Determine frames per second for dispQuirk
   clear
+
+  v1 := 0
+  show  8 splash-0-0
+  show 16 splash-1-0
+  show 24 splash-2-0
+  show 32 splash-3-0
+  show 40 splash-4-0
+  show 48 splash-5-0
+
+  v1 := 15
+  show  8 splash-0-1
+  show 16 splash-1-1
+  show 24 splash-2-1
+  show 32 splash-3-1
+  show 40 splash-4-1
+  show 48 splash-5-1
+
   i := quirks-values
-  load v4
+  load v6
   i := quirks-image
-  vF := 120
-  delay := vF
+  delay := v5
   loop
     v5 := 30
     loop
       sprite v0 v1 1
+      if vF == 0 begin
+        v0 := 54
+        v6 := delay
+        v6 >>= v6
+        v6 >>= v6
+        v0 -= v6
+      end
       v5 -= 1
       if v5 != 0 then
     again
@@ -60,17 +102,18 @@
     vE := delay
   if vE != 0 then again
 
-  # We expect the inner loop with 30 `sprite`s to have been able to run four
-  # times in the timespan of 120 interrupts
+  # We expect the inner loop with 30 `sprite`s to have been able to run six
+  # times in the timespan of 180 interrupts
   v0 := 1
   if v3 != 0 then v0 := 0
-  if v2 != 4 then v0 := 0
+  if v2 > 6 then v0 := 0
+  if v2 < 6 then v0 := 2
   i := scratchpad-plus-1
   save v0
 
   # Determine if sprites get clipped vertically
   clear
-  i := keypad-cursor
+  i := cursor
   v0 := 28
   v1 := 29
   sprite v0 v1 6
@@ -84,7 +127,7 @@
 
   # Determine if sprites get clipped horizontally
   clear
-  i := keypad-cursor
+  i := cursor
   v0 := 61
   v1 := 5
   sprite v0 v1 6
@@ -123,7 +166,7 @@
   if v5 != v7 then v0 := 2
   if v5 != v8 then v0 := 2
   # Wrapping
-  if v9 != 4 then v0 := 2
+  if v9 != 4 then v0 := 3
   i := scratchpad-plus-2
   save v0
 
@@ -161,8 +204,8 @@
   sprite x y 3
   i := quirks-off
   if v5 == 1 then i := quirks-on
-  if v5 != v6 then i := quirks-inconsistent
-  if v5 != v7 then i := quirks-inconsistent
+  if v5 != v6 then i := quirks-inconsistent-1
+  if v5 != v7 then i := quirks-inconsistent-2
   vD := 44
   vE := 1
   drawText
@@ -212,6 +255,7 @@
   sprite x y 3
   i := quirks-off
   if v1 == 1 then i := quirks-on
+  if v1 == 2 then i := quirks-low
   vD := 44
   vE := 11
   drawText
@@ -234,7 +278,8 @@
   sprite x y 3
   i := quirks-off
   if v2 == 1 then i := quirks-on
-  if v2 == 2 then i := quirks-inconsistent
+  if v2 == 2 then i := quirks-inconsistent-1
+  if v2 == 3 then i := quirks-inconsistent-2
   vD := 44
   vE := 16
   drawText
@@ -264,7 +309,7 @@
   sprite x y 3
   i := quirks-off
   if v5 == 0 then i := quirks-on
-  if v5 != v7 then i := quirks-inconsistent
+  if v5 != v7 then i := quirks-inconsistent-1
   vD := 44
   vE := 21
   drawText
@@ -296,14 +341,16 @@
   vE := 26
   drawText
 
-  jump menu-after-keypress
+  v0 := key
+  waitKeyRelease
+  jump main
 
 :segment data
 
 : quirks-menu
-  12 13 :pointer quirks-chip8
-  12 18 :pointer quirks-schip
-  12 23 :pointer quirks-xochip
+  12 11 :pointer quirks-chip8
+  12 16 :pointer quirks-schip
+  12 21 :pointer quirks-xochip
 
 : quirks-choose
   str "PICK PLATFORM" 0
@@ -331,10 +378,35 @@
   str "ON" 0
 : quirks-off
   str "OFF" 0
-: quirks-inconsistent
-  str "ERR" 0
+: quirks-inconsistent-1
+  str "E1" 0
+: quirks-inconsistent-2
+  str "E2" 0
+: quirks-low
+  str "LOW" 0
 
 : quirks-values
-  32 12 0 0 1
+  10 31 0 0 1 180 0
 : quirks-image
   0b10000000
+
+: cursor
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+
+:include "../../pictures/version.png"
+:include "../../pictures/splash.png"
+
+# Jump quirk targets:
+:org 0xE98
+  # We jump here when using v0 in the `jump0` quirks test
+  v5 := 0
+  jump quirks-resume
+:org 0xE9C
+  # We jump here when using vE in the `jump0` quirks test
+  v5 := 1
+  jump quirks-resume

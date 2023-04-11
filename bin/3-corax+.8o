@@ -1,0 +1,420 @@
+# This is an adaptation and extension of the CHIP-8 test rom from corax89,
+# original can be found here:
+# https://github.com/corax89/chip8-test-rom
+
+# MIT License
+#
+# Copyright (c) 2019 corax89, 2023 Timendus
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+:alias x0 v8
+:alias x1 v9
+:alias x2 vA
+:alias y	vB
+
+:macro drawop A B {
+  i := A
+  sprite x0 y 4
+  i := B
+  sprite x1 y 4
+}
+
+: test2X
+  i := image-ok
+  sprite x2 y 4
+  return
+
+: main
+  clear
+  x0 := 50
+  y := 26
+  i := version-0-0
+  sprite x0 y 4
+  x0 := 58
+  i := version-1-0
+  sprite x0 y 4
+
+  x0 := 2
+  x1 := 6
+  x2 := 11
+  y := 1
+  v5 := 42
+  v6 := 43
+
+  #test 3x
+  drawop im3 imX
+  i := image-ok
+  if v6 != 43 then i := image-no
+  sprite x2 y 4
+
+  #test 4x
+  y := 6
+  drawop im4 imX
+  i := image-no
+  if v5 == 42 then i := image-ok
+  sprite x2 y 4
+
+  #test 5x
+  y := 11
+  drawop im5 imX
+  i := image-no
+  if v5 != v6 then i := image-ok
+  sprite x2 y 4
+
+  #test 7x
+  y := 16
+  drawop im7 imX
+  i := image-no
+  v6 += 255
+  if v6 == 42 then i := image-ok
+  sprite x2 y 4
+
+  #test 9x
+  y += 5
+  drawop im9 imX
+  i := image-no
+  if v5 == v6 then i := image-ok
+  sprite x2 y 4
+
+  #test 1x
+  y += 5
+  drawop im1 imX
+  i := image-ok
+  jump test1x
+  i := image-no
+: test1x
+  sprite x2 y 4
+
+  #test "AX"
+  # Note by Timendus: I think this really tests 2NNN, not ANNN, so I changed the
+  # displayed label on this to not confuse users.
+  # See PR: https://github.com/corax89/chip8-test-rom/pull/9
+  x0 := 18
+  x1 := 22
+  x2 := 27
+  y := 1
+  drawop im2 imX
+  test2X
+
+  #test 0E
+  y += 5
+  drawop im0 imE
+  i := image-ok
+  sprite x2 y 4
+
+  #test 8xy0
+  y += 5
+  drawop im8 im0
+  i := image-no
+  v5 := 42
+  v7 := 0
+  v7 := v5
+  if v7 == 42 then i := image-ok
+  sprite x2 y 4
+
+  #test 8xy1
+  y += 5
+  drawop im8 im1
+  i := image-no
+  v6 := 11
+  v7 := 42
+  v7 |= v6
+  if v7 == 43 then i := image-ok
+  sprite x2 y 4
+
+  #test 8xy2
+  y += 5
+  drawop im8 im2
+  i := image-no
+  v6 := 120
+  v7 := 31
+  v7 &= v6
+  if v7 == 24 then i := image-ok
+  sprite x2 y 4
+
+  #test 8xy3
+  y += 5
+  drawop im8 im3
+  i := image-no
+  v6 := 120
+  v7 := 31
+  v7 ^= v6
+  if v7 == 103 then i := image-ok
+  sprite x2 y 4
+
+  #test 8xy4
+  x0 := 34
+  x1 := 38
+  x2 := 43
+  y  := 1
+  drawop im8 im4
+  i := image-no
+  v6 := 140
+  v7 := 140
+  v7 += v6
+  if v7 == 24 then i := image-ok
+  sprite x2 y 4
+
+  #test 8xy5
+  y += 5
+  drawop im8 im5
+  i := image-no
+  v6 := 140
+  v7 := 120
+  v7 -= v6
+  if v7 == 236 then i := image-ok
+  sprite x2 y 4
+
+  #test 8xy7
+  y += 5
+  drawop im8 im7
+  i := image-no
+  v6 := 120
+  v7 := 140
+  v7 =- v6
+  if v7 == 236 then i := image-ok
+  sprite x2 y 4
+
+  #test "8xyE"
+  # Note by Timendus: This should be 8XY6, changed the label here too.
+  # See PR: https://github.com/corax89/chip8-test-rom/pull/7
+  y += 5
+  drawop im8 im6
+  i := image-no
+  v6 := 15
+  v6 >>= v6
+  if v6 == 7 then i := image-ok
+  sprite x2 y 4
+
+  #test "8xy6"
+  # Note by Timendus: This should be 8XYE, changed the label here too.
+  # See PR: https://github.com/corax89/chip8-test-rom/pull/7
+  y += 5
+  drawop im8 imE
+  i := image-no
+  v6 := 224
+  v6 <<= v6
+  if v6 == 192 then i := image-ok
+  sprite x2 y 4
+
+  #test Fx65
+  y += 5
+  drawop imF im6
+  i := scratchpad
+  load v1
+  i := image-ok
+  if v0 != 0xAA then i := image-no
+  if v1 != 0x55 then i := image-no
+  sprite x2 y 4
+
+  #test Fx55
+  x0 := 50
+  x1 := 54
+  x2 := 59
+  y  := 1
+  drawop imF im5
+  i := scratchpad
+  v0 := 0
+  v1 := 48
+  save v1
+  i := scratchpad
+  load v0
+  v1 := v0
+  i := scratchpad-plus-1
+  load v0
+  i := image-ok
+  if v0 != 48 then i := image-no
+  if v1 != 0 then i := image-no
+  sprite x2 y 4
+
+  #test Fx33
+  y += 5
+  drawop imF im3
+  i := scratchpad
+  v6 := 137
+  bcd v6
+  load v2
+  i := image-ok
+  if v0 != 1 then i := image-no
+  if v1 != 3 then i := image-no
+  if v2 != 7 then i := image-no
+  sprite x2 y 4
+
+  #test Fx1E
+  y += 5
+  drawop imF imE
+  i := image-no
+  v6 := 4
+  i += v6
+  sprite x2 y 4
+
+  # Test to see if registers are 8 bit, as much as we can
+  y += 5
+  drawop imV imX
+  i := image-ok
+  # Addition opcodes should not allow us to overflow
+  v6 := 255
+  v6 += 10
+  if v6 != 9 then i := image-no
+  v6 >>= v6
+  if v6 != 4 then i := image-no
+  v6 := 255
+  v0 := 10
+  v6 += v0
+  if v6 != 9 then i := image-no
+  v6 >>= v6
+  if v6 != 4 then i := image-no
+  # Shift opcodes should not retain bits
+  v6 := 255
+  v6 <<= v6
+  v6 >>= v6
+  if v6 != 127 then i := image-no
+  v6 >>= v6
+  v6 <<= v6
+  if v6 != 126 then i := image-no
+  # Subtraction should wrap back to positive
+  v6 := 5
+  v6 -= 10
+  if v6 != 251 then i := image-no
+  v6 := 5
+  v6 -= v0
+  if v6 != 251 then i := image-no
+  v6 := 5
+  v0 =- v6
+  if v0 != 251 then i := image-no
+  sprite x2 y 4
+
+  loop again
+
+: scratchpad
+  0xAA
+: scratchpad-plus-1
+  0x55 0
+
+# Positive and negative images
+: image-no
+  0b00000000
+  0b10100000
+  0b01000000
+  0b10100000
+: image-ok
+  0b00000000
+  0b10100000
+  0b11000000
+  0b10000000
+
+# Individual characters, some taken from Corax89' test.
+: im0
+  0b11100000
+  0b10100000
+  0b10100000
+  0b11100000
+: im1
+  0b11000000
+  0b01000000
+  0b01000000
+  0b11100000
+: im2
+  0b11100000
+  0b00100000
+  0b11000000
+  0b11100000
+: im3
+  0b11100000
+  0b01100000
+  0b00100000
+  0b11100000
+: im4
+  0b10100000
+  0b11100000
+  0b00100000
+  0b00100000
+: im5
+  0b11100000
+  0b11000000
+  0b00100000
+  0b11000000
+: im6
+  0b01100000
+  0b10000000
+  0b11100000
+  0b11100000
+: im7
+  0b11100000
+  0b00100000
+  0b01000000
+  0b01000000
+: im8
+  0b11100000
+  0b11100000
+  0b10100000
+  0b11100000
+: im9
+  0b11100000
+  0b11100000
+  0b00100000
+  0b11000000
+: imA
+  0b01000000
+  0b10100000
+  0b11100000
+  0b10100000
+: imB
+  0b11000000
+  0b11100000
+  0b10100000
+  0b11100000
+: imC
+  0b11100000
+  0b10000000
+  0b10000000
+  0b11100000
+: imD
+  0b11000000
+  0b10100000
+  0b10100000
+  0b11000000
+: imE
+  0b11100000
+  0b11000000
+  0b10000000
+  0b11100000
+: imF
+  0b11100000
+  0b10000000
+  0b11000000
+  0b10000000
+: imV
+  0b00000000
+  0b10100000
+  0b10100000
+  0b01000000
+: imX
+  0b10100000
+  0b01000000
+  0b10100000
+  0b10100000
+
+: version
+: version-0-0
+  0x0a 0xae 0xa2 0x42
+: version-1-0
+  0x38 0x28 0x28 0xb8
+

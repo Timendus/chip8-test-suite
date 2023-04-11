@@ -1,0 +1,772 @@
+# Quirks test
+
+# This is a visual adaptation of some of the tests I wrote for Silicon8
+# (https://github.com/Timendus/silicon8/tree/main/tests) and some newly written
+# tests for specific quirks.
+
+:stringmode str "$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -." {
+  :byte { 4 * VALUE }
+}
+
+:macro text X Y STR {
+  vD := X
+  vE := Y
+  i := STR
+  drawText
+}
+
+:alias x vA
+:alias y vB
+
+: waitKeyRelease
+  v0 := 0
+: -
+  if v0 key then jump -
+  v0 += 1
+  if v0 == 16 then return
+  jump -
+
+# A cute little menu to select a test
+
+# Input:
+#  * v0 v1 point to 0xA + menu struct
+#  * v2 holds the length (zero-indexed)
+: menu-start
+  :alias cursorX v0
+  :alias cursorY v1
+  :alias numItems v2
+  :alias showing v3
+  :alias temp v4
+  :alias currentItem v5
+  :alias selectedItem v6
+
+  currentItem := 0
+  i := menu-draw-cursor
+  save v1
+  i := menu-choose-load
+  save v1
+  jump menu-draw-cursor
+: menu-move-cursor
+  if showing == 1 then sprite cursorX cursorY 2 # i should still be correct
+  waitKeyRelease
+: menu-draw-cursor
+  0 0 # i := <menu>
+  i += currentItem
+  i += currentItem
+  i += currentItem
+  i += currentItem
+  load cursorY # and cursorX
+  showing := 0
+  delay := showing
+
+  loop
+    # Blink cursor
+    temp := delay
+    if temp == 0 begin
+      i := menu-cursor
+      sprite cursorX cursorY 2
+      temp := 10
+      delay := temp
+      temp := 1
+      showing ^= temp
+    end
+
+    # Move cursor up
+    temp := 0xE
+    if temp key begin
+      if currentItem != 0 begin
+        currentItem -= 1
+        jump menu-move-cursor
+      end
+    end
+    # Move cursor down
+    temp := 0xF
+    if temp key begin
+      if currentItem != numItems begin
+        currentItem += 1
+        jump menu-move-cursor
+      end
+    end
+    # Start test under cursor
+    selectedItem := currentItem
+    temp := 0xA
+    if temp key then jump menu-choose
+
+    # Use numbers to jump to tests directly
+    temp := 0
+    numItems += 1
+    loop
+      temp += 1
+      if temp key begin
+        selectedItem := temp
+        selectedItem -= 1
+        jump menu-choose
+      end
+    if temp != numItems then again
+    numItems -= 1
+  again
+
+: menu-choose
+  waitKeyRelease
+: menu-choose-load
+  0 0 # i := <menu>
+  i += selectedItem
+  i += selectedItem
+  i += selectedItem
+  i += selectedItem
+  temp := 2
+  i += temp
+  load v1
+  temp := 0x10
+  v0 |= temp
+  i := menu-choose-jump
+  save v1
+: menu-choose-jump
+  0 0 # jump <item>
+
+# Font rendering code and character data
+# Kept this very simplistic and fast
+
+:macro drawCharacter REG {
+  if REG == 0 then return
+  v0 := REG
+  drawChar
+}
+
+: drawText
+  load vC
+  drawChar
+  drawCharacter v1
+  drawCharacter v2
+  drawCharacter v3
+  drawCharacter v4
+  drawCharacter v5
+  drawCharacter v6
+  drawCharacter v7
+  drawCharacter v8
+  drawCharacter v9
+  drawCharacter vA
+  drawCharacter vB
+  drawCharacter vC
+  return
+
+: drawChar
+  i := characters
+  i += v0
+  sprite vD vE 4
+  vD += 4
+  return
+
+
+:macro show X address {
+  v0 := X
+  i := address
+  sprite v0 v1 15
+}
+
+: main
+  clear
+  i := 0x1FF
+  load v0
+  if v0 == 1 then jump quirks-chip8
+  if v0 == 2 then jump quirks-schip
+  if v0 == 3 then jump quirks-xochip
+
+  text  6  2 quirks-choose
+  text 16 10 quirks-str-chip8
+  text 16 15 quirks-str-schip
+  text 16 20 quirks-str-xochip
+
+  # Show version number in bottom right corner
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
+
+  :unpack 0xA quirks-menu
+  v2 := 2
+  jump menu-start
+
+: quirks-chip8
+  i := scratchpad
+  v0 := 1
+  save v0
+  jump quirks-run-tests
+
+: quirks-schip
+  i := scratchpad
+  v0 := 2
+  save v0
+  jump quirks-run-tests
+
+: quirks-xochip
+  i := scratchpad
+  v0 := 3
+  save v0
+
+: quirks-run-tests
+  waitKeyRelease
+
+  # Determine frames per second for dispQuirk
+  clear
+
+  v1 := 0
+  show  8 splash-0-0
+  show 16 splash-1-0
+  show 24 splash-2-0
+  show 32 splash-3-0
+  show 40 splash-4-0
+  show 48 splash-5-0
+
+  v1 := 15
+  show  8 splash-0-1
+  show 16 splash-1-1
+  show 24 splash-2-1
+  show 32 splash-3-1
+  show 40 splash-4-1
+  show 48 splash-5-1
+
+  i := quirks-values
+  load v6
+  i := quirks-image
+  delay := v5
+  loop
+    v5 := 30
+    loop
+      sprite v0 v1 1
+      if vF == 0 begin
+        v0 := 54
+        v6 := delay
+        v6 >>= v6
+        v6 >>= v6
+        v0 -= v6
+      end
+      v5 -= 1
+      if v5 != 0 then
+    again
+    v2 += v4
+    v3 += vF
+    vE := delay
+  if vE != 0 then again
+
+  # We expect the inner loop with 30 `sprite`s to have been able to run six
+  # times in the timespan of 180 interrupts
+  v0 := 1
+  if v3 != 0 then v0 := 0
+  if v2 > 6 then v0 := 0
+  if v2 < 6 then v0 := 2
+  i := scratchpad-plus-1
+  save v0
+
+  # Determine if sprites get clipped vertically
+  clear
+  i := cursor
+  v0 := 28
+  v1 := 29
+  sprite v0 v1 6
+  v0 := 22
+  v1 := 2
+  sprite v0 v1 2
+  v5 := vF
+  v0 := 34
+  sprite v0 v1 2
+  v6 := vF
+
+  # Determine if sprites get clipped horizontally
+  clear
+  i := cursor
+  v0 := 61
+  v1 := 5
+  sprite v0 v1 6
+  v0 := 3
+  v1 := 4
+  sprite v0 v1 2
+  v7 := vF
+  v1 := 10
+  sprite v0 v1 2
+  v8 := vF
+
+  # Determine if sprites get wrapped (both directions)
+  clear
+  v0 := 110
+  v1 := 50
+  sprite v0 v1 6 # Should draw at 46,18
+  v0 := 40
+  v1 := 17
+  sprite v0 v1 2
+  v9 := vF
+  v0 := 52
+  sprite v0 v1 2
+  v9 += vF
+  v1 := 23
+  sprite v0 v1 2
+  v9 += vF
+  v0 := 40
+  sprite v0 v1 2
+  v9 += vF
+
+  # Save result
+  v0 := 0
+  # Clipping
+  if v5 == 0 then v0 := 1
+  if v5 != v6 then v0 := 2
+  if v5 != v7 then v0 := 2
+  if v5 != v8 then v0 := 2
+  # Wrapping
+  if v9 != 4 then v0 := 3
+  i := scratchpad-plus-2
+  save v0
+
+  # Present results
+
+  clear
+
+  # vfQuirk
+  # When using &, | or ^, the flags register always gets reset to 0
+  text 1 1 quirks-vf
+  v5 := 0
+  vF := 15
+  v0 &= v0
+  if vF == 0 then v5 := 1
+  v6 := 0
+  vF := 15
+  v0 |= v0
+  if vF == 0 then v6 := 1
+  v7 := 0
+  vF := 15
+  v0 ^= v0
+  if vF == 0 then v7 := 1
+  i := scratchpad
+  load v0
+  i := flag-err
+  if v0 == 1 begin
+    # Selected CHIP-8
+    if v5 == 1 then i := flag-ok
+  else
+    # Selected SCHIP or XO-CHIP
+    if v5 == 0 then i := flag-ok
+  end
+  x := 59
+  y := 2
+  sprite x y 3
+  i := quirks-off
+  if v5 == 1 then i := quirks-on
+  if v5 != v6 then i := quirks-inconsistent-1
+  if v5 != v7 then i := quirks-inconsistent-2
+  vD := 44
+  vE := 1
+  drawText
+
+  # memQuirk
+  # When reading or writing memory, i gets incremented
+  text 1 6 quirks-mem
+  v0 := 5
+  i := scratchpad-plus-16
+  save v0
+  load v0
+  v5 := v0
+  i := scratchpad
+  load v0
+  i := flag-err
+  if v0 == 2 begin
+    # Selected SCHIP
+    if v5 == 5 then i := flag-ok
+  else
+    # Selected CHIP-8 or XO-CHIP
+    if v5 != 5 then i := flag-ok
+  end
+  x := 59
+  y := 7
+  sprite x y 3
+  i := quirks-on
+  if v5 == 5 then i := quirks-off
+  vD := 44
+  vE := 6
+  drawText
+
+  # dispQuirk
+  # When drawing a sprite to the screen, the interpreter waits for v-blank
+  text 1 11 quirks-disp
+  i := scratchpad
+  load v1
+  i := flag-err
+  if v0 == 1 begin
+    # Selected CHIP-8
+    if v1 == 1 then i := flag-ok
+  else
+    # Selected SCHIP or XO-CHIP
+    if v1 == 0 then i := flag-ok
+  end
+  x := 59
+  y := 12
+  sprite x y 3
+  i := quirks-off
+  if v1 == 1 then i := quirks-on
+  if v1 == 2 then i := quirks-low
+  vD := 44
+  vE := 11
+  drawText
+
+  # clipQuirk
+  # Sprites wrap to the top of the screen
+  text 1 16 quirks-clip
+  i := scratchpad
+  load v2
+  i := flag-err
+  if v0 == 3 begin
+    # Selected XO-CHIP
+    if v2 == 0 then i := flag-ok
+  else
+    # Selected CHIP-8 or SCHIP
+    if v2 == 1 then i := flag-ok
+  end
+  x := 59
+  y := 17
+  sprite x y 3
+  i := quirks-off
+  if v2 == 1 then i := quirks-on
+  if v2 == 2 then i := quirks-inconsistent-1
+  if v2 == 3 then i := quirks-inconsistent-2
+  vD := 44
+  vE := 16
+  drawText
+
+  # shiftQuirk
+  # When shifting a register, the interpreter always shifts register X into
+  # register X (instead of shifting register Y into register X)
+  text 1 21 quirks-shift
+  v5 := 0
+  v6 := 8
+  v7 := 0
+  v8 := 32
+  v5 <<= v6
+  v7 >>= v8
+  i := scratchpad
+  load v0
+  i := flag-err
+  if v0 == 2 begin
+    # Selected SCHIP
+    if v5 == 0 then i := flag-ok
+  else
+    # Selected CHIP-8 or XO-CHIP
+    if v5 != 0 then i := flag-ok
+  end
+  x := 59
+  y := 22
+  sprite x y 3
+  i := quirks-off
+  if v5 == 0 then i := quirks-on
+  if v5 != v7 then i := quirks-inconsistent-1
+  vD := 44
+  vE := 21
+  drawText
+
+  # jumpQuirk
+  # When using `jump0` (BNNN) the interpreter doesn't jump to NNN + v0 but to
+  # NNN + vX where X is the highest nibble of NNN
+  text 1 26 quirks-jump
+  v0 := 0x98
+  vE := 0x9C
+  jump0 0xE00      # This jumps to one of two routines defined in index.8o (for
+: quirks-resume    # reasons of having to put them in precisely the right spot)
+  i := scratchpad
+  load v0
+  i := flag-err
+  if v0 == 2 begin
+    # Selected SCHIP
+    if v5 != 0 then i := flag-ok
+  else
+    # Selected CHIP-8 or XO-CHIP
+    if v5 == 0 then i := flag-ok
+  end
+  x := 59
+  y := 27
+  sprite x y 3
+  i := quirks-off
+  if v5 == 1 then i := quirks-on
+  vD := 44
+  vE := 26
+  drawText
+
+  v0 := key
+  waitKeyRelease
+  jump main
+
+: scratchpad
+  0
+: scratchpad-plus-1
+  0
+: scratchpad-plus-2
+  0 0 0 0 0
+  0 0 0 0 0
+  0 0 0 0
+: scratchpad-plus-16
+  0
+
+
+: menu-cursor
+  0b11000000
+  0b11000000
+
+
+# Positive and negative images
+: flag-ok
+  0b10100000
+  0b11000000
+: characters
+  0b10000000
+: flag-err
+  0b10100000
+  0b01000000
+  0b10100000
+
+# Individual characters, some taken from Corax89' test.
+: im0
+  0xE0 0xA0 0xA0 0xE0
+: im1
+  0xC0 0x40 0x40 0xE0
+: im2
+  0xE0 0x20 0xC0 0xE0
+: im3
+  0xE0 0x60 0x20 0xE0
+: im4
+  0xA0 0xE0 0x20 0x20
+: im5
+  0b11100000
+  0b11000000
+  0b00100000
+  0b11000000
+: im6
+  0xE0 0x80 0xE0 0xE0
+: im7
+  0xE0 0x20 0x20 0x20
+: im8
+  0xE0 0xE0 0xA0 0xE0
+: im9
+  0xE0 0xE0 0x20 0xE0
+: imA
+  0x40 0xA0 0xE0 0xA0
+: imB
+  0b11000000
+  0b11100000
+  0b10100000
+  0b11100000
+: imC
+  0b11100000
+  0b10000000
+  0b10000000
+  0b11100000
+: imD
+  0b11000000
+  0b10100000
+  0b10100000
+  0b11000000
+: imE
+  0xE0 0xC0 0x80 0xE0
+: imF
+  0xE0 0x80 0xC0 0x80
+: imG
+  0b01100000
+  0b10000000
+  0b10100000
+  0b01100000
+: imH
+  0b10100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imI
+  0b11100000
+  0b01000000
+  0b01000000
+  0b11100000
+: imJ
+  0b01100000
+  0b00100000
+  0b00100000
+  0b11000000
+: imK
+  0b10100000
+  0b11000000
+  0b10100000
+  0b10100000
+: imL
+  0b10000000
+  0b10000000
+  0b10000000
+  0b11100000
+: imM
+  0b11100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imN
+  0b11000000
+  0b10100000
+  0b10100000
+  0b10100000
+: imO
+  0b11100000
+  0b10100000
+  0b10100000
+  0b11100000
+: imP
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10000000
+: imQ
+  0b01000000
+  0b10100000
+  0b11100000
+  0b01100000
+: imR
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10100000
+: imS
+  0b01100000
+  0b11000000
+  0b00100000
+  0b11000000
+: imT
+  0b11100000
+  0b01000000
+  0b01000000
+  0b01000000
+: imU
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01100000
+: imV
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01000000
+: imW
+  0b10100000
+  0b10100000
+  0b11100000
+  0b11100000
+: imX
+  0xA0 0x40 0xA0 0xA0
+: imY
+  0b10100000
+  0b10100000
+  0b01000000
+  0b01000000
+: imZ
+  0b11100000
+  0b01100000
+  0b10000000
+  0b11100000
+: imSpace
+  0 0 0 0
+: imDash
+  0b00000000
+  0b11100000
+  0b00000000
+  0b00000000
+: imPeriod
+  0b00000000
+  0b00000000
+  0b00000000
+  0b01000000
+
+
+: quirks-menu
+  12 11 :pointer quirks-chip8
+  12 16 :pointer quirks-schip
+  12 21 :pointer quirks-xochip
+
+: quirks-choose
+  str "PICK PLATFORM" 0
+: quirks-str-chip8
+  str "1 CHIP-8" 0
+: quirks-str-schip
+  str "2 SCHIP" 0
+: quirks-str-xochip
+  str "3 XO-CHIP" 0
+
+: quirks-vf
+  str "VF RESET" 0
+: quirks-mem
+  str "MEMORY" 0
+: quirks-disp
+  str "DISP.WAIT" 0
+: quirks-clip
+  str "CLIPPING" 0
+: quirks-shift
+  str "SHIFTING" 0
+: quirks-jump
+  str "JUMPING" 0
+
+: quirks-on
+  str "ON" 0
+: quirks-off
+  str "OFF" 0
+: quirks-inconsistent-1
+  str "E1" 0
+: quirks-inconsistent-2
+  str "E2" 0
+: quirks-low
+  str "LOW" 0
+
+: quirks-values
+  10 31 0 0 1 180 0
+: quirks-image
+  0b10000000
+
+: cursor
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+  0b11111110
+
+: version-0-0
+  0x0a 0xae 0xa2 0x42
+: version-1-0
+  0x38 0x28 0x28 0xb8
+
+: splash-0-0
+  0x0f 0x02 0x02 0x02 0x02 0x02 0x00 0x00 0x1f 0x3f 0x71 0xe0 0xe5 0xe0 0xe8
+: splash-1-0
+  0xa0 0x0d 0x2a 0x28 0x28 0x28 0x00 0x00 0x18 0xb8 0xb8 0x38 0x38 0x3f 0xbf
+: splash-2-0
+  0x00 0x19 0xa5 0xbd 0xa1 0x9d 0x00 0x00 0x0c 0x1d 0x1d 0x01 0x0d 0x1d 0x9d
+: splash-3-0
+  0x01 0xc7 0x29 0x29 0x29 0x27 0x00 0x00 0xf8 0xfc 0xce 0xc6 0xc6 0xc6 0xc6
+: splash-4-0
+  0x00 0x49 0x4a 0x49 0x48 0x3b 0x00 0x00 0x00 0x01 0x03 0x03 0x03 0x01 0xf0
+: splash-5-0
+  0x30 0x90 0x00 0x00 0x80 0x00 0x00 0x00 0xfe 0xc7 0x83 0x83 0x83 0xc6 0xfc
+: splash-0-1
+  0xe7 0xe0 0xe0 0xe0 0xe0 0x71 0x3f 0x1f 0x00 0x00 0x07 0x02 0x02 0x02 0x02
+: splash-1-1
+  0x39 0x38 0x38 0x38 0x38 0xb8 0xb8 0x38 0x00 0x00 0x31 0x4a 0x79 0x40 0x3b
+: splash-2-1
+  0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0xdd 0x00 0x00 0xa0 0x38 0x20 0xa0 0x18
+: splash-3-1
+  0xce 0xfc 0xf8 0xc0 0xd4 0xdc 0xc4 0xc5 0x00 0x00 0x30 0x44 0x24 0x14 0x63
+: splash-4-1
+  0xf1 0x03 0x07 0x07 0x77 0x57 0x53 0x71 0x00 0x00 0x28 0x8e 0xa8 0xa8 0xa6
+: splash-5-1
+  0xce 0x87 0x03 0x03 0x03 0x87 0xfe 0xfc 0x00 0x00 0x60 0x90 0xf0 0x80 0x70
+
+
+# Jump quirk targets:
+:org 0xE98
+  # We jump here when using v0 in the `jump0` quirks test
+  v5 := 0
+  jump quirks-resume
+:org 0xE9C
+  # We jump here when using vE in the `jump0` quirks test
+  v5 := 1
+  jump quirks-resume

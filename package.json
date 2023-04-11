@@ -1,10 +1,14 @@
 {
   "name": "Timendus' CHIP-8 Test Suite",
   "scripts": {
-    "build": "octopus src/index.8o bin/chip8-test-suite.8o && cat bin/chip8-test-suite.8o | pbcopy",
-    "build-all": "npm run build && npm run build-binary && npm run build-html",
-    "build-binary": "npm run build && octo bin/chip8-test-suite.8o bin/chip8-test-suite.ch8",
-    "build-html": "npm run build && octo --options octo-config.json bin/chip8-test-suite.8o docs/index.html"
+    "start": "npm run build-logo && npm run build-ibm && npm run build-corax && npm run build-flags && npm run build-quirks && npm run build-keypad",
+    "build-logo": "export TEST='1-chip8-logo' && npm run build-test",
+    "build-ibm": "export TEST='2-ibm-logo' && npm run build-test",
+    "build-corax": "export TEST='3-corax+' && npm run build-test",
+    "build-flags": "export TEST='4-flags' && npm run build-test",
+    "build-quirks": "export TEST='5-quirks' && npm run build-test",
+    "build-keypad": "export TEST='6-keypad' && npm run build-test",
+    "build-test": "octopus src/tests/${TEST}.8o bin/${TEST}.8o && octo bin/${TEST}.8o bin/${TEST}.ch8 && octo --options octo-config.json bin/${TEST}.8o docs/${TEST}.html && cat bin/${TEST}.8o | pbcopy"
   },
   "dependencies": {
     "@chipcode/image-loader": "^0.2.1",

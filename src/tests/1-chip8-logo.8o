@@ -39,7 +39,7 @@
   show 40 splash-4-1
   show 48 splash-5-1
 
-  jump select-test
+  loop again
 
 :segment data
 :include "../../pictures/splash.png"
