@@ -1,0 +1,266 @@
+# Scrolling test
+
+# Description here
+
+:include "../utils/helpers.8o"
+:include "../utils/menu.8o"
+:include "../utils/text-rendering.8o"
+
+: main
+  lores
+  clear
+  i := 0x1FF
+  load v0
+  if v0 == 1 then jump scrolling-lores-full-pixels
+  if v0 == 2 then jump scrolling-lores-half-pixels
+  if v0 == 3 then jump scrolling-hires
+
+  text 10  2 scrolling-choose
+  text  8 10 scrolling-str-chip8
+  text  8 15 scrolling-str-schip
+  text  8 20 scrolling-str-xochip
+
+  # Show version number in bottom right corner
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
+
+  :unpack 0xA scrolling-menu
+  v2 := 2
+  jump menu-start
+
+: scrolling-lores-full-pixels
+	clear
+	
+  i := scrolling-arrow-left
+  v0 := 46
+  v1 := 11
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 10
+  v1 := 11
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-down
+  v0 := 28
+  v1 := 0
+  sprite v0 v1 8
+	scroll-down 6
+
+  jump scrolling-draw-borders-lores
+
+: scrolling-lores-half-pixels
+	clear
+	
+  i := scrolling-arrow-left
+  v0 := 46
+  v1 := 11
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+  scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 10
+  v1 := 11
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+  scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-down
+  v0 := 28
+  v1 := 0
+  sprite v0 v1 8
+	scroll-down 12
+
+: scrolling-draw-borders-lores
+  i := scrolling-pixel
+  v0 := 21	# X
+  v1 := 33
+  v2 := 27
+  v3 := 26	# Y
+	v4 := 15
+	v5 := 4
+  loop
+    sprite v0 v3 1
+    sprite v1 v3 1
+		sprite v0 v4 1
+    sprite v1 v4 1
+    sprite v2 v5 1
+    v0 += 1
+		v1 += 1
+		v2 += 1
+    if v0 != 31 then
+  again
+  v0 := 20  # X
+  v1 := 31
+  v2 := 32
+  v3 := 43
+	v4 := 26
+	v5 := 37
+	v6 := 16  # Y
+	v7 := 5
+  loop
+    sprite v0 v6 1
+    sprite v1 v6 1
+    sprite v2 v6 1
+		sprite v3 v6 1
+		sprite v4 v7 1
+		sprite v5 v7 1
+    v6 += 1
+		v7 += 1
+    if v6 != 26 then
+  again
+
+  v0 := key
+  waitKeyRelease
+  jump main
+
+: scrolling-hires
+	clear
+	hires
+	
+  i := scrolling-arrow-left
+  v0 := 78
+  v1 := 22
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 42
+  v1 := 22
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-down
+  v0 := 60
+  v1 := 11
+  sprite v0 v1 8
+	scroll-down 12
+
+  i := scrolling-pixel
+  v0 := 53	# X
+  v1 := 65
+  v2 := 59
+  v3 := 43	# Y
+	v4 := 32
+	v5 := 21
+  loop
+    sprite v0 v3 1
+    sprite v1 v3 1
+		sprite v0 v4 1
+    sprite v1 v4 1
+    sprite v2 v5 1
+    v0 += 1
+		v1 += 1
+		v2 += 1
+    if v0 != 63 then
+  again
+  v0 := 52  # X
+  v1 := 63
+  v2 := 64
+  v3 := 75
+	v4 := 58
+	v5 := 69
+	v6 := 33  # Y
+	v7 := 22
+  loop
+    sprite v0 v6 1
+    sprite v1 v6 1
+    sprite v2 v6 1
+		sprite v3 v6 1
+		sprite v4 v7 1
+		sprite v5 v7 1
+    v6 += 1
+		v7 += 1
+    if v7 != 32 then
+  again
+
+  v0 := key
+  waitKeyRelease
+  jump main
+
+:segment data
+
+: scrolling-menu
+  4 11 :pointer scrolling-lores-full-pixels
+  4 16 :pointer scrolling-lores-half-pixels
+  4 21 :pointer scrolling-hires
+
+: scrolling-choose
+  str "PICK TARGET" 0
+: scrolling-str-chip8
+  str "1 MODERN LOW" 0
+: scrolling-str-schip
+  str "2 LEGACY LOW" 0
+: scrolling-str-xochip
+  str "3 EITHER HIGH" 0
+
+: scrolling-arrow-left
+  0b11111111
+  0b11100111
+  0b11001111
+  0b10000001
+  0b10000001
+  0b11001111
+  0b11100111
+  0b11111111
+
+: scrolling-arrow-right
+  0b11111111
+  0b11100111
+  0b11110011
+  0b10000001
+  0b10000001
+  0b11110011
+  0b11100111
+  0b11111111
+
+: scrolling-arrow-down
+  0b11111111
+  0b11100111
+  0b11100111
+  0b10100101
+  0b10000001
+  0b11000011
+  0b11100111
+  0b11111111
+
+: scrolling-pixel
+  0b10000000
+
+:include "../../pictures/version.png"

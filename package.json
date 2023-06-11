@@ -1,13 +1,15 @@
 {
   "name": "Timendus' CHIP-8 Test Suite",
   "scripts": {
-    "start": "npm run build-logo && npm run build-ibm && npm run build-corax && npm run build-flags && npm run build-quirks && npm run build-keypad",
+    "start": "npm run build-logo && npm run build-ibm && npm run build-corax && npm run build-flags && npm run build-quirks && npm run build-keypad && npm run build-schip-scroll && npm run build-xochip-scroll",
     "build-logo": "export TEST='1-chip8-logo' && npm run build-test",
     "build-ibm": "export TEST='2-ibm-logo' && npm run build-test",
     "build-corax": "export TEST='3-corax+' && npm run build-test",
     "build-flags": "export TEST='4-flags' && npm run build-test",
     "build-quirks": "export TEST='5-quirks' && npm run build-test",
     "build-keypad": "export TEST='6-keypad' && npm run build-test",
+    "build-schip-scroll": "export TEST='7a-superchip-scroll' && npm run build-test",
+    "build-xochip-scroll": "export TEST='7b-xochip-scroll' && npm run build-test",
     "build-test": "octopus src/tests/${TEST}.8o bin/${TEST}.8o && octo bin/${TEST}.8o bin/${TEST}.ch8 && octo --options octo-config.json bin/${TEST}.8o docs/${TEST}.html && cat bin/${TEST}.8o | pbcopy"
   },
   "dependencies": {
