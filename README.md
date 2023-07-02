@@ -147,8 +147,8 @@ Here's a rough description of what these opcodes should do to pass the tests:
 * `8xy4` - `vX += vY`
 * `8xy5` - `vX -= vY`
 * `8xy7` - `vX = vY - vX`
-* `8xy6` - `vX = vY >> 1` or `vX >>= 1` depending on quirks
-* `8xyE` - `vX = vY << 1` or `vX <<= 1` depending on quirks
+* `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
+* `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
 * `Fx65` - load registers `v0` - `vX` from memory starting at `i`
 * `Fx55` - save registers `v0` - `vX` to memory starting at `i`
 * `Fx33` - store binary-coded decimal representation of `vX` to memory at `i`,
@@ -207,9 +207,9 @@ HAPPY  8xy1   8xy2
 * `8xy3` - `vX ^= vY`
 * `8xy4` - `vX += vY`
 * `8xy5` - `vX -= vY`
-* `8xy6` - `vX = vY >> 1` or `vX >>= 1` depending on quirks
+* `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
 * `8xy7` - `vX = vY - vX`
-* `8xyE` - `vX = vY << 1` or `vX <<= 1` depending on quirks
+* `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
 
 The bottom part (that starts with "CARRY") checks behaviour of the following
 opcodes, in the case that there **is** an overflow, carry or shifted out bit:
@@ -221,9 +221,9 @@ CARRY  8xy4   8xy5
 
 * `8xy4` - `vX += vY`
 * `8xy5` - `vX -= vY`
-* `8xy6` - `vX = vY >> 1` or `vX >>= 1` depending on quirks
+* `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
 * `8xy7` - `vX = vY - vX`
-* `8xyE` - `vX = vY << 1` or `vX <<= 1` depending on quirks
+* `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
 
 The last row (that starts with "OTHER") checks that the opcode `Fx1E` (`i +=
 vX`) properly adds the value of register `vX` to the index register, first for a
