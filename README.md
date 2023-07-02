@@ -160,8 +160,7 @@ Here's a rough description of what these opcodes should do to pass the tests:
 If you are having trouble figuring out how each opcode is supposed to behave,
 check out [Tobias'
 guide](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#instructions) or
-[Gulrak's growing CHIP-8
-references](https://chip8.gulrak.net).
+[Gulrak's table of opcodes](https://chip8.gulrak.net) (but make sure you only check "CHIP-8" if you are just starting out).
 
 ## Flags test
 
