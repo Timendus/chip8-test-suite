@@ -160,8 +160,7 @@ Here's a rough description of what these opcodes should do to pass the tests:
 If you are having trouble figuring out how each opcode is supposed to behave,
 check out [Tobias'
 guide](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#instructions) or
-[Gulrak's growing CHIP-8
-references](https://chip8.gulrak.net/reference/opcodes/).
+[Gulrak's table of opcodes](https://chip8.gulrak.net) (but make sure you only check "CHIP-8" if you are just starting out).
 
 ## Flags test
 
@@ -310,7 +309,7 @@ cross).
 Note that you need timer support for this test to run.
 
 See this [excellent
-table](https://games.gulrak.net/cadmium/chip8-opcode-table.html) by Gulrak for
+table](https://chip8.gulrak.net) by Gulrak for
 an overview of all the known quirks for the relatively popular CHIP-8 versions.
 See [this website](https://chip-8.github.io/extensions/) for a lot more
 information about all the historical versions of the platform and the different
