@@ -644,21 +644,26 @@
     # v4 := 1
     # v5 := 180
     # v6 := 0
-  v0 += 6
+  v0 += v0
   v1 += v1
   v5 >>= v5
   i := quirks-line
   loop
-    sprite v0 v1 1
+    sprite v0 v1 2
     v0 += 8
-    if v0 != 64 then
+    if v0 != 60 then
   again
   i := quirks-image
+  loop
+    sprite v0 v1 2
+    v0 += 1
+    if v0 != 64 then
+  again
   delay := v5
   loop
-    v5 := 30
+    v5 := 15
     loop
-      sprite v0 v1 1
+      sprite v0 v1 2
       if vF == 0 begin
         v0 := 108
         v6 := delay
@@ -680,7 +685,9 @@
   10 31 0 0 1 180 0
 : quirks-image
   0b10000000
+  0b10000000
 : quirks-line
+  0b11111111
   0b11111111
 
 :include "../../pictures/version.png"
