@@ -3,11 +3,12 @@
 # CHIP-8 test suite
 
 _A collection of ROM images with tests that will aid you in developing your own
-CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
+CHIP-8, SUPER-CHIP or XO-CHIP interpreter (or "emulator")_
 
 ## Table of contents
 
   * [Introduction](#introduction)
+  * [Baseline](#baseline)
   * [Available tests](#available-tests)
     * [CHIP-8 splash screen](#chip-8-splash-screen)
     * [IBM logo](#ibm-logo)
@@ -15,6 +16,8 @@ CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
     * [Flags test](#flags-test)
     * [Quirks test](#quirks-test)
     * [Keypad test](#keypad-test)
+    * [Scrolling test](#scrolling-test)
+    * [Beep test](#beep-test)
   * [Contributing](#contributing)
   * [Community response 😄](#community-response-)
 
@@ -22,9 +25,9 @@ CHIP-8, SCHIP or XO-CHIP interpreter (or "emulator")_
 
 I found it hard to find reliable sources on what is the right behaviour and what
 is not, especially with the subtle differences between the original "Cosmac VIP"
-CHIP-8 and the HP84's SCHIP (or "superchip"). Now that I have written and ported
-a couple of interpreters as well as a few programs and games for the platform, I
-thought it was time to put that knowledge into code.
+CHIP-8 and the HP48's SUPER-CHIP (or "S-CHIP"). Now that I have written and
+ported a couple of interpreters as well as a few programs and games for the
+platform, I thought it was time to put that knowledge into code.
 
 If you're having issues with your interpreter, you can find help in the [EmuDev
 discord channel `#chip-8`](https://discord.gg/dkmJAes). Every test has a clearly
@@ -32,6 +35,36 @@ visible version number, which will help people to diagnose your problems if you
 share a screenshot. If you discover a problem with this test ROM itself, feel
 free to file an issue or open a pull request. It's open source, licensed under
 the GPLv3, and you're welcome to [contribute](#contributing).
+
+# Baseline
+
+If the test suite itself is wrong, we're not helping anyone. So what are we
+testing the test suite against?
+
+## CHIP-8
+
+There are several good Cosmac VIP emulators, so we can quite faithfully run the
+original CHIP-8 interpreter and check the results. We use [Emma
+O2](https://www.emma02.hobby-site.com/) and/or
+[Cadmium](https://github.com/gulrak/cadmium) in `VIP-CHIP-8` mode to validate
+the test suite.
+
+If you have an actual, physical Cosmac VIP and would like to verify the test
+suite, let me know! 😄
+
+## SUPER-CHIP
+
+For SUPER-CHIP, the test suite has been tested against actual HP48 graphing
+calculators, in the various interpreters that exist for that system.
+[Gulrak](https://github.com/gulrak) from the CHIP-8 community has an HP48SX, and
+has been so kind as to test if the test suite ROMs behave as expected.
+
+## XO-CHIP
+
+The XO-CHIP extension was written by [John
+Earnest](https://github.com/johnearnest) and first implemented in his IDE slash
+interpreter Octo. As such, we treat [Octo](http://octo-ide.com/) as the gold
+standard for how an XO-CHIP system should behave, and test against that.
 
 # Available tests
 
@@ -287,7 +320,7 @@ cross).
 * `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second. More information
   [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-drawing-sprites/).
-  Test will show `LOW` if the number of cycles per frame is too low for the test
+  Test will show `SLOW` if the number of cycles per frame is too low for the test
   to be deterministic (this is not necessarily an error, but a suggestion to
   rerun the test with a higher number of cycles per frame).
 * `Clipping` - Sprites drawn at the bottom edge of the screen get clipped
@@ -296,9 +329,9 @@ cross).
   of the screen. This also tests that sprites drawn at coordinates of `x > 63`
   and/or `y > 31` wrap around to `x % 64` and `y % 32`. More information
   [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-drawing-sprites/).
-  Test will show `E1` if the clipping is inconsistent in different dimensions or
-  wrapping to the wrong coordinates and `E2` if sprites don't wrap around as
-  expected.
+  Test will show `ERR1` if the clipping is inconsistent in different dimensions
+  or wrapping to the wrong coordinates and `ERR2` if sprites don't wrap around
+  as expected.
 * `Shifting` - The shift opcodes (`8xy6` and `8xyE`) only operate on `vX`
   instead of storing the shifted version of `vY` in `vX` (more information
   [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#8xy6-and-8xye-shift)). Test will show `E1` if the shift opcodes behave differently.
@@ -307,6 +340,25 @@ cross).
   information [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#bnnn-jump-with-offset))
 
 Note that you need timer support for this test to run.
+
+### SUPER-CHIP / XO-CHIP
+
+If you select SUPER-CHIP or XO-CHIP in the menu, half of the test will be
+executed in `hires` mode, and the behaviour of `Display wait` and `Clipping`
+will be tested in both `lores` and `hires` modes. This means you can see some
+different values for these quirks:
+
+* `NONE` - The quirk is disabled in both modes
+* `HRES` - The quirk is only enabled in `hires` mode
+* `LRES` - The quirk is only enabled in `lores` mode
+* `BOTH` - The quirk is enabled in both modes
+
+If the test finds different errors for the `Clipping` test in `hires` mode than
+in `lores` mode, it will show `ERR3`. In that case, first make sure your modes
+produce the same wrapping and clipping results, and see which errors pop up
+after that.
+
+### More information
 
 See this [excellent
 table](https://chip8.gulrak.net) by Gulrak for
@@ -383,7 +435,94 @@ See [this
 article](https://laurencescotford.net/chip-8-on-the-cosmac-vip-keyboard-input/)
 for more information.
 
-## Contributing
+## Scrolling test
+
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/7-scrolling.ch8)
+  (source code available [here](./src/tests/7-scrolling.8o))
+* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/7-scrolling.html)
+  to see what's supposed to happen
+
+This test is only applicable to SUPER-CHIP and XO-CHIP interpreters, since
+regular CHIP-8 does not have scrolling instructions. It will test to see if your
+scrolling opcodes scroll the display in the right directions by the right
+amounts of pixels. One literal "edge"-case that it does **not** cover is what
+happens at the edges of the screen.
+
+### The menu
+
+The test asks you to choose the platform and resolution you are targeting:
+
+![Choosing a target platform in the scrolling test](./pictures/scrolling-platform.png)
+
+You can press any of the numbers `1` or `2` on the CHIP-8 keypad to select the
+corresponding entry.
+
+Alternatively, you can move the cursor up and down with CHIP-8 keys `E` and `F`
+and select an item with `A`. This feature mainly exists so people implementing
+interpreters for platforms with limited input devices (like a game controller)
+can map their buttons to those CHIP-8 keys and have an intuitive interface too.
+
+If you want to repeat a test often or even automate them, having to use the
+graphical menu just gets in the way. In that case, you can force this ROM to
+select a specific platform by loading a value between `1` and `5` into memory at
+the address `0x1FF` (`512`).
+
+* `1` - SUPER-CHIP `lores` with modern behaviour
+* `2` - SUPER-CHIP `lores` with legacy behaviour
+* `3` - SUPER-CHIP `hires`
+* `4` - XO-CHIP `lores`
+* `5` - XO-CHIP `hires`
+
+### The test
+
+The test will show you a visual with arrows and boxes. If everything works as
+expected for the target you have selected, all the arrows will end up in their
+boxes, like so:
+
+![Result of the scrolling test for `lores` SUPER-CHIP](./pictures/lores-scrolling.png)
+
+If you have issues with one or more of your scrolling instructions, some arrows
+will be (partially) outside their boxes. The arrows all point in the directions
+that they should be scrolled in, so the ones that have not moved the correct
+distance in the direction that they point in represent the scrolling
+instructions that are not working properly.
+
+For example, this is what you see if none of the scrolling instructions have
+been implemented:
+
+![Result of the scrolling test with no implemented scrolling](./pictures/lores-no-scrolling.png)
+
+A note on legacy versus modern behaviour for SUPER-CHIP's `lores` mode:
+
+The original SUPER-CHIP interpreters on the HP48 calculators treated `lores` as
+a `hires` buffer where each pixel was 2x2 physical pixels. The scrolling
+instructions operated the same in both `hires` and `lores` modes. Which means
+that in `lores` mode scrolling happened per "half pixel". This behaviour is what
+the "legacy" version of the test is intended for.
+
+The "modern" version of the test works in the way most people would expect:
+scrolling one pixel just scrolls one `lores` pixel. This is also the way
+scrolling is implemented in most modern SUPER-CHIP interpreters. So even though
+that is technically "wrong" for SUPER-CHIP, all modern `lores` games that use
+scrolling depend on this "modern" interpretation of the opcodes.
+
+In practice most interpreters implement the "modern" behaviour and just ignore
+the "legacy" behaviour. But if you are a completionist, you can support "legacy"
+scrolling as a quirk.
+
+## Beep test
+
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/8-beep.ch8)
+  (source code available [here](./src/tests/8-beep.8o))
+* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/8-beep.html)
+  to see what's supposed to happen
+
+This test allows you to test if your buzzer is working. It will beep SOS in
+morse code and flash a speaker icon on the display in the same pattern. If you
+press the CHIP-8 button `B` it will give you manual control over the buzzer.
+Press `B` to beep.
+
+# Contributing
 
 Do you find an issue in this test suite that you think you can fix? Feel free to
 submit a PR! Here's how to build the project, assuming you have Nodejs and NPM
@@ -399,12 +538,14 @@ npm install
 npm start
 
 # Build a specific test:
-npm run build-logo
-npm run build-ibm
-npm run build-corax
-npm run build-flags
-npm run build-quirks
-npm run build-keypad
+TEST=1-chip8-logo npm run build-test
+TEST=2-ibm-logo npm run build-test
+TEST=3-corax+ npm run build-test
+TEST=4-flags npm run build-test
+TEST=5-quirks npm run build-test
+TEST=6-keypad npm run build-test
+TEST=7-scrolling npm run build-test
+TEST=8-beep npm run build-test
 ```
 
 Note that the `npm` scripts use the MacOS command `pbcopy` to copy
@@ -416,7 +557,7 @@ not work properly. Edit `package.json` and remove this part from the end of `scr
  && cat bin/${TEST}.8o | pbcopy
 ```
 
-## Community response 😄
+# Community response 😄
 
 [![DUDE THANKS! I was writing a CHIP-8 emulator and THIS HELPED ME SO FRICKING MUCH, THANKS! / same here, this is amazing](./pictures/testimonial1.png)](https://github.com/Timendus/chip8-test-suite/issues/1)
 
