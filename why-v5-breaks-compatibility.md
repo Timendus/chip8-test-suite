@@ -1,8 +1,8 @@
 # Why does version 5 "break compatibility"?
 
-Interpreters that successfully pass all the tests in versions one through four
-will almost certainly fail the `Display wait` test on the fifth and later
-editions of this test suite. Why is that?
+Interpreters that successfully pass the SUPER-CHIP version of the quirks test in
+versions one through four will almost certainly fail the `Display wait` test on
+the fifth and later editions of this test suite. Why is that?
 
 It has to do with how SUPER-CHIP low resolution mode works, and a feature of
 that mode that's long been overlooked.
@@ -14,8 +14,8 @@ We've all come to know the high and low resolution modes of SUPER-CHIP as
 and the descriptions of these opcodes in various sources. However, in [the
 original description](https://groups.google.com/g/comp.sys.handhelds/c/fPUzuAkDdVs?pli=1)
 of SUPER-CHIP's opcodes, the author Erik Bryntse calls this "extended screen
-mode" and describes that it is used for "enabling higher speed and full screen
-(64x128) resolution".
+mode" and describes that it is used for "enabling **higher speed** and full screen
+(64x128) resolution" (emphasis mine).
 
 So `lores` mode, being the inverse of that, uses the lower resolution and also
 _restricts the speed of the interpreter_ to 60 sprites drawn per second
@@ -59,7 +59,7 @@ CHIP48 interpreters on the original hardware:
 
 I'm aware that this is an annoyance for many people. And that implementing this
 new quirk for SUPER-CHIP will probably make some (modern) games run
-worse<super>1</super>.
+worse<sup>1</sup>.
 
 However, one of the main goals of this test suite is to keep the CHIP-8
 interpreters in our community from diverging even further. Every interpreter
@@ -76,10 +76,11 @@ That's why I thought this was the "right" solution, and I hope you agree.
 Happy coding!
 
 
-1) You're now probably thinking of implementing yet another configurable quirk
-in your interpreter, to enable this behaviour to pass the test and to disable it
-when running games. I would advise againt that. Instead, try running those games
-in XO-CHIP's `lores` mode, which does not restrict the drawing speed. I bet most
-will run just fine with that preset. If you don't have XO-CHIP support yet, this
-could be a good reason to get started 😉
+<sup>1)</sup> You're now probably thinking of implementing yet another
+configurable quirk in your interpreter, to enable this behaviour to pass the
+test and to disable it when running games. I would advise against that. Instead,
+try running those games in XO-CHIP's `lores` mode, which does not restrict the
+drawing speed. I bet most will run just fine with that preset. If you don't have
+[XO-CHIP](http://johnearnest.github.io/Octo/docs/XO-ChipSpecification.html)
+support yet, this could be a good reason to get started 😉
 

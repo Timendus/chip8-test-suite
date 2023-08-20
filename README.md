@@ -316,7 +316,8 @@ cross).
   flags register to zero. Test will show `E1` if the AND and OR tests don't
   behave the same and `E2` if the AND and XOR tests don't behave the same.
 * `Memory` - The save and load opcodes (`Fx55` and `Fx65`) increment the index
-  register. More information [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-loading-and-saving-variables/) and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
+  register. More information [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-loading-and-saving-variables/)
+  and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
 * `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second. More information
   [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-drawing-sprites/).
@@ -345,18 +346,22 @@ Note that you need timer support for this test to run.
 
 If you select SUPER-CHIP or XO-CHIP in the menu, half of the test will be
 executed in `hires` mode, and the behaviour of `Display wait` and `Clipping`
-will be tested in both `lores` and `hires` modes. This means you can see some
-different values for these quirks:
+will be tested in both `lores` and `hires` modes. This means you will not just
+see "on" or "off" for these quirks, but instead one of these values:
 
 * `NONE` - The quirk is disabled in both modes
 * `HRES` - The quirk is only enabled in `hires` mode
 * `LRES` - The quirk is only enabled in `lores` mode
 * `BOTH` - The quirk is enabled in both modes
 
-If the test finds different errors for the `Clipping` test in `hires` mode than
-in `lores` mode, it will show `ERR3`. In that case, first make sure your modes
-produce the same wrapping and clipping results, and see which errors pop up
-after that.
+If the test finds different errors for the `Clipping` test in `hires` mode
+compared to `lores` mode, it will show `ERR3`. In that case, first make sure
+your modes produce the same wrapping and clipping results, and see which errors
+pop up after that.
+
+Wondering why testing `hires` has been added, or how a quirk can possibly be
+enabled in only one of the modes? You can [read the full story
+here](./why-v5-breaks-compatibility.md).
 
 ### More information
 
@@ -503,12 +508,13 @@ the "legacy" version of the test is intended for.
 The "modern" version of the test works in the way most people would expect:
 scrolling one pixel just scrolls one `lores` pixel. This is also the way
 scrolling is implemented in most modern SUPER-CHIP interpreters. So even though
-that is technically "wrong" for SUPER-CHIP, all modern `lores` games that use
-scrolling depend on this "modern" interpretation of the opcodes.
+that is technically "wrong" for SUPER-CHIP, and the test makes that explicit,
+most `lores` games that use scrolling depend on this "modern" interpretation of
+the opcodes. There are almost no ROMs that depend on the legacy version.
 
 In practice most interpreters implement the "modern" behaviour and just ignore
-the "legacy" behaviour. But if you are a completionist, you can support "legacy"
-scrolling as a quirk.
+the "legacy" behaviour. But for that handful of ROMs that can make use of it,
+you can support `lores` "legacy" scrolling as a quirk.
 
 ## Beep test
 
