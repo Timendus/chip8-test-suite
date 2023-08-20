@@ -187,15 +187,28 @@
 
   # Subtraction in one direction (no carry)
   opcode-digit 0x5 # 0x85
+  # Edge cases:
+  # Check that vF -= vX results in no carry
   vF := 20
   vF -= 15_in_a_register # 5 (0x05), but should be overwritten by flag, so 1
   v4 := vF
+  # Check that vX -= vF results in the correct result and no carry
   v3 := 20
   vF := 15 
   v3 -= vF # 5 (0x05)
+  # Check that N - N (for the same N) does not result in carry
+  v5 := 10
+  vF := 10
+  v5 -= vF
+  v5 := vF
+  # Base case: check that subtracting two regular registers results in the
+  # correct value and no carry set, and that the carry register actually gets
+  # overwritten.
   vF := 0xAA
   v2 := 50
   v2 -= 15_in_a_register # 35 (0x23)
+  # Check all our assertions
+  if v5 != 1 then vF := 2
   expect-v2-vf-v3-v4 35 1 5 1
 
   y += 5
@@ -214,16 +227,29 @@
 
   # Subtraction in the other direction (no carry)
   opcode-digit 0x7 # 0x87
+  # Edge cases:
+  # Check that vF =- vX results in no carry
   vF := 10
   vF =- 15_in_a_register # 5 (0x5), but should be overwritten by flag, so 1
   v4 := vF
+  # Check that vX =- vF results in the correct result and no carry
   v3 := 15
   vF := 20
   v3 =- vF # 5 (0x05)
+  # Check that N - N (for the same N) does not result in carry
+  v5 := 10
+  vF := 10
+  v5 =- vF
+  v5 := vF
+  # Base case: check that subtracting two regular registers results in the
+  # correct value and no carry set, and taht the carry register actually gets
+  # overwritten.
   vF := 0xAA
   v2 := 15
   v1 := 50
   v2 =- v1 # 35 (0x23)
+  # Check all our assertions
+  if v5 != 1 then vF := 2
   expect-v2-vf-v3-v4 35 1 5 1
   x += 1
 
@@ -526,7 +552,7 @@
   str "OTHER" 0
 
 : version-0-0
-  0x0a 0xae 0xa2 0x42
+  0x0e 0xac 0xa2 0x4c
 : version-1-0
   0x38 0x28 0x28 0xb8
 

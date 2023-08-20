@@ -1,0 +1,72 @@
+# Beep test
+
+# This is a new test for this test suite, that allows you to test if your buzzer
+# is working. It will beep SOS in morse code and flash a speaker icon on the
+# display in the same pattern. If you press the CHIP-8 B button it will give you
+# manual control over the buzzer.
+
+: main
+  i := pattern
+  load v0
+  v2 := 1
+  v3 := v0
+  v4 := 0xB
+  vA := 28
+  vB := 12
+  loop
+    i := pattern
+    i += v2
+    load v1
+    i := speaker
+    sprite vA vB 7
+    buzzer := v0
+    delay := v0
+    wait-for-delay
+    sprite vA vB 7
+    delay := v1
+    wait-for-delay
+    v2 += 2
+    if v2 != v3 then
+  again
+  jump main
+
+: wait-for-delay
+  if v4 key then jump manual-control
+  v0 := delay
+  if v0 != 0 then jump wait-for-delay
+  return
+
+: manual-control
+  v0 := 0
+  v1 := 60
+  v2 := 0xB
+  clear
+  loop
+    i := speaker
+    sprite vA vB 7
+    loop
+      buzzer := v1
+      if v2 key then
+    again
+    sprite vA vB 7
+    loop
+      buzzer := v0
+      if v2 -key then
+    again
+  again
+
+: pattern
+  19
+  10 5 10 5 10 20
+  30 5 30 5 30 20
+  10 5 10 5 10 60
+
+: speaker
+  0b00011001
+  0b00101010
+  0b11001000
+  0b10001011
+  0b11001000
+  0b00101010
+  0b00011001
+
