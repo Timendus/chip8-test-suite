@@ -469,7 +469,7 @@ happens at the edges of the screen.
 
 The test asks you to choose the platform and resolution you are targeting:
 
-![Choosing a target platform in the scrolling test](./pictures/scrolling-platform.png)
+![Choosing a target platform in the scrolling test](./pictures/scrolling-platform.gif)
 
 You can press any of the numbers `1` or `2` on the CHIP-8 keypad to select the
 corresponding entry.
