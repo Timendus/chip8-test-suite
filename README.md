@@ -54,7 +54,7 @@ suite, let me know! 😄
 
 ## SUPER-CHIP
 
-For SUPER-CHIP, the test suite has been tested against actual HP48 graphing
+For SUPER-CHIP, the test suite has been tested against real HP48 graphing
 calculators, in the various interpreters that exist for that system.
 [Gulrak](https://github.com/gulrak) from the CHIP-8 community has an HP48SX, and
 has been so kind as to test if the test suite ROMs behave as expected.
@@ -62,9 +62,9 @@ has been so kind as to test if the test suite ROMs behave as expected.
 ## XO-CHIP
 
 The XO-CHIP extension was written by [John
-Earnest](https://github.com/johnearnest) and first implemented in his IDE slash
-interpreter Octo. As such, we treat [Octo](http://octo-ide.com/) as the gold
-standard for how an XO-CHIP system should behave, and test against that.
+Earnest](https://github.com/johnearnest) and was first implemented in his IDE
+slash interpreter Octo. As such, we treat [Octo](http://octo-ide.com/) as the
+gold standard for how an XO-CHIP system should behave, and test against that.
 
 # Available tests
 
@@ -275,11 +275,11 @@ for more information on the arithmetic operations and the flags.
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/5-quirks.html)
   to see what's supposed to happen
 
-CHIP-8, SCHIP and XO-CHIP have subtle differences in the way they interpret the
-bytecode. We often call these differences quirks. This test detects which quirks
-your interpreter implements, and if those quirks match the platform you're
-trying to target. This is one of the hardest parts to "get right" and often a
-reason why "some games work, but some don't".
+CHIP-8, SUPER-CHIP and XO-CHIP have subtle differences in the way they interpret
+the bytecode. We often call these differences quirks. This test detects which
+quirks your interpreter implements, and if those quirks match the platform
+you're trying to target. This is one of the hardest parts to "get right" and
+often a reason why "some games work, but some don't".
 
 ### The menu
 
