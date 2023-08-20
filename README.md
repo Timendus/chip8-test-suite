@@ -440,11 +440,23 @@ See [this
 article](https://laurencescotford.net/chip-8-on-the-cosmac-vip-keyboard-input/)
 for more information.
 
+## Beep test
+
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/7-beep.ch8)
+  (source code available [here](./src/tests/7-beep.8o))
+* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/7-beep.html)
+  to see what's supposed to happen
+
+This test allows you to test if your buzzer is working. It will beep SOS in
+morse code and flash a speaker icon on the display in the same pattern. If you
+press the CHIP-8 button `B` it will give you manual control over the buzzer.
+Press `B` to beep.
+
 ## Scrolling test
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/7-scrolling.ch8)
-  (source code available [here](./src/tests/7-scrolling.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/7-scrolling.html)
+* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/8-scrolling.ch8)
+  (source code available [here](./src/tests/8-scrolling.8o))
+* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/8-scrolling.html)
   to see what's supposed to happen
 
 This test is only applicable to SUPER-CHIP and XO-CHIP interpreters, since
@@ -515,18 +527,6 @@ the opcodes. There are almost no ROMs that depend on the legacy version.
 In practice most interpreters implement the "modern" behaviour and just ignore
 the "legacy" behaviour. But for that handful of ROMs that can make use of it,
 you can support `lores` "legacy" scrolling as a quirk.
-
-## Beep test
-
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/8-beep.ch8)
-  (source code available [here](./src/tests/8-beep.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/8-beep.html)
-  to see what's supposed to happen
-
-This test allows you to test if your buzzer is working. It will beep SOS in
-morse code and flash a speaker icon on the display in the same pattern. If you
-press the CHIP-8 button `B` it will give you manual control over the buzzer.
-Press `B` to beep.
 
 # Contributing
 
