@@ -16,8 +16,8 @@ CHIP-8, SUPER-CHIP or XO-CHIP interpreter (or "emulator")_
     * [Flags test](#flags-test)
     * [Quirks test](#quirks-test)
     * [Keypad test](#keypad-test)
-    * [Scrolling test](#scrolling-test)
     * [Beep test](#beep-test)
+    * [Scrolling test](#scrolling-test)
   * [Contributing](#contributing)
   * [Community response 😄](#community-response-)
 
@@ -38,8 +38,11 @@ the GPLv3, and you're welcome to [contribute](#contributing).
 
 # Baseline
 
-If the test suite itself is wrong, we're not helping anyone. So what are we
-testing the test suite against?
+Most tests have been written to run equally well on all three major CHIP-8
+platforms, unless otherwise specified. The [quirks test](#quirks-test) is the
+most interesting one, since it was designed to test the differences between
+those three platforms. If the test suite itself is wrong, we're not helping
+anyone. So what are we testing the test suite against?
 
 ## CHIP-8
 
@@ -56,8 +59,9 @@ suite, let me know! 😄
 
 For SUPER-CHIP, the test suite has been tested against real HP48 graphing
 calculators, in the various interpreters that exist for that system.
-[Gulrak](https://github.com/gulrak) from the CHIP-8 community has an HP48SX, and
-has been so kind as to test if the test suite ROMs behave as expected.
+[Gulrak](https://github.com/gulrak) from the CHIP-8 community has both an HP48SX
+and an HP48GX, and has been so kind as to check if the test suite ROMs behave as
+expected.
 
 ## XO-CHIP
 
@@ -313,8 +317,8 @@ or an error) and if that matches your chosen target platform (a checkmark or a
 cross).
 
 * `vF reset` - The AND, OR and XOR opcodes (`8xy1`, `8xy2` and `8xy3`) reset the
-  flags register to zero. Test will show `E1` if the AND and OR tests don't
-  behave the same and `E2` if the AND and XOR tests don't behave the same.
+  flags register to zero. Test will show `ERR1` if the AND and OR tests don't
+  behave the same and `ERR2` if the AND and XOR tests don't behave the same.
 * `Memory` - The save and load opcodes (`Fx55` and `Fx65`) increment the index
   register. More information [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-loading-and-saving-variables/)
   and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
@@ -335,7 +339,8 @@ cross).
   as expected.
 * `Shifting` - The shift opcodes (`8xy6` and `8xyE`) only operate on `vX`
   instead of storing the shifted version of `vY` in `vX` (more information
-  [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#8xy6-and-8xye-shift)). Test will show `E1` if the shift opcodes behave differently.
+  [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#8xy6-and-8xye-shift)).
+  Test will show `ERR1` if the shift opcodes behave differently.
 * `Jumping` - The "jump to some address plus `v0`" instruction (`Bnnn`) doesn't
   use `v0`, but `vX` instead where `X` is the highest nibble of `nnn` (more
   information [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#bnnn-jump-with-offset))
@@ -445,12 +450,15 @@ for more information.
 * [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/7-beep.ch8)
   (source code available [here](./src/tests/7-beep.8o))
 * [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/7-beep.html)
-  to see what's supposed to happen
+  to see what's supposed to happen (sound may not actually play due to browser
+  restrictions)
 
 This test allows you to test if your buzzer is working. It will beep SOS in
 morse code and flash a speaker icon on the display in the same pattern. If you
 press the CHIP-8 button `B` it will give you manual control over the buzzer.
 Press `B` to beep.
+
+![The beep test beeping](./pictures/beep.png)
 
 ## Scrolling test
 
@@ -500,9 +508,9 @@ boxes, like so:
 
 If you have issues with one or more of your scrolling instructions, some arrows
 will be (partially) outside their boxes. The arrows all point in the directions
-that they should be scrolled in, so the ones that have not moved the correct
-distance in the direction that they point in represent the scrolling
-instructions that are not working properly.
+that they should be scrolled in, so the ones that have not moved in the
+direction that they point in represent the scrolling instructions that are not
+working properly.
 
 For example, this is what you see if none of the scrolling instructions have
 been implemented:
@@ -523,10 +531,6 @@ scrolling is implemented in most modern SUPER-CHIP interpreters. So even though
 that is technically "wrong" for SUPER-CHIP, and the test makes that explicit,
 most `lores` games that use scrolling depend on this "modern" interpretation of
 the opcodes. There are almost no ROMs that depend on the legacy version.
-
-In practice most interpreters implement the "modern" behaviour and just ignore
-the "legacy" behaviour. But for that handful of ROMs that can make use of it,
-you can support `lores` "legacy" scrolling as a quirk.
 
 # Contributing
 
