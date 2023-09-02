@@ -287,12 +287,14 @@ often a reason why "some games work, but some don't".
 
 ### The menu
 
-The test asks you to choose the platform you are targeting:
+The test asks you to choose the platform you are targeting. If you select
+SUPER-CHIP, if will then also ask you if you want to test for the "modern" or
+the "legacy" behaviour.
 
 ![Choosing a target platform in the quirks test](./pictures/quirks-platform.png)
 
-You can press any of the numbers `1` to `3` on the CHIP-8 keypad to jump to the
-corresponding test.
+You can press any of the numbers `1` to `3` on the CHIP-8 keypad to make the
+corresponding selection.
 
 Alternatively, you can move the cursor up and down with CHIP-8 keys `E` and `F`
 and select an item with `A`. This feature mainly exists so people implementing
@@ -301,8 +303,13 @@ can map their buttons to those CHIP-8 keys and have an intuitive interface too.
 
 If you want to repeat a test often or even automate them, having to use the
 graphical menu just gets in the way. In that case, you can force this ROM to
-select a specific platform by loading a value between `1` and `3` into memory at
+select a specific platform by loading a value between `1` and `4` into memory at
 the address `0x1FF` (`512`).
+
+* `1` - CHIP-8
+* `2` - SUPER-CHIP with modern behaviour
+* `3` - XO-CHIP
+* `4` - SUPER-CHIP with legacy behaviour
 
 ### The test
 
@@ -364,9 +371,10 @@ compared to `lores` mode, it will show `ERR3`. In that case, first make sure
 your modes produce the same wrapping and clipping results, and see which errors
 pop up after that.
 
-Wondering why testing `hires` has been added, or how a quirk can possibly be
-enabled in only one of the modes? You can [read the full story
-here](./why-v5-breaks-compatibility.md).
+Wondering why testing `hires` has been added, or if a quirk can ever be enabled
+in only one of the modes? Or just wondering why SUPER-CHIP has a "legacy" and a
+"modern" version of the test? You can [read the full story
+here](./legacy-superchip.md).
 
 ### More information
 
@@ -517,20 +525,8 @@ been implemented:
 
 ![Result of the scrolling test with no implemented scrolling](./pictures/lores-no-scrolling.png)
 
-A note on legacy versus modern behaviour for SUPER-CHIP's `lores` mode:
-
-The original SUPER-CHIP interpreters on the HP48 calculators treated `lores` as
-a `hires` buffer where each pixel was 2x2 physical pixels. The scrolling
-instructions operated the same in both `hires` and `lores` modes. Which means
-that in `lores` mode scrolling happened per "half pixel". This behaviour is what
-the "legacy" version of the test is intended for.
-
-The "modern" version of the test works in the way most people would expect:
-scrolling one pixel just scrolls one `lores` pixel. This is also the way
-scrolling is implemented in most modern SUPER-CHIP interpreters. So even though
-that is technically "wrong" for SUPER-CHIP, and the test makes that explicit,
-most `lores` games that use scrolling depend on this "modern" interpretation of
-the opcodes. There are almost no ROMs that depend on the legacy version.
+A note on legacy versus modern behaviour for SUPER-CHIP's `lores` mode can be
+found in the document [Legacy SUPER-CHIP](./legacy-superchip.md).
 
 # Contributing
 
