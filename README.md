@@ -289,7 +289,7 @@ often a reason why "some games work, but some don't".
 
 The test asks you to choose the platform you are targeting. If you select
 SUPER-CHIP, if will then also ask you if you want to test for the "modern" or
-the "legacy" behaviour.
+the "legacy" behaviour. When in doubt, go for the "modern" one.
 
 ![Choosing a target platform in the quirks test](./pictures/quirks-platform.png)
 
@@ -483,7 +483,9 @@ happens at the edges of the screen.
 
 ### The menu
 
-The test asks you to choose the platform and resolution you are targeting:
+The test asks you to choose the platform and resolution you are targeting. For
+SUPER-CHIP `lores`, it will also ask you to choose between "modern" or "legacy"
+behaviour. When in doubt, go for the "modern" one.
 
 ![Choosing a target platform in the scrolling test](./pictures/scrolling-platform.gif)
 
