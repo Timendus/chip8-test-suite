@@ -19,23 +19,41 @@
 :const ERR3 8
 
 :const CHIP8 1
-:const SUPERCHIP 2
+:const SCHIP_MODERN 2
 :const XOCHIP 3
+:const SCHIP_LEGACY 4
 
 : main
   clear
   i := 0x1FF
   load v0
-  if v0 == CHIP8     then jump quirks-chip8
-  if v0 == SUPERCHIP then jump quirks-schip
-  if v0 == XOCHIP    then jump quirks-xochip
+  if v0 == CHIP8        then jump quirks-chip8
+  if v0 == SCHIP_MODERN then jump quirks-schip
+  if v0 == SCHIP_LEGACY then jump quirks-schip-legacy
+  if v0 == XOCHIP       then jump quirks-xochip
 
   text  6  2 quirks-choose
-  text 16 10 quirks-str-chip8
-  text 16 15 quirks-str-schip
-  text 16 20 quirks-str-xochip
+  text 10 10 quirks-str-chip8
+  text 10 15 quirks-str-schip
+  text 10 20 quirks-str-xochip
+  render-version
+ 
+  :unpack 0xA quirks-menu
+  v2 := 2
+  jump menu-start
 
-  # Show version number in bottom right corner
+: superchip-menu
+  clear
+  text 10  2 quirks-choose-superchip
+  text 18 12 quirks-str-modern
+  text 18 17 quirks-str-legacy
+  render-version
+
+  :unpack 0xA superchip-target-menu
+  v2 := 1
+  jump menu-start
+
+: render-version
   x := 50
   y := 27
   i := version-0-0
@@ -43,26 +61,34 @@
   x := 58
   i := version-1-0
   sprite x y 4
-
-  :unpack 0xA quirks-menu
-  v2 := 2
-  jump menu-start
+  return
 
 :segment data
 
 : quirks-menu
-  12 11 :pointer quirks-chip8
-  12 16 :pointer quirks-schip
-  12 21 :pointer quirks-xochip
+  6 11 :pointer quirks-chip8
+  6 16 :pointer superchip-menu
+  6 21 :pointer quirks-xochip
 
 : quirks-choose
   str "PICK PLATFORM" 0
 : quirks-str-chip8
   str "1 CHIP-8" 0
 : quirks-str-schip
-  str "2 SCHIP" 0
+  str "2 SUPER-CHIP" 0
 : quirks-str-xochip
   str "3 XO-CHIP" 0
+
+: superchip-target-menu
+  14 13 :pointer quirks-schip
+  14 18 :pointer quirks-schip-legacy
+
+: quirks-choose-superchip
+  str "PICK TARGET" 0
+: quirks-str-modern
+  str "1 MODERN" 0
+: quirks-str-legacy
+  str "2 LEGACY" 0
 
 :segment code
 
@@ -74,7 +100,13 @@
 
 : quirks-schip
   i := scratchpad
-  v0 := SUPERCHIP
+  v0 := SCHIP_MODERN
+  save v0
+  jump quirks-run-tests
+
+: quirks-schip-legacy
+  i := scratchpad
+  v0 := SCHIP_LEGACY
   save v0
   jump quirks-run-tests
 
@@ -354,10 +386,16 @@
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == SUPERCHIP begin
+  if v0 == CHIP8 begin
+    if v5 != 5 then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
     if v5 == 5 then i := flag-ok
-  else
-    # Selected CHIP-8 or XO-CHIP
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v5 == 5 then i := flag-ok
+  end
+  if v0 == XOCHIP begin
     if v5 != 5 then i := flag-ok
   end
   x := 59
@@ -378,7 +416,10 @@
   if v0 == CHIP8 begin
     if v1 == ON then i := flag-ok
   end
-  if v0 == SUPERCHIP begin
+  if v0 == SCHIP_MODERN begin
+    if v1 == NONE then i := flag-ok
+  end
+  if v0 == SCHIP_LEGACY begin
     if v1 == LORES then i := flag-ok
   end
   if v0 == XOCHIP begin
@@ -407,7 +448,10 @@
   if v0 == CHIP8 begin
     if v2 == ON  then i := flag-ok
   end
-  if v0 == SUPERCHIP begin
+  if v0 == SCHIP_MODERN begin
+    if v2 == BOTH then i := flag-ok
+  end
+  if v0 == SCHIP_LEGACY begin
     if v2 == BOTH then i := flag-ok
   end
   if v0 == XOCHIP begin
@@ -442,10 +486,16 @@
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == SUPERCHIP begin
+  if v0 == CHIP8 begin
+    if v5 != 0 then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
     if v5 == 0 then i := flag-ok
-  else
-    # Selected CHIP-8 or XO-CHIP
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v5 == 0 then i := flag-ok
+  end
+  if v0 == XOCHIP begin
     if v5 != 0 then i := flag-ok
   end
   x := 59
@@ -469,10 +519,16 @@
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == SUPERCHIP begin
+  if v0 == CHIP8 begin
+    if v5 == 0 then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
     if v5 != 0 then i := flag-ok
-  else
-    # Selected CHIP-8 or XO-CHIP
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v5 != 0 then i := flag-ok
+  end
+  if v0 == XOCHIP begin
     if v5 == 0 then i := flag-ok
   end
   x := 59
