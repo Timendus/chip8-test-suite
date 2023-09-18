@@ -487,7 +487,7 @@ The test asks you to choose the platform and resolution you are targeting. For
 SUPER-CHIP `lores`, it will also ask you to choose between "modern" or "legacy"
 behaviour. When in doubt, go for the "modern" one.
 
-![Choosing a target platform in the scrolling test](./pictures/scrolling-platform.gif)
+![Choosing a target platform in the scrolling test](./pictures/scrolling-platform.png)
 
 You can press any of the numbers `1` or `2` on the CHIP-8 keypad to select the
 corresponding entry.
