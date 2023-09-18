@@ -231,7 +231,7 @@ test, only the value is checked because overflow of the index register is not
 really defined in CHIP-8 and this opcode is not supposed to influence the flag
 register.
 
-See [this article](https://laurencescotford.com/chip-8-on-the-cosmac-vip-arithmetic-and-logic-instructions/)
+See [this article](https://laurencescotford.net/chip-8-on-the-cosmac-vip-arithmetic-and-logic-instructions/)
 or [this article](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#logical-and-arithmetic-instructions)
 for more information on the arithmetic operations and the flags.
 
@@ -283,10 +283,10 @@ cross).
   flags register to zero. Test will show `E1` if the AND and OR tests don't
   behave the same and `E2` if the AND and XOR tests don't behave the same.
 * `Memory` - The save and load opcodes (`Fx55` and `Fx65`) increment the index
-  register. More information [here](https://laurencescotford.com/chip-8-on-the-cosmac-vip-loading-and-saving-variables/) and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
+  register. More information [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-loading-and-saving-variables/) and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
 * `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second. More information
-  [here](https://laurencescotford.com/chip-8-on-the-cosmac-vip-drawing-sprites/).
+  [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-drawing-sprites/).
   Test will show `LOW` if the number of cycles per frame is too low for the test
   to be deterministic (this is not necessarily an error, but a suggestion to
   rerun the test with a higher number of cycles per frame).
@@ -295,7 +295,7 @@ cross).
   test checks if sprites get rendered at the right coordinates on the other side
   of the screen. This also tests that sprites drawn at coordinates of `x > 63`
   and/or `y > 31` wrap around to `x % 64` and `y % 32`. More information
-  [here](https://laurencescotford.com/chip-8-on-the-cosmac-vip-drawing-sprites/).
+  [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-drawing-sprites/).
   Test will show `E1` if the clipping is inconsistent in different dimensions or
   wrapping to the wrong coordinates and `E2` if sprites don't wrap around as
   expected.
@@ -380,7 +380,7 @@ Otherwise, you can get either of these errors:
   released before resuming
 
 See [this
-article](https://laurencescotford.com/chip-8-on-the-cosmac-vip-keyboard-input/)
+article](https://laurencescotford.net/chip-8-on-the-cosmac-vip-keyboard-input/)
 for more information.
 
 ## Contributing
