@@ -8,26 +8,52 @@
 :include "../utils/menu.8o"
 :include "../utils/text-rendering.8o"
 
-:macro show X address {
-  v0 := X
-  i := address
-  sprite v0 v1 15
-}
+:const OFF 0
+:const ON 1
+:const BOTH 2
+:const NONE 3
+:const LORES 4
+:const HIRES 5
+:const ERR1 6
+:const ERR2 7
+:const ERR3 8
+
+:const CHIP8 1
+:const SCHIP_MODERN 2
+:const XOCHIP 3
+:const SCHIP_LEGACY 4
 
 : main
   clear
   i := 0x1FF
   load v0
-  if v0 == 1 then jump quirks-chip8
-  if v0 == 2 then jump quirks-schip
-  if v0 == 3 then jump quirks-xochip
+  if v0 == CHIP8        then jump quirks-chip8
+  if v0 == SCHIP_MODERN then jump quirks-schip
+  if v0 == SCHIP_LEGACY then jump quirks-schip-legacy
+  if v0 == XOCHIP       then jump quirks-xochip
 
   text  6  2 quirks-choose
-  text 16 10 quirks-str-chip8
-  text 16 15 quirks-str-schip
-  text 16 20 quirks-str-xochip
+  text 10 10 quirks-str-chip8
+  text 10 15 quirks-str-schip
+  text 10 20 quirks-str-xochip
+  render-version
+ 
+  :unpack 0xA quirks-menu
+  v2 := 2
+  jump menu-start
 
-  # Show version number in bottom right corner
+: superchip-menu
+  clear
+  text 10  2 quirks-choose-superchip
+  text 18 12 quirks-str-modern
+  text 18 17 quirks-str-legacy
+  render-version
+
+  :unpack 0xA superchip-target-menu
+  v2 := 1
+  jump menu-start
+
+: render-version
   x := 50
   y := 27
   i := version-0-0
@@ -35,81 +61,122 @@
   x := 58
   i := version-1-0
   sprite x y 4
+  return
 
-  :unpack 0xA quirks-menu
-  v2 := 2
-  jump menu-start
+:segment data
+
+: quirks-menu
+  6 11 :pointer quirks-chip8
+  6 16 :pointer superchip-menu
+  6 21 :pointer quirks-xochip
+
+: quirks-choose
+  str "PICK PLATFORM" 0
+: quirks-str-chip8
+  str "1 CHIP-8" 0
+: quirks-str-schip
+  str "2 SUPER-CHIP" 0
+: quirks-str-xochip
+  str "3 XO-CHIP" 0
+
+: superchip-target-menu
+  14 13 :pointer quirks-schip
+  14 18 :pointer quirks-schip-legacy
+
+: quirks-choose-superchip
+  str "PICK TARGET" 0
+: quirks-str-modern
+  str "1 MODERN" 0
+: quirks-str-legacy
+  str "2 LEGACY" 0
+
+:segment code
 
 : quirks-chip8
   i := scratchpad
-  v0 := 1
+  v0 := CHIP8
   save v0
   jump quirks-run-tests
 
 : quirks-schip
   i := scratchpad
-  v0 := 2
+  v0 := SCHIP_MODERN
+  save v0
+  jump quirks-run-tests
+
+: quirks-schip-legacy
+  i := scratchpad
+  v0 := SCHIP_LEGACY
   save v0
   jump quirks-run-tests
 
 : quirks-xochip
   i := scratchpad
-  v0 := 3
+  v0 := XOCHIP
   save v0
 
 : quirks-run-tests
   waitKeyRelease
-
-  # Determine frames per second for dispQuirk
   clear
 
-  v1 := 0
-  show  8 splash-0-0
-  show 16 splash-1-0
-  show 24 splash-2-0
-  show 32 splash-3-0
-  show 40 splash-4-0
-  show 48 splash-5-0
+  # Determine frames per second for dispQuirk
+  i := scratchpad
+  load v0
+  if v0 == CHIP8 begin
+    get-frames-per-second-chip8
 
-  v1 := 15
-  show  8 splash-0-1
-  show 16 splash-1-1
-  show 24 splash-2-1
-  show 32 splash-3-1
-  show 40 splash-4-1
-  show 48 splash-5-1
+    # We expect the inner loop with 30 `sprite`s to have been able to run six
+    # times in the timespan of 180 interrupts
+    v0 := ON
+    if v3 != 0 then v0 := OFF
+    if v2 > 6 then v0 := OFF
+    if v2 < 6 then v0 := ERR1
+    i := scratchpad-plus-1
+    save v0
+  else              # Superchip & XO-CHIP
+    get-frames-per-second-schip-xochip
 
-  i := quirks-values
-  load v6
-  i := quirks-image
-  delay := v5
-  loop
-    v5 := 30
-    loop
-      sprite v0 v1 1
-      if vF == 0 begin
-        v0 := 54
-        v6 := delay
-        v6 >>= v6
-        v6 >>= v6
-        v0 -= v6
-      end
-      v5 -= 1
-      if v5 != 0 then
-    again
-    v2 += v4
-    v3 += vF
-    vE := delay
-  if vE != 0 then again
+    # We expect the inner loop with 30 `sprite`s to have been able to run 3
+    # times in the timespan of 90 interrupts
+    v0 := ON
+    if v3 != 0 then v0 := OFF
+    if v2 > 3 then v0 := OFF
+    if v2 < 3 then v0 := ERR1
+    i := scratchpad-plus-1
+    save v0
 
-  # We expect the inner loop with 30 `sprite`s to have been able to run six
-  # times in the timespan of 180 interrupts
-  v0 := 1
-  if v3 != 0 then v0 := 0
-  if v2 > 6 then v0 := 0
-  if v2 < 6 then v0 := 2
-  i := scratchpad-plus-1
-  save v0
+    # Do the test again, but now in hires mode
+    hires
+    clear
+    get-frames-per-second-hires
+
+    # We expect the inner loop with 30 `sprite`s to have been able to run 3
+    # times in the timespan of 90 interrupts
+    v1 := ON
+    if v3 != 0 then v1 := OFF
+    if v2 > 3 then v1 := OFF
+    if v2 < 3 then v1 := ERR1
+    i := scratchpad-plus-1
+    load v0
+    if v0 == ERR1 then jump quirks-combined-vblank-skip
+    if v1 == ERR1 begin
+      v0 := ERR1
+      jump quirks-combined-vblank-skip
+    end
+    if v0 == OFF begin
+      if v1 == OFF then v0 := NONE
+      if v1 == ON  then v0 := HIRES
+    end
+    if v0 == ON begin
+      if v1 == OFF then v0 := LORES
+      if v1 == ON  then v0 := BOTH
+    end
+: quirks-combined-vblank-skip
+    i := scratchpad-plus-1
+    save v0
+
+    lores
+  end
 
   # Determine if sprites get clipped vertically
   clear
@@ -159,16 +226,115 @@
   v9 += vF
 
   # Save result
-  v0 := 0
+  v0 := OFF
   # Clipping
-  if v5 == 0 then v0 := 1
-  if v5 != v6 then v0 := 2
-  if v5 != v7 then v0 := 2
-  if v5 != v8 then v0 := 2
+  if v5 == 0 then v0 := ON
+  if v5 != v6 then v0 := ERR1
+  if v5 != v7 then v0 := ERR1
+  if v5 != v8 then v0 := ERR1
   # Wrapping
-  if v9 != 4 then v0 := 3
+  if v9 != 4 then v0 := ERR2
   i := scratchpad-plus-2
   save v0
+
+  # If SuperCHIP or XO-CHIP, do it again in hires
+  i := scratchpad
+  load v0
+  if v0 != CHIP8 begin
+    hires
+    # Determine if sprites get clipped vertically
+    clear
+    i := cursor
+    v0 := 60
+    v1 := 61
+    sprite v0 v1 6
+    v0 := 54
+    v1 := 2
+    sprite v0 v1 2
+    v5 := vF
+    v0 := 66
+    sprite v0 v1 2
+    v6 := vF
+
+    # Determine if sprites get clipped horizontally
+    clear
+    i := cursor
+    v0 := 125
+    v1 := 5
+    sprite v0 v1 6
+    v0 := 3
+    v1 := 4
+    sprite v0 v1 2
+    v7 := vF
+    v1 := 10
+    sprite v0 v1 2
+    v8 := vF
+
+    # Determine if sprites get wrapped (both directions)
+    clear
+    v0 := 174
+    v1 := 82
+    sprite v0 v1 6 # Should draw at 46,18
+    v0 := 40
+    v1 := 17
+    sprite v0 v1 2
+    v9 := vF
+    v0 := 52
+    sprite v0 v1 2
+    v9 += vF
+    v1 := 23
+    sprite v0 v1 2
+    v9 += vF
+    v0 := 40
+    sprite v0 v1 2
+    v9 += vF
+
+    # Determine result
+    v1 := OFF
+    # Clipping
+    if v5 == 0 then v1 := ON
+    if v5 != v6 then v1 := ERR1
+    if v5 != v7 then v1 := ERR1
+    if v5 != v8 then v1 := ERR1
+    # Wrapping
+    if v9 != 4 then v1 := ERR2
+
+    # Compare with previous result
+    i := scratchpad-plus-2
+    load v0
+
+    if v0 == ERR1 begin
+      if v1 == ERR1 then jump quirks-combined-wrapping-skip
+      v0 := ERR3
+      jump quirks-combined-wrapping-skip
+    end
+    if v0 == ERR2 begin
+      if v1 == ERR2 then jump quirks-combined-wrapping-skip
+      v0 := ERR3
+      jump quirks-combined-wrapping-skip
+    end
+    if v1 == ERR1 begin
+      v0 := ERR3
+      jump quirks-combined-wrapping-skip
+    end
+    if v1 == ERR2 begin
+      v0 := ERR3
+      jump quirks-combined-wrapping-skip
+    end
+
+    if v0 == ON begin
+      if v1 == ON  then v0 := BOTH
+      if v1 == OFF then v0 := LORES
+    end
+    if v0 == OFF begin
+      if v1 == ON  then v0 := HIRES
+      if v1 == OFF then v0 := NONE
+    end
+: quirks-combined-wrapping-skip
+    i := scratchpad-plus-2
+    save v0
+    lores
+  end
 
   # Present results
 
@@ -192,8 +358,7 @@
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == 1 begin
-    # Selected CHIP-8
+  if v0 == CHIP8 begin
     if v5 == 1 then i := flag-ok
   else
     # Selected SCHIP or XO-CHIP
@@ -206,7 +371,7 @@
   if v5 == 1 then i := quirks-on
   if v5 != v6 then i := quirks-inconsistent-1
   if v5 != v7 then i := quirks-inconsistent-2
-  vD := 44
+  vD := 42
   vE := 1
   drawText
 
@@ -221,11 +386,16 @@
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == 2 begin
-    # Selected SCHIP
+  if v0 == CHIP8 begin
+    if v5 != 5 then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
     if v5 == 5 then i := flag-ok
-  else
-    # Selected CHIP-8 or XO-CHIP
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v5 == 5 then i := flag-ok
+  end
+  if v0 == XOCHIP begin
     if v5 != 5 then i := flag-ok
   end
   x := 59
@@ -233,7 +403,7 @@
   sprite x y 3
   i := quirks-on
   if v5 == 5 then i := quirks-off
-  vD := 44
+  vD := 42
   vE := 6
   drawText
 
@@ -243,20 +413,29 @@
   i := scratchpad
   load v1
   i := flag-err
-  if v0 == 1 begin
-    # Selected CHIP-8
-    if v1 == 1 then i := flag-ok
-  else
-    # Selected SCHIP or XO-CHIP
-    if v1 == 0 then i := flag-ok
+  if v0 == CHIP8 begin
+    if v1 == ON then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
+    if v1 == NONE then i := flag-ok
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v1 == LORES then i := flag-ok
+  end
+  if v0 == XOCHIP begin
+    if v1 == NONE then i := flag-ok
   end
   x := 59
   y := 12
   sprite x y 3
   i := quirks-off
-  if v1 == 1 then i := quirks-on
-  if v1 == 2 then i := quirks-low
-  vD := 44
+  if v1 == ON    then i := quirks-on
+  if v1 == ERR1  then i := quirks-slow
+  if v1 == LORES then i := quirks-lores
+  if v1 == HIRES then i := quirks-hires
+  if v1 == BOTH  then i := quirks-both
+  if v1 == NONE  then i := quirks-none
+  vD := 42
   vE := 11
   drawText
 
@@ -266,21 +445,31 @@
   i := scratchpad
   load v2
   i := flag-err
-  if v0 == 3 begin
-    # Selected XO-CHIP
-    if v2 == 0 then i := flag-ok
-  else
-    # Selected CHIP-8 or SCHIP
-    if v2 == 1 then i := flag-ok
+  if v0 == CHIP8 begin
+    if v2 == ON  then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
+    if v2 == BOTH then i := flag-ok
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v2 == BOTH then i := flag-ok
+  end
+  if v0 == XOCHIP begin
+    if v2 == NONE then i := flag-ok
   end
   x := 59
   y := 17
   sprite x y 3
   i := quirks-off
-  if v2 == 1 then i := quirks-on
-  if v2 == 2 then i := quirks-inconsistent-1
-  if v2 == 3 then i := quirks-inconsistent-2
-  vD := 44
+  if v2 == ON    then i := quirks-on
+  if v2 == LORES then i := quirks-lores
+  if v2 == HIRES then i := quirks-hires
+  if v2 == BOTH  then i := quirks-both
+  if v2 == NONE  then i := quirks-none
+  if v2 == ERR1  then i := quirks-inconsistent-1
+  if v2 == ERR2  then i := quirks-inconsistent-2
+  if v2 == ERR3  then i := quirks-inconsistent-3
+  vD := 42
   vE := 16
   drawText
 
@@ -297,11 +486,16 @@
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == 2 begin
-    # Selected SCHIP
+  if v0 == CHIP8 begin
+    if v5 != 0 then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
     if v5 == 0 then i := flag-ok
-  else
-    # Selected CHIP-8 or XO-CHIP
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v5 == 0 then i := flag-ok
+  end
+  if v0 == XOCHIP begin
     if v5 != 0 then i := flag-ok
   end
   x := 59
@@ -310,7 +504,7 @@
   i := quirks-off
   if v5 == 0 then i := quirks-on
   if v5 != v7 then i := quirks-inconsistent-1
-  vD := 44
+  vD := 42
   vE := 21
   drawText
 
@@ -325,11 +519,16 @@
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == 2 begin
-    # Selected SCHIP
+  if v0 == CHIP8 begin
+    if v5 == 0 then i := flag-ok
+  end
+  if v0 == SCHIP_MODERN begin
     if v5 != 0 then i := flag-ok
-  else
-    # Selected CHIP-8 or XO-CHIP
+  end
+  if v0 == SCHIP_LEGACY begin
+    if v5 != 0 then i := flag-ok
+  end
+  if v0 == XOCHIP begin
     if v5 == 0 then i := flag-ok
   end
   x := 59
@@ -337,7 +536,7 @@
   sprite x y 3
   i := quirks-off
   if v5 == 1 then i := quirks-on
-  vD := 44
+  vD := 42
   vE := 26
   drawText
 
@@ -346,20 +545,6 @@
   jump main
 
 :segment data
-
-: quirks-menu
-  12 11 :pointer quirks-chip8
-  12 16 :pointer quirks-schip
-  12 21 :pointer quirks-xochip
-
-: quirks-choose
-  str "PICK PLATFORM" 0
-: quirks-str-chip8
-  str "1 CHIP-8" 0
-: quirks-str-schip
-  str "2 SCHIP" 0
-: quirks-str-xochip
-  str "3 XO-CHIP" 0
 
 : quirks-vf
   str "VF RESET" 0
@@ -378,17 +563,22 @@
   str "ON" 0
 : quirks-off
   str "OFF" 0
+: quirks-slow
+  str "SLOW" 0
+: quirks-lores
+  str "LRES" 0
+: quirks-hires
+  str "HRES" 0
+: quirks-both
+  str "BOTH" 0
+: quirks-none
+  str "NONE" 0
 : quirks-inconsistent-1
-  str "E1" 0
+  str "ERR1" 0
 : quirks-inconsistent-2
-  str "E2" 0
-: quirks-low
-  str "LOW" 0
-
-: quirks-values
-  10 31 0 0 1 180 0
-: quirks-image
-  0b10000000
+  str "ERR2" 0
+: quirks-inconsistent-3
+  str "ERR3" 0
 
 : cursor
   0b11111110
@@ -398,8 +588,167 @@
   0b11111110
   0b11111110
 
+:segment code
+
+: get-frames-per-second-chip8
+  quirks-show-splash-lores
+  i := quirks-values
+  load v6
+    # v0 := 10
+    # v1 := 31
+    # v2 := 0
+    # v3 := 0
+    # v4 := 1
+    # v5 := 180
+    # v6 := 0
+  i := quirks-image
+  delay := v5
+  loop
+    v5 := 30
+    loop
+      sprite v0 v1 1
+      if vF == 0 begin
+        v0 := 54
+        v6 := delay
+        v6 >>= v6
+        v6 >>= v6
+        v0 -= v6
+      end
+      v5 -= 1
+      if v5 != 0 then
+    again
+    v2 += v4
+    v3 += vF
+    vE := delay
+  if vE != 0 then again
+  return
+
+: get-frames-per-second-schip-xochip
+  quirks-show-splash-lores
+  i := quirks-values
+  load v6
+    # v0 := 10
+    # v1 := 31
+    # v2 := 0
+    # v3 := 0
+    # v4 := 1
+    # v5 := 180
+    # v6 := 0
+  v5 >>= v5
+  i := quirks-image
+  delay := v5
+  loop
+    v5 := 30
+    loop
+      sprite v0 v1 1
+      if vF == 0 begin
+        v0 := 32
+        v6 := delay
+        v6 >>= v6
+        v6 >>= v6
+        v0 -= v6
+      end
+      v5 -= 1
+      if v5 != 0 then
+    again
+    v2 += v4
+    v3 += vF
+    vE := delay
+  if vE != 0 then again
+  return
+
+: quirks-show-splash-lores
+  v0 := 8
+  v1 := 0
+  v2 := 15
+  i := splash-0-0
+  loop
+    sprite v0 v1 15
+    i += v2
+    v0 += 8
+    if v0 == 56 begin
+      v0 := 8
+      v1 += 15
+    end
+    if v1 != 30 then
+  again
+  return
+
+: get-frames-per-second-hires
+  v0 := 16
+  v1 := 0
+  v2 := 32
+  i := splash2x-0-0
+  loop
+    sprite v0 v1 0
+    i += v2
+    v0 += 16
+    if v0 == 112 begin
+      v0 := 16
+      v1 += 16
+    end
+    if v1 != 64 then
+  again
+
+  # 11th pixel
+  i := quirks-values
+  load v6
+    # v0 := 10
+    # v1 := 31
+    # v2 := 0
+    # v3 := 0
+    # v4 := 1
+    # v5 := 180
+    # v6 := 0
+  v0 += v0
+  v1 += v1
+  v5 >>= v5
+  i := quirks-line
+  loop
+    sprite v0 v1 2
+    v0 += 8
+    if v0 != 60 then
+  again
+  i := quirks-image
+  loop
+    sprite v0 v1 2
+    v0 += 1
+    if v0 != 64 then
+  again
+  delay := v5
+  loop
+    v5 := 15
+    loop
+      sprite v0 v1 2
+      if vF == 0 begin
+        v0 := 108
+        v6 := delay
+        v6 >>= v6
+        v0 -= v6
+      end
+      v5 -= 1
+      if v5 != 0 then
+    again
+    v2 += v4
+    v3 += vF
+    vE := delay
+  if vE != 0 then again
+  return
+
+:segment data
+
+: quirks-values
+  10 31 0 0 1 180 0
+: quirks-image
+  0b10000000
+  0b10000000
+: quirks-line
+  0b11111111
+  0b11111111
+
 :include "../../pictures/version.png"
 :include "../../pictures/splash.png"
+:include "../../pictures/splash2x.png" 16x16
 
 # Jump quirk targets:
 :org 0xE98

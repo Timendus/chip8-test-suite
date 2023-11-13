@@ -1,0 +1,830 @@
+# Scrolling test
+
+# This is a new test for this test suite, that allows you to test if your
+# scrolling opcodes do the right thing. All the arrows should land in their
+# boxes in the direction they point in.
+
+
+
+:stringmode str "$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -." {
+  :byte { 4 * VALUE }
+}
+
+:macro text X Y STR {
+  vD := X
+  vE := Y
+  i := STR
+  drawText
+}
+
+:alias x vA
+:alias y vB
+
+: waitKeyRelease
+  v0 := 0
+: -
+  if v0 key then jump -
+  v0 += 1
+  if v0 == 16 then return
+  jump -
+
+# A cute little menu to select a test
+
+# Input:
+#  * v0 v1 point to 0xA + menu struct
+#  * v2 holds the length (zero-indexed)
+: menu-start
+  :alias cursorX v0
+  :alias cursorY v1
+  :alias numItems v2
+  :alias showing v3
+  :alias temp v4
+  :alias currentItem v5
+  :alias selectedItem v6
+
+  currentItem := 0
+  i := menu-draw-cursor
+  save v1
+  i := menu-choose-load
+  save v1
+  jump menu-draw-cursor
+: menu-move-cursor
+  if showing == 1 then sprite cursorX cursorY 2 # i should still be correct
+  waitKeyRelease
+: menu-draw-cursor
+  0 0 # i := <menu>
+  i += currentItem
+  i += currentItem
+  i += currentItem
+  i += currentItem
+  load cursorY # and cursorX
+  showing := 0
+  delay := showing
+
+  loop
+    # Blink cursor
+    temp := delay
+    if temp == 0 begin
+      i := menu-cursor
+      sprite cursorX cursorY 2
+      temp := 10
+      delay := temp
+      temp := 1
+      showing ^= temp
+    end
+
+    # Move cursor up
+    temp := 0xE
+    if temp key begin
+      if currentItem != 0 begin
+        currentItem -= 1
+        jump menu-move-cursor
+      end
+    end
+    # Move cursor down
+    temp := 0xF
+    if temp key begin
+      if currentItem != numItems begin
+        currentItem += 1
+        jump menu-move-cursor
+      end
+    end
+    # Start test under cursor
+    selectedItem := currentItem
+    temp := 0xA
+    if temp key then jump menu-choose
+
+    # Use numbers to jump to tests directly
+    temp := 0
+    numItems += 1
+    loop
+      temp += 1
+      if temp key begin
+        selectedItem := temp
+        selectedItem -= 1
+        jump menu-choose
+      end
+    if temp != numItems then again
+    numItems -= 1
+  again
+
+: menu-choose
+  waitKeyRelease
+: menu-choose-load
+  0 0 # i := <menu>
+  i += selectedItem
+  i += selectedItem
+  i += selectedItem
+  i += selectedItem
+  temp := 2
+  i += temp
+  load v1
+  temp := 0x10
+  v0 |= temp
+  i := menu-choose-jump
+  save v1
+: menu-choose-jump
+  0 0 # jump <item>
+
+# Font rendering code and character data
+# Kept this very simplistic and fast
+
+:macro drawCharacter REG {
+  if REG == 0 then return
+  v0 := REG
+  drawChar
+}
+
+: drawText
+  load vC
+  drawChar
+  drawCharacter v1
+  drawCharacter v2
+  drawCharacter v3
+  drawCharacter v4
+  drawCharacter v5
+  drawCharacter v6
+  drawCharacter v7
+  drawCharacter v8
+  drawCharacter v9
+  drawCharacter vA
+  drawCharacter vB
+  drawCharacter vC
+  return
+
+: drawChar
+  i := characters
+  i += v0
+  sprite vD vE 4
+  vD += 4
+  return
+
+
+: main
+  # Jump to the right test based on magic values
+  i := 0x1FF
+  load v0
+  if v0 == 1 then jump scrolling-superchip-lores-full-pixels
+  if v0 == 2 then jump scrolling-superchip-lores-half-pixels
+  if v0 == 3 then jump scrolling-superchip-hires
+  if v0 == 4 then jump scrolling-xochip-lores
+  if v0 == 5 then jump scrolling-xochip-hires
+
+
+
+: menu-1
+  lores
+  clear
+  text  6  2 scrolling-choose-1
+  text 12 12 scrolling-str-superchip
+  text 12 17 scrolling-str-xochip
+  render-version
+  :unpack 0xA scrolling-menu-1
+  v2 := 1
+  jump menu-start
+
+: menu-2
+  lores
+  clear
+  text  7  2 scrolling-choose-2
+  text 15 12 scrolling-str-lores
+  text 15 17 scrolling-str-hires
+  render-version
+  :unpack 0xA scrolling-menu-2
+  v2 := 1
+  jump menu-start
+
+: menu-3
+  lores
+  clear
+  text 10  2 scrolling-choose-3
+  text 18 12 scrolling-str-modern
+  text 18 17 scrolling-str-legacy
+  render-version
+  :unpack 0xA scrolling-menu-3
+  v2 := 1
+  jump menu-start
+
+: render-version
+  x := 50
+  y := 27
+  i := version-0-0
+  sprite x y 4
+  x := 58
+  i := version-1-0
+  sprite x y 4
+  return
+
+
+
+: scrolling-superchip
+  i := selection
+  v0 := 0
+  save v0
+  jump menu-2
+
+: scrolling-xochip
+  i := selection
+  v0 := 1
+  save v0
+  jump menu-2
+
+: scrolling-lores
+  i := selection
+  load v0
+  if v0 == 0 then jump menu-3
+  jump scrolling-xochip-lores
+
+: scrolling-hires
+  i := selection
+  load v0
+  if v0 == 0 then jump scrolling-superchip-hires
+  jump scrolling-xochip-hires
+
+
+
+: scrolling-superchip-lores-full-pixels
+	clear
+	
+  i := scrolling-arrow-left
+  v0 := 46
+  v1 := 11
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 10
+  v1 := 11
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-down
+  v0 := 28
+  v1 := 0
+  sprite v0 v1 8
+	scroll-down 6
+
+  jump scrolling-draw-borders-lores
+
+: scrolling-superchip-lores-half-pixels
+	clear
+	
+  i := scrolling-arrow-left
+  v0 := 46
+  v1 := 11
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+  scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 10
+  v1 := 11
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+  scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-down
+  v0 := 28
+  v1 := 0
+  sprite v0 v1 8
+	scroll-down 12
+
+: scrolling-draw-borders-lores
+  i := scrolling-pixel
+  v0 := 21	# X
+  v1 := 33
+  v2 := 27
+  v3 := 26	# Y
+	v4 := 15
+	v5 := 4
+  loop
+    sprite v0 v3 1
+    sprite v1 v3 1
+		sprite v0 v4 1
+    sprite v1 v4 1
+    sprite v2 v5 1
+    v0 += 1
+		v1 += 1
+		v2 += 1
+    if v0 != 31 then
+  again
+  v0 := 20  # X
+  v1 := 31
+  v2 := 32
+  v3 := 43
+	v4 := 26
+	v5 := 37
+	v6 := 16  # Y
+	v7 := 5
+  loop
+    sprite v0 v6 1
+    sprite v1 v6 1
+    sprite v2 v6 1
+		sprite v3 v6 1
+		sprite v4 v7 1
+		sprite v5 v7 1
+    v6 += 1
+		v7 += 1
+    if v6 != 26 then
+  again
+
+  v0 := key
+  waitKeyRelease
+  jump main
+
+
+: scrolling-superchip-hires
+	clear
+	hires
+	
+  i := scrolling-arrow-left
+  v0 := 78
+  v1 := 22
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 42
+  v1 := 22
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-down
+  v0 := 60
+  v1 := 11
+  sprite v0 v1 8
+	scroll-down 12
+
+  i := scrolling-pixel
+  v0 := 53	# X
+  v1 := 65
+  v2 := 59
+  v3 := 43	# Y
+	v4 := 32
+	v5 := 21
+  loop
+    sprite v0 v3 1
+    sprite v1 v3 1
+		sprite v0 v4 1
+    sprite v1 v4 1
+    sprite v2 v5 1
+    v0 += 1
+		v1 += 1
+		v2 += 1
+    if v0 != 63 then
+  again
+  v0 := 52  # X
+  v1 := 63
+  v2 := 64
+  v3 := 75
+	v4 := 58
+	v5 := 69
+	v6 := 33  # Y
+	v7 := 22
+  loop
+    sprite v0 v6 1
+    sprite v1 v6 1
+    sprite v2 v6 1
+		sprite v3 v6 1
+		sprite v4 v7 1
+		sprite v5 v7 1
+    v6 += 1
+		v7 += 1
+    if v7 != 32 then
+  again
+
+  v0 := key
+  waitKeyRelease
+  jump main
+
+
+
+: scrolling-xochip-lores
+	clear
+	
+  i := scrolling-arrow-left
+  v0 := 45
+  v1 := 23
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 10
+  v1 := 12
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-up
+  v0 := 22
+  v1 := 23
+  sprite v0 v1 8
+	scroll-up 12
+
+  i := scrolling-arrow-down
+  v0 := 33
+  v1 := 0
+  sprite v0 v1 8
+	scroll-down 6
+
+  i := scrolling-pixel
+  v0 := 21	# X
+  v1 := 26	# Y
+	v2 := 15
+	v3 := 4
+  loop
+    sprite v0 v1 1
+    sprite v0 v2 1
+		sprite v0 v3 1
+    v0 += 1
+    if v0 != 42 then
+  again
+  v0 := 20  # X
+  v1 := 31
+  v2 := 42
+	v3 := 5  # Y
+  loop
+    sprite v0 v3 1
+    sprite v1 v3 1
+    sprite v2 v3 1
+    v3 += 1
+    if v3 != 26 then
+  again
+
+  v0 := key
+  waitKeyRelease
+  jump main
+
+
+: scrolling-xochip-hires
+	clear
+	hires
+
+  i := scrolling-arrow-left
+  v0 := 77
+  v1 := 46
+  sprite v0 v1 8
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+	scroll-left
+
+  i := scrolling-arrow-right
+  v0 := 42
+  v1 := 35
+  sprite v0 v1 8
+	scroll-right
+	scroll-right
+	scroll-right
+
+  i := scrolling-arrow-up
+  v0 := 54
+  v1 := 46
+  sprite v0 v1 8
+	scroll-up 12
+  scroll-up 12
+
+  i := scrolling-arrow-down
+  v0 := 65
+  v1 := 11
+  sprite v0 v1 8
+	scroll-down 12
+
+  i := scrolling-pixel
+  v0 := 53	# X
+  v1 := 21	# Y
+	v2 := 32
+	v3 := 43
+  loop
+    sprite v0 v1 1
+    sprite v0 v2 1
+		sprite v0 v3 1
+    v0 += 1
+    if v0 != 74 then
+  again
+  v0 := 52  # X
+  v1 := 63
+  v2 := 74
+	v3 := 22  # Y
+  loop
+    sprite v0 v3 1
+    sprite v1 v3 1
+    sprite v2 v3 1
+    v3 += 1
+    if v3 != 43 then
+  again
+
+  v0 := key
+  waitKeyRelease
+  jump main
+
+
+
+: scratchpad
+  0
+: scratchpad-plus-1
+  0
+: scratchpad-plus-2
+  0 0 0 0 0
+  0 0 0 0 0
+  0 0 0 0
+: scratchpad-plus-16
+  0
+
+
+: menu-cursor
+  0b11000000
+  0b11000000
+
+
+# Positive and negative images
+: flag-ok
+  0b10100000
+  0b11000000
+: characters
+  0b10000000
+: flag-err
+  0b10100000
+  0b01000000
+  0b10100000
+
+# Individual characters, some taken from Corax89' test.
+: im0
+  0xE0 0xA0 0xA0 0xE0
+: im1
+  0xC0 0x40 0x40 0xE0
+: im2
+  0xE0 0x20 0xC0 0xE0
+: im3
+  0xE0 0x60 0x20 0xE0
+: im4
+  0xA0 0xE0 0x20 0x20
+: im5
+  0b11100000
+  0b11000000
+  0b00100000
+  0b11000000
+: im6
+  0xE0 0x80 0xE0 0xE0
+: im7
+  0xE0 0x20 0x20 0x20
+: im8
+  0xE0 0xE0 0xA0 0xE0
+: im9
+  0xE0 0xE0 0x20 0xE0
+: imA
+  0x40 0xA0 0xE0 0xA0
+: imB
+  0b11000000
+  0b11100000
+  0b10100000
+  0b11100000
+: imC
+  0b11100000
+  0b10000000
+  0b10000000
+  0b11100000
+: imD
+  0b11000000
+  0b10100000
+  0b10100000
+  0b11000000
+: imE
+  0xE0 0xC0 0x80 0xE0
+: imF
+  0xE0 0x80 0xC0 0x80
+: imG
+  0b01100000
+  0b10000000
+  0b10100000
+  0b01100000
+: imH
+  0b10100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imI
+  0b11100000
+  0b01000000
+  0b01000000
+  0b11100000
+: imJ
+  0b01100000
+  0b00100000
+  0b00100000
+  0b11000000
+: imK
+  0b10100000
+  0b11000000
+  0b10100000
+  0b10100000
+: imL
+  0b10000000
+  0b10000000
+  0b10000000
+  0b11100000
+: imM
+  0b11100000
+  0b11100000
+  0b10100000
+  0b10100000
+: imN
+  0b11000000
+  0b10100000
+  0b10100000
+  0b10100000
+: imO
+  0b11100000
+  0b10100000
+  0b10100000
+  0b11100000
+: imP
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10000000
+: imQ
+  0b01000000
+  0b10100000
+  0b11100000
+  0b01100000
+: imR
+  0b11000000
+  0b10100000
+  0b11000000
+  0b10100000
+: imS
+  0b01100000
+  0b11000000
+  0b00100000
+  0b11000000
+: imT
+  0b11100000
+  0b01000000
+  0b01000000
+  0b01000000
+: imU
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01100000
+: imV
+  0b10100000
+  0b10100000
+  0b10100000
+  0b01000000
+: imW
+  0b10100000
+  0b10100000
+  0b11100000
+  0b11100000
+: imX
+  0xA0 0x40 0xA0 0xA0
+: imY
+  0b10100000
+  0b10100000
+  0b01000000
+  0b01000000
+: imZ
+  0b11100000
+  0b01100000
+  0b10000000
+  0b11100000
+: imSpace
+  0 0 0 0
+: imDash
+  0b00000000
+  0b11100000
+  0b00000000
+  0b00000000
+: imPeriod
+  0b00000000
+  0b00000000
+  0b00000000
+  0b01000000
+
+
+
+: scrolling-menu-1
+  8 13 :pointer scrolling-superchip
+  8 18 :pointer scrolling-xochip
+
+: scrolling-choose-1
+  str "PICK PLATFORM" 0
+: scrolling-str-superchip
+  str "1 SUPERCHIP" 0
+: scrolling-str-xochip
+  str "2 XO-CHIP" 0
+
+: scrolling-menu-2
+  11 13 :pointer scrolling-lores
+  11 18 :pointer scrolling-hires
+
+: scrolling-choose-2
+  str "PICK SCR SIZE" 0
+: scrolling-str-lores
+  str "1 LOW RES" 0
+: scrolling-str-hires
+  str "2 HIGH RES" 0
+
+: scrolling-menu-3
+  14 13 :pointer scrolling-superchip-lores-full-pixels
+  14 18 :pointer scrolling-superchip-lores-half-pixels
+
+: scrolling-choose-3
+  str "PICK TARGET" 0
+: scrolling-str-modern
+  str "1 MODERN" 0
+: scrolling-str-legacy
+  str "2 LEGACY" 0
+
+
+
+: scrolling-arrow-left
+  0b11111111
+  0b11100111
+  0b11001111
+  0b10000001
+  0b10000001
+  0b11001111
+  0b11100111
+  0b11111111
+
+: scrolling-arrow-right
+  0b11111111
+  0b11100111
+  0b11110011
+  0b10000001
+  0b10000001
+  0b11110011
+  0b11100111
+  0b11111111
+
+: scrolling-arrow-up
+  0b11111111
+  0b11100111
+  0b11000011
+  0b10000001
+  0b10100101
+  0b11100111
+  0b11100111
+  0b11111111
+
+: scrolling-arrow-down
+  0b11111111
+  0b11100111
+  0b11100111
+  0b10100101
+  0b10000001
+  0b11000011
+  0b11100111
+  0b11111111
+
+: scrolling-pixel
+  0b10000000
+
+: selection
+  0
+
+: version-0-0
+  0x0a 0xae 0xa2 0x42
+: version-1-0
+  0x10 0x30 0x10 0xb8
+
+
