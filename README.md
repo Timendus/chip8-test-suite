@@ -445,7 +445,8 @@ Otherwise, you can get either of these errors:
 
 * `NOT HALTING` - Your implementation immediately returns the value of any
   currently pressed keys in `vX`, instead of halting the interpreter until a key
-  is pressed (note that this needs timer support to be accurate)
+  is pressed (note that this needs timer support to be accurate - in other words,
+  the DELAY TIMER should continue to count down while awaiting a keypress)
 * `NOT RELEASED` - Your implementation doesn't wait for the pressed key to be
   released before resuming
 
