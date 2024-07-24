@@ -27,7 +27,7 @@
 :alias x0 v8
 :alias x1 v9
 :alias x2 vA
-:alias y	vB
+:alias y  vB
 
 :macro drawop A B {
   i := A
@@ -37,9 +37,10 @@
 }
 
 : test2X
-  i := image-ok
-  sprite x2 y 4
+  v0 := 1
   return
+  v0 := 2
+  jump 2X-0E-hard-return
 
 : main
   clear
@@ -106,18 +107,28 @@
   # Note by Timendus: I think this really tests 2NNN, not ANNN, so I changed the
   # displayed label on this to not confuse users.
   # See PR: https://github.com/corax89/chip8-test-rom/pull/9
+
+  # Test calling and returning from subroutines (2NNN and 00EE)
   x0 := 18
   x1 := 22
   x2 := 27
   y := 1
   drawop im2 imX
+	
+  # Attempt to run a subroutine
+  v0 := 0
   test2X
-
-  #test 0E
+	
+  : 2X-0E-hard-return
+  i := image-ok
+  if v0 == 0 then i := image-no  # Subroutine was never called
+  sprite x2 y 4
+  
   y += 5
   drawop im0 imE
   i := image-ok
-  sprite x2 y 4
+  if v0 == 2 then i := image-no  # Return didn't work
+  if v0 != 0 then sprite x2 y 4  # If subroutine wasn't called, return wasn't tested
 
   #test 8xy0
   y += 5
@@ -247,14 +258,41 @@
   #test Fx33
   y += 5
   drawop imF im3
+  
+  # >= 100
   i := scratchpad
   v6 := 137
   bcd v6
   load v2
+
+  i := image-no
+
+  if v0 != 1 then jump fx33-fail
+  if v1 != 3 then jump fx33-fail
+  if v2 != 7 then jump fx33-fail
+  
+  # < 100
+  i := scratchpad
+  v6 := 65
+  bcd v6
+  load v2
+  if v0 != 0 then jump fx33-fail
+  if v1 != 6 then jump fx33-fail
+  if v2 != 5 then jump fx33-fail
+  
+  # < 10
+  i := scratchpad
+  v6 := 4
+  bcd v6
+  load v2
+  
+  if v0 != 0 then jump fx33-fail
+  if v1 != 0 then jump fx33-fail
+  if v2 != 4 then jump fx33-fail
+	
   i := image-ok
-  if v0 != 1 then i := image-no
-  if v1 != 3 then i := image-no
-  if v2 != 7 then i := image-no
+  
+: fx33-fail
   sprite x2 y 4
 
   #test Fx1E
