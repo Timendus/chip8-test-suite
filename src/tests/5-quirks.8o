@@ -378,31 +378,56 @@
   # memQuirk
   # When reading or writing memory, i gets incremented
   text 1 6 quirks-mem
-  v0 := 5
-  i := scratchpad-plus-16
-  save v0
+  v0 := 1
+  v1 := 2
+  v2 := 3
+  v3 := 4
+  v4 := 5
+  i := scratchpad-plus-3
+  save v4
+  v0 := 11
+  v1 := 12
+  v2 := 13
+  i := scratchpad-plus-3
+  save v2
   load v0
   v5 := v0
+  load v0
+  v6 := v0
   i := scratchpad
   load v0
   i := flag-err
-  if v0 == CHIP8 begin
-    if v5 != 5 then i := flag-ok
+
+  if v0 == CHIP8 then jump expect-memquirk
+  if v0 == SCHIP_MODERN then jump expect-no-memquirk
+  if v0 == SCHIP_LEGACY then jump expect-no-memquirk
+  if v0 == XOCHIP then jump expect-memquirk
+
+: expect-memquirk
+  if v5 == 4 begin
+    if v6 == 5 begin 
+      i := flag-ok
+    else
+      i := quirks-inconsistent-1
+    end
   end
-  if v0 == SCHIP_MODERN begin
-    if v5 == 5 then i := flag-ok
+  jump memquirk-done
+
+: expect-no-memquirk
+  if v5 == 11 begin
+    if v6 == 11 begin
+      i := flag-ok
+    else
+      i := quirks-inconsistent-1
+    end
   end
-  if v0 == SCHIP_LEGACY begin
-    if v5 == 5 then i := flag-ok
-  end
-  if v0 == XOCHIP begin
-    if v5 != 5 then i := flag-ok
-  end
+
+: memquirk-done
   x := 59
   y := 7
   sprite x y 3
   i := quirks-on
-  if v5 == 5 then i := quirks-off
+  if v5 == 11 then i := quirks-off
   vD := 42
   vE := 6
   drawText
