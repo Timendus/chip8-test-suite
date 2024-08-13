@@ -151,6 +151,10 @@ seem to be maintaining this ROM anymore.
 So I've taken the liberty to fix those issues, add a few new tests and make some
 cosmetic changes for this test suite.
 
+This test needs the opcodes listed above for the IBM logo as well as the
+conditional skip opcodes (`3XNN`, `4XNN` and `5XY0`) to be working properly to
+actually show you some sane results.
+
 ![Corax89's opcode test](./pictures/corax+.png)
 
 The codes on the screen correspond to the functioning of these opcodes:
