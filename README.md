@@ -7,19 +7,19 @@ CHIP-8, SUPER-CHIP or XO-CHIP interpreter (or "emulator")_
 
 ## Table of contents
 
-  * [Introduction](#introduction)
-  * [Baseline](#baseline)
-  * [Available tests](#available-tests)
-    * [CHIP-8 splash screen](#chip-8-splash-screen)
-    * [IBM logo](#ibm-logo)
-    * [Corax+ opcode test](#corax-opcode-test)
-    * [Flags test](#flags-test)
-    * [Quirks test](#quirks-test)
-    * [Keypad test](#keypad-test)
-    * [Beep test](#beep-test)
-    * [Scrolling test](#scrolling-test)
-  * [Contributing](#contributing)
-  * [Community response 😄](#community-response-)
+- [Introduction](#introduction)
+- [Baseline](#baseline)
+- [Available tests](#available-tests)
+  - [CHIP-8 splash screen](#chip-8-splash-screen)
+  - [IBM logo](#ibm-logo)
+  - [Corax+ opcode test](#corax-opcode-test)
+  - [Flags test](#flags-test)
+  - [Quirks test](#quirks-test)
+  - [Keypad test](#keypad-test)
+  - [Beep test](#beep-test)
+  - [Scrolling test](#scrolling-test)
+- [Contributing](#contributing)
+- [Community response 😄](#community-response-)
 
 # Introduction
 
@@ -74,9 +74,9 @@ gold standard for how an XO-CHIP system should behave, and test against that.
 
 ## CHIP-8 splash screen
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/1-chip8-logo.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/1-chip8-logo.ch8)
   (source code available [here](./src/tests/1-chip8-logo.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/1-chip8-logo.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/1-chip8-logo.html)
   to see what's supposed to happen
 
 The first test is a very simple splash screen. It is very similar to the often
@@ -91,21 +91,21 @@ to shift the bits of the sprite to align with the buffer.
 Run the ROM for 39 cycles to see this splash screen on the display. This first
 test can tell you if you're interpreting these opcodes properly:
 
-  * `00E0` - Clear the screen
-  * `6xnn` - Load normal register with immediate value
-  * `Annn` - Load index register with immediate value
-  * `Dxyn` - Draw sprite to screen (only aligned)
+- `00E0` - Clear the screen
+- `6xnn` - Load normal register with immediate value
+- `Annn` - Load index register with immediate value
+- `Dxyn` - Draw sprite to screen (only aligned)
 
 If you run the ROM for more than 39 cycles, it will enter an endless loop. If
 that also works as expected, you've also correctly interpreted the jump opcode:
 
-  * `1nnn` - Jump
+- `1nnn` - Jump
 
 ## IBM logo
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/2-ibm-logo.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/2-ibm-logo.ch8)
   (source code available [here](./src/tests/2-ibm-logo.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/2-ibm-logo.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/2-ibm-logo.html)
   to see what's supposed to happen
 
 The second test is the classic IBM ROM. If the splash screen works as expected,
@@ -122,23 +122,22 @@ original (except for the version number).
 Run the ROM for 20 cycles to see the IBM logo on the display. If you can see the
 IBM logo, you are properly interpreting these opcodes:
 
-
-  * `00E0` - Clear the screen
-  * `6xnn` - Load normal register with immediate value
-  * `Annn` - Load index register with immediate value
-  * `7xnn` - Add immediate value to normal register
-  * `Dxyn` - Draw sprite to screen (un-aligned)
+- `00E0` - Clear the screen
+- `6xnn` - Load normal register with immediate value
+- `Annn` - Load index register with immediate value
+- `7xnn` - Add immediate value to normal register
+- `Dxyn` - Draw sprite to screen (un-aligned)
 
 If you run the ROM for more than 20 cycles, it will enter an endless loop. If
 that also works as expected, you've also correctly interpreted the jump opcode:
 
-  * `1nnn` - Jump
+- `1nnn` - Jump
 
 ## Corax+ opcode test
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/3-corax+.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/3-corax+.ch8)
   (source code available [here](./src/tests/3-corax+.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/3-corax+.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/3-corax+.html)
   to see what's supposed to happen
 
 This ROM is an adaptation of another famous one, the [CHIP-8 test rom written by
@@ -173,29 +172,29 @@ If you see a cross you can be sure that you have an issue with that opcode.
 
 Here's a rough description of what these opcodes should do to pass the tests:
 
-* `3xnn` - if `vX == nn`, skip next opcode
-* `4xnn` - if `vX != nn`, skip next opcode
-* `5xy0` - if `vX == vY`, skip next opcode
-* `7xnn` - `vX += nn`
-* `9xy0` - if `vX != vY`, skip next opcode
-* `1nnn` - `jump nnn` (goto)
-* `2nnn` - `call nnn` (subroutine)
-* `00EE` - `return` from subroutine
-* `8xy0` - `vX = vY`
-* `8xy1` - `vX |= vY`
-* `8xy2` - `vX &= vY`
-* `8xy3` - `vX ^= vY`
-* `8xy4` - `vX += vY`
-* `8xy5` - `vX -= vY`
-* `8xy7` - `vX = vY - vX`
-* `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
-* `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
-* `Fx65` - load registers `v0` - `vX` from memory starting at `i`
-* `Fx55` - save registers `v0` - `vX` to memory starting at `i`
-* `Fx33` - store binary-coded decimal representation of `vX` to memory at `i`,
+- `3xnn` - if `vX == nn`, skip next opcode
+- `4xnn` - if `vX != nn`, skip next opcode
+- `5xy0` - if `vX == vY`, skip next opcode
+- `7xnn` - `vX += nn`
+- `9xy0` - if `vX != vY`, skip next opcode
+- `1nnn` - `jump nnn` (goto)
+- `2nnn` - `call nnn` (subroutine)
+- `00EE` - `return` from subroutine
+- `8xy0` - `vX = vY`
+- `8xy1` - `vX |= vY`
+- `8xy2` - `vX &= vY`
+- `8xy3` - `vX ^= vY`
+- `8xy4` - `vX += vY`
+- `8xy5` - `vX -= vY`
+- `8xy7` - `vX = vY - vX`
+- `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
+- `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
+- `Fx65` - load registers `v0` - `vX` from memory starting at `i`
+- `Fx55` - save registers `v0` - `vX` to memory starting at `i`
+- `Fx33` - store binary-coded decimal representation of `vX` to memory at `i`,
   `i + 1` and `i + 2`
-* `Fx1E` - `i += vX`
-* `Registers` - The `v0` - `vF` registers should be 8 bits wide. This tests to
+- `Fx1E` - `i += vX`
+- `Registers` - The `v0` - `vF` registers should be 8 bits wide. This tests to
   see if it can overflow your registers.
 
 If you are having trouble figuring out how each opcode is supposed to behave,
@@ -205,9 +204,9 @@ guide](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#instructions) or
 
 ## Flags test
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/4-flags.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/4-flags.ch8)
   (source code available [here](./src/tests/4-flags.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/4-flags.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/4-flags.html)
   to see what's supposed to happen
 
 This test checks to see if your math operations function properly on some given
@@ -242,14 +241,14 @@ HAPPY  8xy1   8xy2
 8xy6   8xy7   8xyE
 ```
 
-* `8xy1` - `vX |= vY`
-* `8xy2` - `vX &= vY`
-* `8xy3` - `vX ^= vY`
-* `8xy4` - `vX += vY`
-* `8xy5` - `vX -= vY`
-* `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
-* `8xy7` - `vX = vY - vX`
-* `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
+- `8xy1` - `vX |= vY`
+- `8xy2` - `vX &= vY`
+- `8xy3` - `vX ^= vY`
+- `8xy4` - `vX += vY`
+- `8xy5` - `vX -= vY`
+- `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
+- `8xy7` - `vX = vY - vX`
+- `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
 
 The bottom part (that starts with "CARRY") checks behaviour of the following
 opcodes, in the case that there **is** an overflow, carry or shifted out bit:
@@ -259,11 +258,11 @@ CARRY  8xy4   8xy5
 8xy6   8xy7   8xyE
 ```
 
-* `8xy4` - `vX += vY`
-* `8xy5` - `vX -= vY`
-* `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
-* `8xy7` - `vX = vY - vX`
-* `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
+- `8xy4` - `vX += vY`
+- `8xy5` - `vX -= vY`
+- `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
+- `8xy7` - `vX = vY - vX`
+- `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
 
 The last row (that starts with "OTHER") checks that the opcode `Fx1E` (`i +=
 vX`) properly adds the value of register `vX` to the index register, first for a
@@ -278,9 +277,9 @@ for more information on the arithmetic operations and the flags.
 
 ## Quirks test
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/5-quirks.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/5-quirks.ch8)
   (source code available [here](./src/tests/5-quirks.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/5-quirks.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/5-quirks.html)
   to see what's supposed to happen
 
 CHIP-8, SUPER-CHIP and XO-CHIP have subtle differences in the way they interpret
@@ -310,10 +309,10 @@ graphical menu just gets in the way. In that case, you can force this ROM to
 select a specific platform by loading a value between `1` and `4` into memory at
 the address `0x1FF` (`512`).
 
-* `1` - CHIP-8
-* `2` - SUPER-CHIP with modern behaviour
-* `3` - XO-CHIP
-* `4` - SUPER-CHIP with legacy behaviour
+- `1` - CHIP-8
+- `2` - SUPER-CHIP with modern behaviour
+- `3` - XO-CHIP
+- `4` - SUPER-CHIP with legacy behaviour
 
 ### The test
 
@@ -327,19 +326,19 @@ The screen shows you if the following quirks are detected as active ("on", "off"
 or an error) and if that matches your chosen target platform (a checkmark or a
 cross).
 
-* `vF reset` - The AND, OR and XOR opcodes (`8xy1`, `8xy2` and `8xy3`) reset the
+- `vF reset` - The AND, OR and XOR opcodes (`8xy1`, `8xy2` and `8xy3`) reset the
   flags register to zero. Test will show `ERR1` if the AND and OR tests don't
   behave the same and `ERR2` if the AND and XOR tests don't behave the same.
-* `Memory` - The save and load opcodes (`Fx55` and `Fx65`) increment the index
+- `Memory` - The save and load opcodes (`Fx55` and `Fx65`) increment the index
   register. More information [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-loading-and-saving-variables/)
   and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
-* `Display wait` - Drawing sprites to the display waits for the vertical blank
+- `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second. More information
   [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-drawing-sprites/).
   Test will show `SLOW` if the number of cycles per frame is too low for the test
   to be deterministic (this is not necessarily an error, but a suggestion to
   rerun the test with a higher number of cycles per frame).
-* `Clipping` - Sprites drawn at the bottom edge of the screen get clipped
+- `Clipping` - Sprites drawn at the bottom edge of the screen get clipped
   instead of wrapping around to the top of the screen. When clipping is off, the
   test checks if sprites get rendered at the right coordinates on the other side
   of the screen. This also tests that sprites drawn at coordinates of `x > 63`
@@ -348,11 +347,11 @@ cross).
   Test will show `ERR1` if the clipping is inconsistent in different dimensions
   or wrapping to the wrong coordinates and `ERR2` if sprites don't wrap around
   as expected.
-* `Shifting` - The shift opcodes (`8xy6` and `8xyE`) only operate on `vX`
+- `Shifting` - The shift opcodes (`8xy6` and `8xyE`) only operate on `vX`
   instead of storing the shifted version of `vY` in `vX` (more information
   [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#8xy6-and-8xye-shift)).
   Test will show `ERR1` if the shift opcodes behave differently.
-* `Jumping` - The "jump to some address plus `v0`" instruction (`Bnnn`) doesn't
+- `Jumping` - The "jump to some address plus `v0`" instruction (`Bnnn`) doesn't
   use `v0`, but `vX` instead where `X` is the highest nibble of `nnn` (more
   information [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#bnnn-jump-with-offset))
 
@@ -365,10 +364,10 @@ executed in `hires` mode, and the behaviour of `Display wait` and `Clipping`
 will be tested in both `lores` and `hires` modes. This means you will not just
 see "on" or "off" for these quirks, but instead one of these values:
 
-* `NONE` - The quirk is disabled in both modes
-* `HRES` - The quirk is only enabled in `hires` mode
-* `LRES` - The quirk is only enabled in `lores` mode
-* `BOTH` - The quirk is enabled in both modes
+- `NONE` - The quirk is disabled in both modes
+- `HRES` - The quirk is only enabled in `hires` mode
+- `LRES` - The quirk is only enabled in `lores` mode
+- `BOTH` - The quirk is enabled in both modes
 
 If the test finds different errors for the `Clipping` test in `hires` mode
 compared to `lores` mode, it will show `ERR3`. In that case, first make sure
@@ -391,9 +390,9 @@ quirks among them.
 
 ## Keypad test
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/6-keypad.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/6-keypad.ch8)
   (source code available [here](./src/tests/6-keypad.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/6-keypad.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/6-keypad.html)
   to see what's supposed to happen
 
 This test allows you to test all three CHIP-8 key input opcodes. It shows you a
@@ -447,11 +446,11 @@ screen:
 
 Otherwise, you can get either of these errors:
 
-* `NOT HALTING` - Your implementation immediately returns the value of any
+- `NOT HALTING` - Your implementation immediately returns the value of any
   currently pressed keys in `vX`, instead of halting the interpreter until a key
   is pressed (note that this needs timer support to be accurate - in other words,
   the DELAY TIMER should continue to count down while awaiting a keypress)
-* `NOT RELEASED` - Your implementation doesn't wait for the pressed key to be
+- `NOT RELEASED` - Your implementation doesn't wait for the pressed key to be
   released before resuming
 
 See [this
@@ -460,9 +459,9 @@ for more information.
 
 ## Beep test
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/7-beep.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/7-beep.ch8)
   (source code available [here](./src/tests/7-beep.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/7-beep.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/7-beep.html)
   to see what's supposed to happen (sound may not actually play due to browser
   restrictions)
 
@@ -475,9 +474,9 @@ Press `B` to beep.
 
 ## Scrolling test
 
-* [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/8-scrolling.ch8)
+- [Download ROM](https://github.com/Timendus/chip8-test-suite/raw/main/bin/8-scrolling.ch8)
   (source code available [here](./src/tests/8-scrolling.8o))
-* [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/8-scrolling.html)
+- [Run this ROM in Octo](https://timendus.github.io/chip8-test-suite/8-scrolling.html)
   to see what's supposed to happen
 
 This test is only applicable to SUPER-CHIP and XO-CHIP interpreters, since
@@ -507,11 +506,11 @@ graphical menu just gets in the way. In that case, you can force this ROM to
 select a specific platform by loading a value between `1` and `5` into memory at
 the address `0x1FF` (`512`).
 
-* `1` - SUPER-CHIP `lores` with modern behaviour
-* `2` - SUPER-CHIP `lores` with legacy behaviour
-* `3` - SUPER-CHIP `hires`
-* `4` - XO-CHIP `lores`
-* `5` - XO-CHIP `hires`
+- `1` - SUPER-CHIP `lores` with modern behaviour
+- `2` - SUPER-CHIP `lores` with legacy behaviour
+- `3` - SUPER-CHIP `hires`
+- `4` - XO-CHIP `lores`
+- `5` - XO-CHIP `hires`
 
 ### The test
 
@@ -546,6 +545,7 @@ git clone git@github.com:Timendus/chip8-test-suite.git
 cd chip8-test-suite
 npm install
 ```
+
 ```bash
 # Build all the tests in `src/tests/` to `bin/`:
 npm start
