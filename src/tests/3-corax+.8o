@@ -36,11 +36,11 @@
   sprite x1 y 4
 }
 
-: test2X
+: test-2X-0E
   v0 := 1
   return
   v0 := 2
-  jump 2X-0E-hard-return
+  jump test-2X-0E-hard-return
 
 : main
   clear
@@ -103,11 +103,6 @@
 : test1x
   sprite x2 y 4
 
-  #test "AX"
-  # Note by Timendus: I think this really tests 2NNN, not ANNN, so I changed the
-  # displayed label on this to not confuse users.
-  # See PR: https://github.com/corax89/chip8-test-rom/pull/9
-
   # Test calling and returning from subroutines (2NNN and 00EE)
   x0 := 18
   x1 := 22
@@ -117,9 +112,9 @@
 	
   # Attempt to run a subroutine
   v0 := 0
-  test2X
+  test-2X-0E
 	
-  : 2X-0E-hard-return
+: test-2X-0E-hard-return
   i := image-ok
   if v0 == 0 then i := image-no  # Subroutine was never called
   sprite x2 y 4
