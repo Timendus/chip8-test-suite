@@ -32,6 +32,7 @@
 :macro drawop A B {
   i := A
   sprite x0 y 4
+
   i := B
   sprite x1 y 4
 }
@@ -39,6 +40,14 @@
 : test-2X-0E
   v0 := 1
   return
+
+  # These opcodes should only run if the interpreter doesn't have 00EE implemented.
+
+  # Note by Madster: I have seen one interpreter, of which I've forgotten the
+  # name of, that allows the execution of the opcode succeeding the return. There 
+  # is a chance that this would fail on that interpreter; however, I'll need to dig up that 
+  # interpreter to test that, though.
+
   v0 := 2
   jump test-2X-0E-hard-return
 
@@ -55,7 +64,7 @@
   i := version-1-0
   sprite x0 y 4
 
-  # general register setup
+  # general register setup for the conditional opcodes.
   x0 := 2
   x1 := 6
   x2 := 11
@@ -366,7 +375,7 @@
 
   sprite x2 y 4
 
-  # Test to see if registers are 8 bit, as much as we can
+  # Test to see if registers are 8 bit, as thoroughly as possible.
   y += 5
 
   drawop imV imX
