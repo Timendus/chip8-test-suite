@@ -394,10 +394,11 @@
   v5 := v0
   load v0
   v6 := v0
+
   i := scratchpad
   load v0
   i := flag-err
-
+  v1 := 0
   if v0 == CHIP8 then jump expect-memquirk
   if v0 == SCHIP_MODERN then jump expect-no-memquirk
   if v0 == SCHIP_LEGACY then jump expect-no-memquirk
@@ -408,7 +409,7 @@
     if v6 == 5 begin 
       i := flag-ok
     else
-      i := quirks-inconsistent-1
+      v1 := 1
     end
   end
   jump memquirk-done
@@ -418,7 +419,7 @@
     if v6 == 11 begin
       i := flag-ok
     else
-      i := quirks-inconsistent-1
+      v1 := 1
     end
   end
 
@@ -428,6 +429,7 @@
   sprite x y 3
   i := quirks-on
   if v5 == 11 then i := quirks-off
+  if v1 == 1 then i := quirks-inconsistent-1
   vD := 42
   vE := 6
   drawText
