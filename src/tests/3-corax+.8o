@@ -4,7 +4,7 @@
 
 # MIT License
 #
-# Copyright (c) 2019 corax89, 2023 Timendus
+# Copyright (c) 2019 corax89, 2023,2024 Timendus
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -40,361 +40,324 @@
 : test-2X-0E
   v0 := 1
   return
-
-  # These opcodes should only run if the interpreter doesn't have 00EE implemented.
-
-  # Note by Madster: I have seen one interpreter, of which I've forgotten the
-  # name of, that allows the execution of the opcode succeeding the return. There 
-  # is a chance that this would fail on that interpreter; however, I'll need to dig up that 
-  # interpreter to test that, though.
-
+  # These opcodes will run if the interpreter doesn't have return (00EE) implemented:
   v0 := 2
   jump test-2X-0E-hard-return
 
 : main
   clear
 
-  # display current version
+  # Display current version
   x0 := 50
   y := 26
   i := version-0-0
   sprite x0 y 4
-
   x0 := 58
   i := version-1-0
   sprite x0 y 4
 
-  # general register setup for the conditional opcodes.
+  # Show output in the first column
   x0 := 2
   x1 := 6
   x2 := 11
-
   y := 1
+
+#################
+# Test 3xNN
 
   v5 := 42
   v6 := 43
-
-  # test 3xNN
   drawop im3 imX
-
   i := image-ok
   if v6 != 43 then i := image-no
-
   sprite x2 y 4
 
-  # test 4xNN
+#################
+# Test 4xNN
+
   y := 6
-
   drawop im4 imX
-
   i := image-no
   if v5 == 42 then i := image-ok
-
   sprite x2 y 4
 
-  # test 5xy0
+#################
+# Test 5xy0
+
   y := 11
-
   drawop im5 imX
-
   i := image-no
   if v5 != v6 then i := image-ok
-
   sprite x2 y 4
 
-  # test 7xNN
+#################
+# Test 7xNN
+
   y := 16
-
   drawop im7 imX
-
   i := image-no
   v6 += 255
   if v6 == 42 then i := image-ok
-
   sprite x2 y 4
 
-  # test 9xy0
+#################
+# Test 9xy0
+
   y += 5
-
   drawop im9 imX
-
   i := image-no
   if v5 == v6 then i := image-ok
-
   sprite x2 y 4
 
-  # test 1NNN (displayed as 1X)
+#################
+# Test 1NNN (displayed as 1X)
+
   y += 5
-
   drawop im1 imX
-
   i := image-ok
   jump test-1X-pass
-
   i := image-no
-
 : test-1X-pass
   sprite x2 y 4
 
-  # Test calling and returning from subroutines (2NNN and 00EE, displayed as 2X and 0E)
+  # Show output in the second column
   x0 := 18
   x1 := 22
   x2 := 27
   y := 1
 
+#################
+# Test calling subroutines (2NNN, displayed as 2X)
+
   drawop im2 imX
-	
-  # Attempt to run a subroutine
   v0 := 0
-  test-2X-0E
-	
+  test-2X-0E    # Attempt to run a subroutine
 : test-2X-0E-hard-return
   i := image-ok
   if v0 == 0 then i := image-no  # Subroutine was never called
-
   sprite x2 y 4
-  
+
+#################
+# Test returning from subroutines (00EE, displayed as 0E)
+
   y += 5
   drawop im0 imE
-
   i := image-ok
   if v0 == 2 then i := image-no  # Return didn't work
   if v0 != 0 then sprite x2 y 4  # If subroutine wasn't called, return wasn't tested
 
-  # test 8xy0
+#################
+# Test 8xy0
+
   y += 5
-
   drawop im8 im0
-
   i := image-no
   v5 := 42
   v7 := 0
   v7 := v5
   if v7 == 42 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xy1
+#################
+# Test 8xy1
+
   y += 5
-
   drawop im8 im1
-
   i := image-no
   v6 := 11
   v7 := 42
   v7 |= v6
   if v7 == 43 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xy2
+#################
+# Test 8xy2
+
   y += 5
-
   drawop im8 im2
-
   i := image-no
   v6 := 120
   v7 := 31
   v7 &= v6
   if v7 == 24 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xy3
+#################
+# Test 8xy3
+
   y += 5
-
   drawop im8 im3
-
   i := image-no
   v6 := 120
   v7 := 31
   v7 ^= v6
   if v7 == 103 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xy4
+  # Show output in the third column
   x0 := 34
   x1 := 38
   x2 := 43
   y  := 1
 
-  drawop im8 im4
+#################
+# Test 8xy4
 
+  drawop im8 im4
   i := image-no
   v6 := 140
   v7 := 140
   v7 += v6
   if v7 == 24 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xy5
+#################
+# Test 8xy5
+
   y += 5
-
   drawop im8 im5
-
   i := image-no
   v6 := 140
   v7 := 120
   v7 -= v6
   if v7 == 236 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xy7
+#################
+# Test 8xy7
+
   y += 5
-
   drawop im8 im7
-
   i := image-no
   v6 := 120
   v7 := 140
   v7 =- v6
   if v7 == 236 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xy6
+#################
+# Test 8xy6
+
   y += 5
-
   drawop im8 im6
-
   i := image-no
   v6 := 15
   v6 >>= v6
   if v6 == 7 then i := image-ok
-
   sprite x2 y 4
 
-  # test 8xyE
+#################
+# Test 8xyE
+
   y += 5
-
   drawop im8 imE
-
   i := image-no
   v6 := 224
   v6 <<= v6
   if v6 == 192 then i := image-ok
-
   sprite x2 y 4
 
-  # test Fx65
+#################
+# Test Fx65
+
   y += 5
-
   drawop imF im6
-
   i := scratchpad
   load v1
   i := image-ok
   if v0 != 0xAA then i := image-no
   if v1 != 0x55 then i := image-no
-
   sprite x2 y 4
 
-  # test Fx55
+#################
+# Test Fx55
+
   x0 := 50
   x1 := 54
   x2 := 59
   y  := 1
-
   drawop imF im5
-
   i := scratchpad
   v0 := 0
   v1 := 48
   save v1
-
   i := scratchpad
   load v0
-
   v1 := v0
   i := scratchpad-plus-1
   load v0
-
   i := image-ok
   if v0 != 48 then i := image-no
   if v1 != 0 then i := image-no
-
   sprite x2 y 4
 
-  # test Fx33
-  y += 5
+#################
+# Test Fx33
 
+  y += 5
   drawop imF im3
-  
-  # >= 100
+
+  # N >= 100
   i := scratchpad
   v6 := 137
   bcd v6
   load v2
-  
   i := image-no
-
   if v0 != 1 then jump fx33-fail
   if v1 != 3 then jump fx33-fail
   if v2 != 7 then jump fx33-fail
   
-  # < 100
+  # N < 100
   i := scratchpad
   v6 := 65
   bcd v6
   load v2
-
   i := image-no  
-
   if v0 != 0 then jump fx33-fail
   if v1 != 6 then jump fx33-fail
   if v2 != 5 then jump fx33-fail
   
-  # < 10
+  # N < 10
   i := scratchpad
   v6 := 4
   bcd v6
   load v2
-
   i := image-no
-  
   if v0 != 0 then jump fx33-fail
   if v1 != 0 then jump fx33-fail
   if v2 != 4 then jump fx33-fail
 	
   i := image-ok
-  
 : fx33-fail
   sprite x2 y 4
 
-  #test Fx1E
+#################
+# Test Fx1E
+
   y += 5
-
   drawop imF imE
-
   i := image-no
   v6 := 4
   i += v6
-
   sprite x2 y 4
 
-  # Test to see if registers are 8 bit, as thoroughly as possible.
+#################
+# Test to see if registers are 8 bit, as thoroughly as possible.
+
   y += 5
-
   drawop imV imX
-
   i := image-ok
 
   # Addition opcodes should not allow us to overflow
   v6 := 255
   v6 += 10
   if v6 != 9 then i := image-no
-
   v6 >>= v6
   if v6 != 4 then i := image-no
-
   v6 := 255
   v0 := 10
   v6 += v0
   if v6 != 9 then i := image-no
-
   v6 >>= v6
   if v6 != 4 then i := image-no
 
@@ -403,7 +366,6 @@
   v6 <<= v6
   v6 >>= v6
   if v6 != 127 then i := image-no
-
   v6 >>= v6
   v6 <<= v6
   if v6 != 126 then i := image-no
@@ -412,16 +374,17 @@
   v6 := 5
   v6 -= 10
   if v6 != 251 then i := image-no
-
   v6 := 5
   v6 -= v0
   if v6 != 251 then i := image-no
-
   v6 := 5
   v0 =- v6
   if v0 != 251 then i := image-no
 
   sprite x2 y 4
+
+#################
+# Test is done!
 
   loop again
 
