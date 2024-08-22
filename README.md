@@ -332,6 +332,7 @@ cross).
 - `Memory` - The save and load opcodes (`Fx55` and `Fx65`) increment the index
   register. More information [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-loading-and-saving-variables/)
   and [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#fx55-and-fx65-store-and-load-memory).
+  Test will show `ERR1` if reading and writing don't behave the same.
 - `Display wait` - Drawing sprites to the display waits for the vertical blank
   interrupt, limiting their speed to max 60 sprites per second. More information
   [here](https://laurencescotford.net/chip-8-on-the-cosmac-vip-drawing-sprites/).
