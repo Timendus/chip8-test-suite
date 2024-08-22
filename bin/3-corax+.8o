@@ -4,7 +4,7 @@
 
 # MIT License
 #
-# Copyright (c) 2019 corax89, 2023 Timendus
+# Copyright (c) 2019 corax89, 2023,2024 Timendus
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,22 +27,27 @@
 :alias x0 v8
 :alias x1 v9
 :alias x2 vA
-:alias y	vB
+:alias y  vB
 
 :macro drawop A B {
   i := A
   sprite x0 y 4
+
   i := B
   sprite x1 y 4
 }
 
-: test2X
-  i := image-ok
-  sprite x2 y 4
+: test-2X-0E
+  v0 := 1
   return
+  # These opcodes will run if the interpreter doesn't have return (00EE) implemented:
+  v0 := 2
+  jump test-2X-0E-hard-return
 
 : main
   clear
+
+  # Display current version
   x0 := 50
   y := 26
   i := version-0-0
@@ -51,34 +56,43 @@
   i := version-1-0
   sprite x0 y 4
 
+  # Show output in the first column
   x0 := 2
   x1 := 6
   x2 := 11
   y := 1
+
+#################
+# Test 3xNN
+
   v5 := 42
   v6 := 43
-
-  #test 3x
   drawop im3 imX
   i := image-ok
   if v6 != 43 then i := image-no
   sprite x2 y 4
 
-  #test 4x
+#################
+# Test 4xNN
+
   y := 6
   drawop im4 imX
   i := image-no
   if v5 == 42 then i := image-ok
   sprite x2 y 4
 
-  #test 5x
+#################
+# Test 5xy0
+
   y := 11
   drawop im5 imX
   i := image-no
   if v5 != v6 then i := image-ok
   sprite x2 y 4
 
-  #test 7x
+#################
+# Test 7xNN
+
   y := 16
   drawop im7 imX
   i := image-no
@@ -86,40 +100,55 @@
   if v6 == 42 then i := image-ok
   sprite x2 y 4
 
-  #test 9x
+#################
+# Test 9xy0
+
   y += 5
   drawop im9 imX
   i := image-no
   if v5 == v6 then i := image-ok
   sprite x2 y 4
 
-  #test 1x
+#################
+# Test 1NNN (displayed as 1X)
+
   y += 5
   drawop im1 imX
   i := image-ok
-  jump test1x
+  jump test-1X-pass
   i := image-no
-: test1x
+: test-1X-pass
   sprite x2 y 4
 
-  #test "AX"
-  # Note by Timendus: I think this really tests 2NNN, not ANNN, so I changed the
-  # displayed label on this to not confuse users.
-  # See PR: https://github.com/corax89/chip8-test-rom/pull/9
+  # Show output in the second column
   x0 := 18
   x1 := 22
   x2 := 27
   y := 1
-  drawop im2 imX
-  test2X
 
-  #test 0E
+#################
+# Test calling subroutines (2NNN, displayed as 2X)
+
+  drawop im2 imX
+  v0 := 0
+  test-2X-0E    # Attempt to run a subroutine
+: test-2X-0E-hard-return
+  i := image-ok
+  if v0 == 0 then i := image-no  # Subroutine was never called
+  sprite x2 y 4
+
+#################
+# Test returning from subroutines (00EE, displayed as 0E)
+
   y += 5
   drawop im0 imE
   i := image-ok
-  sprite x2 y 4
+  if v0 == 2 then i := image-no  # Return didn't work
+  if v0 != 0 then sprite x2 y 4  # If subroutine wasn't called, return wasn't tested
 
-  #test 8xy0
+#################
+# Test 8xy0
+
   y += 5
   drawop im8 im0
   i := image-no
@@ -129,7 +158,9 @@
   if v7 == 42 then i := image-ok
   sprite x2 y 4
 
-  #test 8xy1
+#################
+# Test 8xy1
+
   y += 5
   drawop im8 im1
   i := image-no
@@ -139,7 +170,9 @@
   if v7 == 43 then i := image-ok
   sprite x2 y 4
 
-  #test 8xy2
+#################
+# Test 8xy2
+
   y += 5
   drawop im8 im2
   i := image-no
@@ -149,7 +182,9 @@
   if v7 == 24 then i := image-ok
   sprite x2 y 4
 
-  #test 8xy3
+#################
+# Test 8xy3
+
   y += 5
   drawop im8 im3
   i := image-no
@@ -159,11 +194,15 @@
   if v7 == 103 then i := image-ok
   sprite x2 y 4
 
-  #test 8xy4
+  # Show output in the third column
   x0 := 34
   x1 := 38
   x2 := 43
   y  := 1
+
+#################
+# Test 8xy4
+
   drawop im8 im4
   i := image-no
   v6 := 140
@@ -172,7 +211,9 @@
   if v7 == 24 then i := image-ok
   sprite x2 y 4
 
-  #test 8xy5
+#################
+# Test 8xy5
+
   y += 5
   drawop im8 im5
   i := image-no
@@ -182,7 +223,9 @@
   if v7 == 236 then i := image-ok
   sprite x2 y 4
 
-  #test 8xy7
+#################
+# Test 8xy7
+
   y += 5
   drawop im8 im7
   i := image-no
@@ -192,9 +235,9 @@
   if v7 == 236 then i := image-ok
   sprite x2 y 4
 
-  #test "8xyE"
-  # Note by Timendus: This should be 8XY6, changed the label here too.
-  # See PR: https://github.com/corax89/chip8-test-rom/pull/7
+#################
+# Test 8xy6
+
   y += 5
   drawop im8 im6
   i := image-no
@@ -203,9 +246,9 @@
   if v6 == 7 then i := image-ok
   sprite x2 y 4
 
-  #test "8xy6"
-  # Note by Timendus: This should be 8XYE, changed the label here too.
-  # See PR: https://github.com/corax89/chip8-test-rom/pull/7
+#################
+# Test 8xyE
+
   y += 5
   drawop im8 imE
   i := image-no
@@ -214,7 +257,9 @@
   if v6 == 192 then i := image-ok
   sprite x2 y 4
 
-  #test Fx65
+#################
+# Test Fx65
+
   y += 5
   drawop imF im6
   i := scratchpad
@@ -224,7 +269,9 @@
   if v1 != 0x55 then i := image-no
   sprite x2 y 4
 
-  #test Fx55
+#################
+# Test Fx55
+
   x0 := 50
   x1 := 54
   x2 := 59
@@ -244,20 +291,49 @@
   if v1 != 0 then i := image-no
   sprite x2 y 4
 
-  #test Fx33
+#################
+# Test Fx33
+
   y += 5
   drawop imF im3
+
+  # N >= 100
   i := scratchpad
   v6 := 137
   bcd v6
   load v2
+  i := image-no
+  if v0 != 1 then jump fx33-fail
+  if v1 != 3 then jump fx33-fail
+  if v2 != 7 then jump fx33-fail
+  
+  # N < 100
+  i := scratchpad
+  v6 := 65
+  bcd v6
+  load v2
+  i := image-no  
+  if v0 != 0 then jump fx33-fail
+  if v1 != 6 then jump fx33-fail
+  if v2 != 5 then jump fx33-fail
+  
+  # N < 10
+  i := scratchpad
+  v6 := 4
+  bcd v6
+  load v2
+  i := image-no
+  if v0 != 0 then jump fx33-fail
+  if v1 != 0 then jump fx33-fail
+  if v2 != 4 then jump fx33-fail
+	
   i := image-ok
-  if v0 != 1 then i := image-no
-  if v1 != 3 then i := image-no
-  if v2 != 7 then i := image-no
+: fx33-fail
   sprite x2 y 4
 
-  #test Fx1E
+#################
+# Test Fx1E
+
   y += 5
   drawop imF imE
   i := image-no
@@ -265,10 +341,13 @@
   i += v6
   sprite x2 y 4
 
-  # Test to see if registers are 8 bit, as much as we can
+#################
+# Test to see if registers are 8 bit, as thoroughly as possible.
+
   y += 5
   drawop imV imX
   i := image-ok
+
   # Addition opcodes should not allow us to overflow
   v6 := 255
   v6 += 10
@@ -281,6 +360,7 @@
   if v6 != 9 then i := image-no
   v6 >>= v6
   if v6 != 4 then i := image-no
+
   # Shift opcodes should not retain bits
   v6 := 255
   v6 <<= v6
@@ -289,6 +369,7 @@
   v6 >>= v6
   v6 <<= v6
   if v6 != 126 then i := image-no
+
   # Subtraction should wrap back to positive
   v6 := 5
   v6 -= 10
@@ -299,7 +380,11 @@
   v6 := 5
   v0 =- v6
   if v0 != 251 then i := image-no
+
   sprite x2 y 4
+
+#################
+# Test is done!
 
   loop again
 
@@ -416,5 +501,5 @@
 : version-0-0
   0x0a 0xae 0xa2 0x42
 : version-1-0
-  0x10 0x30 0x10 0xb8
+  0x38 0x08 0x30 0xb8
 
