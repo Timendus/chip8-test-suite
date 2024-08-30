@@ -370,8 +370,10 @@
 : scratchpad-plus-1
   0
 : scratchpad-plus-2
+  0
+: scratchpad-plus-3
   0 0 0 0 0
-  0 0 0 0 0
+  0 0 0 0
   0 0 0 0
 : scratchpad-plus-16
   0
@@ -554,5 +556,5 @@
 : version-0-0
   0x0a 0xae 0xa2 0x42
 : version-1-0
-  0x10 0x30 0x10 0xb8
+  0x38 0x08 0x30 0xb8
 
