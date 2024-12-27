@@ -384,6 +384,72 @@
   sprite x2 y 4
 
 #################
+# Test CxNN (Fairly long test, and also prone to failing)
+
+  # See if a random number is returned
+y += 5
+  drawop imC imX
+  
+  i := image-no
+  
+  v6 := 0
+  v7 := 0
+  
+  loop
+    v7 += 1
+    v6 := random 255
+    
+    if v7 == 0 then jump cxnn-fail
+    if v6 > 255 then cxnn-fail
+    if v6 == 0 then
+  again
+  
+  # Masking tests
+  # Mask of 0x00
+  v6 := 0
+  v7 := 0
+  
+  loop
+    v7 += 1
+    v6 := random 0
+    
+    if v6 != 0 then jump cxnn-fail
+    if v7 != 0 then 
+  again
+  
+  # Mask of 0x0F
+  v6 := 0
+  v7 := 0
+  
+  loop
+    v7 += 1
+    v6 := random 0xF
+    
+    if v6 > 0xF then jump cxnn-fail
+    if v7 != 0 then 
+  again
+  
+  # Mask of 0xF0
+  v6 := 0
+  v7 := 0
+  v4 := 0xF0
+  
+  loop
+    v7 += 1
+    v6 := random 0xF0
+    v5 := v6
+    v5 &= v4
+    
+    if v6 > 0xF0 then jump cxnn-fail
+    if v6 != v5 then jump cxnn-fail
+    if v7 != 0 then 
+  again
+  
+  i := image-ok
+: cxnn-fail
+  sprite x2 y 4
+
+#################
 # Test is done!
 
   loop again
