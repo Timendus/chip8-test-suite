@@ -68,7 +68,8 @@
   v5 := 42
   v6 := 43
   drawop im3 imX
-  i := image-ok
+  i := image-no
+  if v6 != 42 then i := image-ok
   if v6 != 43 then i := image-no
   sprite x2 y 4
 
@@ -79,6 +80,7 @@
   drawop im4 imX
   i := image-no
   if v5 == 42 then i := image-ok
+  if v5 == 43 then i := image-no
   sprite x2 y 4
 
 #################
@@ -86,8 +88,9 @@
 
   y := 11
   drawop im5 imX
-  i := image-no
+  i := image-no  
   if v5 != v6 then i := image-ok
+  if v5 != v5 then i := image-no
   sprite x2 y 4
 
 #################
@@ -107,6 +110,7 @@
   drawop im9 imX
   i := image-no
   if v5 == v6 then i := image-ok
+  if v5 == vb then i := image-no
   sprite x2 y 4
 
 #################
