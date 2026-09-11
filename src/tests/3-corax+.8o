@@ -88,6 +88,9 @@
   drawop im5 imX
   i := image-no
   if v5 != v6 then i := image-ok
+  v3 := 7
+  v4 := 7
+  if v3 != v4 then i := image-no
   sprite x2 y 4
 
 #################
