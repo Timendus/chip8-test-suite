@@ -188,6 +188,10 @@
   vF := 10
   v5 =- vF
   v5 := vF
+  # Check that vX =- vX, one register with itself, gives zero and no carry
+  v6 := 10
+  v6 =- v6
+  v7 := vF
   # Base case: check that subtracting two regular registers results in the
   # correct value and no carry set, and taht the carry register actually gets
   # overwritten.
@@ -197,6 +201,8 @@
   v2 =- v1 # 35 (0x23)
   # Check all our assertions
   if v5 != 1 then vF := 2
+  if v6 != 0 then vF := 2
+  if v7 != 1 then vF := 2
   expect-v2-vf-v3-v4 35 1 5 1
   x += 1
 
