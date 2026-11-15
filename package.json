@@ -2,7 +2,7 @@
   "name": "Timendus' CHIP-8 Test Suite",
   "scripts": {
     "start": "npm run scale-splash && npm run build-tests",
-    "scale-splash": "ffmpeg -y -i pictures/splash.png -vf scale=96:-1 -sws_flags neighbor pictures/splash2x.png",
+    "scale-splash": "ffmpeg -y -i pictures/splash.png -vf scale=96:-1 -sws_flags neighbor -update true pictures/splash2x.png",
     "build-tests": "for TEST in ./src/tests/*.8o; do export TEST=`basename ${TEST%.*}`; npm run build-test; done",
     "build-test": "echo \"Building ${TEST}.ch8\" && octopus src/tests/${TEST}.8o bin/${TEST}.8o && octo bin/${TEST}.8o bin/${TEST}.ch8 && octo --options octo-config.json bin/${TEST}.8o docs/${TEST}.html && cat bin/${TEST}.8o | pbcopy"
   },
