@@ -391,6 +391,42 @@
   sprite x2 y 4
 
 #################
+# Test CxNN (displayed as CX)
+
+  y += 5
+  drawop imC imX
+  # Within its mask every bit must come up as 0 and as 1, and no bit outside
+  # the mask may ever be set. Between them 0xA5 and 0x5A have each bit once
+  # inside and once outside the mask, so a modulo instead of a mask shows too.
+  # A working random generator needs about ten draws, the test gives up after
+  # 64. The counter is kept away from v6's neighbours, so a Cxnn that writes
+  # the wrong register still ends the loop.
+  v1 := 0     # OR of the 0xA5 results
+  v2 := 0xFF  # AND of the 0xA5 results
+  v3 := 0     # OR of the 0x5A results
+  v4 := 0xFF  # AND of the 0x5A results
+  vC := 0     # draws so far
+  i := image-no
+  loop
+    vC += 1
+    if vC == 64 then jump cxnn-fail
+    v6 := random 0xA5
+    v1 |= v6
+    v2 &= v6
+    v6 := random 0x5A
+    v3 |= v6
+    v4 &= v6
+    v0 := v2
+    v0 |= v4
+    if v1 != 0xA5 then v0 := 1
+    if v3 != 0x5A then v0 := 1
+    while v0 != 0
+  again
+  i := image-ok
+: cxnn-fail
+  sprite x2 y 4
+
+#################
 # Test is done!
 
   loop again
