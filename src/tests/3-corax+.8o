@@ -48,18 +48,18 @@
   clear
 
   # Display current version
-  x0 := 50
-  y := 26
+  x0 := 51
+  y := 27
   i := version-0-0
   sprite x0 y 4
-  x0 := 58
+  x0 := 59
   i := version-1-0
   sprite x0 y 4
 
   # Show output in the first column
-  x0 := 2
-  x1 := 6
-  x2 := 11
+  x0 := 0
+  x1 := 4
+  x2 := 8
   y := 1
 
 #################
@@ -116,10 +116,15 @@
   if v5 == vb then i := image-no
   sprite x2 y 4
 
+  # Show output in the second column
+  x0 := 13
+  x1 := 17
+  x2 := 21
+  y := 1
+
 #################
 # Test 1NNN (displayed as 1X)
 
-  y += 5
   drawop im1 imX
   i := image-ok
   jump test-1X-pass
@@ -127,15 +132,10 @@
 : test-1X-pass
   sprite x2 y 4
 
-  # Show output in the second column
-  x0 := 18
-  x1 := 22
-  x2 := 27
-  y := 1
-
 #################
 # Test calling subroutines (2NNN, displayed as 2X)
 
+  y += 5
   drawop im2 imX
   v0 := 0
   test-2X-0E    # Attempt to run a subroutine
@@ -177,10 +177,15 @@
   if v7 == 43 then i := image-ok
   sprite x2 y 4
 
+  # Show output in the third column
+  x0 := 26
+  x1 := 30
+  x2 := 34
+  y  := 1
+
 #################
 # Test 8xy2
 
-  y += 5
   drawop im8 im2
   i := image-no
   v6 := 120
@@ -201,21 +206,23 @@
   if v7 == 103 then i := image-ok
   sprite x2 y 4
 
-  # Show output in the third column
-  x0 := 34
-  x1 := 38
-  x2 := 43
-  y  := 1
-
 #################
 # Test 8xy4
 
+  y += 5
   drawop im8 im4
   i := image-no
   v6 := 140
   v7 := 140
   v7 += v6
   if v7 == 24 then i := image-ok
+  v6 := 0x35
+  v7 := 0x1B
+  v7 += v6
+  if v7 != 0x50 then i := image-no
+  if v6 != 0x35 then i := image-no
+  v6 += v6
+  if v6 != 0x6A then i := image-no
   sprite x2 y 4
 
 #################
@@ -242,10 +249,15 @@
   if v7 == 236 then i := image-ok
   sprite x2 y 4
 
+  # Show output in the fourth column
+  x0 := 39
+  x1 := 43
+  x2 := 47
+  y  := 1
+
 #################
 # Test 8xy6
 
-  y += 5
   drawop im8 im6
   i := image-no
   v6 := 15
@@ -279,10 +291,7 @@
 #################
 # Test Fx55
 
-  x0 := 50
-  x1 := 54
-  x2 := 59
-  y  := 1
+  y += 5
   drawop imF im5
   i := scratchpad
   v0 := 0
@@ -338,14 +347,106 @@
 : fx33-fail
   sprite x2 y 4
 
+  # Show output in the fifth column
+  x0 := 52
+  x1 := 56
+  x2 := 60
+  y  := 1
+
 #################
 # Test Fx1E
 
-  y += 5
   drawop imF imE
   i := image-no
   v6 := 4
   i += v6
+  sprite x2 y 4
+
+#################
+# Test Fx29
+
+  y += 5
+  drawop imF im9
+  vE := 8
+  i := hex vE
+  load v4
+  v5 := v0
+  v6 := v1
+  v7 := v2
+  v0 |= v1
+  v0 |= v2
+  v0 |= v3
+  v0 |= v4
+  if v0 == 0 then jump fx29-fail
+  v1 := 0x0F
+  v1 &= v0
+  if v1 != 0 then jump fx29-fail
+  vD := 8
+  i := hex vD
+  load v2
+  if v0 != v5 then jump fx29-fail
+  if v1 != v6 then jump fx29-fail
+  if v2 != v7 then jump fx29-fail
+  vD := 0
+  i := hex vD
+  load v2
+  v0 ^= v5
+  v1 ^= v6
+  v2 ^= v7
+  v0 |= v1
+  v0 |= v2
+  i := image-ok
+  if v0 != 0 then jump fx29-done
+: fx29-fail
+  i := image-no
+: fx29-done
+  sprite x2 y 4
+
+#################
+# Test Fx15 and Fx07 (displayed as DT)
+
+  y += 5
+  drawop imD imT
+  v6 := 42
+  v7 := 0
+  delay := v6
+  v7 := delay
+  i := image-ok
+  if v7 == 42 then jump dt-done
+  delay := v6
+  v7 := delay
+  if v7 != 42 then i := image-no
+: dt-done
+  sprite x2 y 4
+
+#################
+# Test CxNN (displayed as CX)
+
+  y += 5
+  drawop imC imX
+  v1 := 0     # OR of the 0xA5 results
+  v2 := 0xFF  # AND of the 0xA5 results
+  v3 := 0     # OR of the 0x5A results
+  v4 := 0xFF  # AND of the 0x5A results
+  vC := 0     # draws so far
+  i := image-no
+  loop
+    vC += 1
+    if vC == 64 then jump cxnn-fail
+    v6 := random 0xA5
+    v1 |= v6
+    v2 &= v6
+    v6 := random 0x5A
+    v3 |= v6
+    v4 &= v6
+    v0 := v2
+    v0 |= v4
+    if v1 != 0xA5 then v0 := 1
+    if v3 != 0x5A then v0 := 1
+    while v0 != 0
+  again
+  i := image-ok
+: cxnn-fail
   sprite x2 y 4
 
 #################
@@ -388,42 +489,6 @@
   v0 =- v6
   if v0 != 251 then i := image-no
 
-  sprite x2 y 4
-
-#################
-# Test CxNN (displayed as CX)
-
-  y += 5
-  drawop imC imX
-  # Within its mask every bit must come up as 0 and as 1, and no bit outside
-  # the mask may ever be set. Between them 0xA5 and 0x5A have each bit once
-  # inside and once outside the mask, so a modulo instead of a mask shows too.
-  # A working random generator needs about ten draws, the test gives up after
-  # 64. The counter is kept away from v6's neighbours, so a Cxnn that writes
-  # the wrong register still ends the loop.
-  v1 := 0     # OR of the 0xA5 results
-  v2 := 0xFF  # AND of the 0xA5 results
-  v3 := 0     # OR of the 0x5A results
-  v4 := 0xFF  # AND of the 0x5A results
-  vC := 0     # draws so far
-  i := image-no
-  loop
-    vC += 1
-    if vC == 64 then jump cxnn-fail
-    v6 := random 0xA5
-    v1 |= v6
-    v2 &= v6
-    v6 := random 0x5A
-    v3 |= v6
-    v4 &= v6
-    v0 := v2
-    v0 |= v4
-    if v1 != 0xA5 then v0 := 1
-    if v3 != 0x5A then v0 := 1
-    while v0 != 0
-  again
-  i := image-ok
-: cxnn-fail
   sprite x2 y 4
 
 #################
@@ -531,6 +596,11 @@
   0b10000000
   0b11000000
   0b10000000
+: imT
+  0b11100000
+  0b01000000
+  0b01000000
+  0b01000000
 : imV
   0b00000000
   0b10100000
