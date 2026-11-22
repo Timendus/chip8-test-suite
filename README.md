@@ -7,17 +7,31 @@ CHIP-8, SUPER-CHIP or XO-CHIP interpreter (or "emulator")_
 
 ## Table of contents
 
+- [CHIP-8 test suite](#chip-8-test-suite)
+  - [Table of contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Baseline](#baseline)
+  - [CHIP-8](#chip-8)
+  - [SUPER-CHIP](#super-chip)
+  - [XO-CHIP](#xo-chip)
 - [Available tests](#available-tests)
   - [CHIP-8 splash screen](#chip-8-splash-screen)
   - [IBM logo](#ibm-logo)
   - [Corax+ opcode test](#corax-opcode-test)
   - [Flags test](#flags-test)
   - [Quirks test](#quirks-test)
+    - [The menu](#the-menu)
+    - [The test](#the-test)
+    - [SUPER-CHIP / XO-CHIP](#super-chip--xo-chip)
+    - [More information](#more-information)
   - [Keypad test](#keypad-test)
+    - [1. `Ex9E DOWN`](#1-ex9e-down)
+    - [2. `ExA1 UP`](#2-exa1-up)
+    - [3. `Fx0A GETKEY`](#3-fx0a-getkey)
   - [Beep test](#beep-test)
   - [Scrolling test](#scrolling-test)
+    - [The menu](#the-menu-1)
+    - [The test](#the-test-1)
 - [Contributing](#contributing)
 - [Community response 😄](#community-response-)
 
@@ -159,12 +173,11 @@ actually show you some sane results.
 The codes on the screen correspond to the functioning of these opcodes:
 
 ```
-3xnn    2nnn    8xy4    Fx55
-4xnn    00EE    8xy5    Fx33
-5xy0    8xy0    8xy7    Fx1E
-7xnn    8xy1    8xy6    Registers
-9xy0    8xy2    8xyE
-1nnn    8xy3    Fx65
+3xnn    1nnn    8xy2    8xy6    Fx1E
+4xnn    2nnn    8xy3    8xyE    Fx29
+5xy0    00EE    8xy4    Fx65    DT
+7xnn    8xy0    8xy5    Fx55    CxNN
+9xy0    8xy1    8xy7    Fx33    Registers
 ```
 
 If you see a checkmark, they're at least somewhat functional in the happy path.
@@ -194,6 +207,16 @@ Here's a rough description of what these opcodes should do to pass the tests:
 - `Fx33` - store binary-coded decimal representation of `vX` to memory at `i`,
   `i + 1` and `i + 2`
 - `Fx1E` - `i += vX`
+- `Fx29` - point `i` to the font sprite for the hexadecimal digit in `vX`. it
+  checks that the sprite is not empty, at most 4 pixels wide, the same for the
+  same value in another register and differs between `0` and `8`
+- `DT` - `Fx15` sets the delay timer to `vX` and `Fx07` reads it back into
+  `vX`. The test sets the delay timer to 42. It expects to read 42 right after
+  that. It tries this twice, in case a frame ended right in between. A common
+  mistake this catches is counting the timer down on every instruction instead of
+  once per frame
+- `CxNN` - `vX = random & nn`. The test checks that no bits outside of `nn` are
+  ever set, and that every bit inside `nn` shows up both set and cleared
 - `Registers` - The `v0` - `vF` registers should be 8 bits wide. This tests to
   see if it can overflow your registers.
 
@@ -247,7 +270,8 @@ HAPPY  8xy1   8xy2
 - `8xy4` - `vX += vY`
 - `8xy5` - `vX -= vY`
 - `8xy6` - `vX = vY >> 1` or `vX = vX >> 1` depending on quirks
-- `8xy7` - `vX = vY - vX`
+- `8xy7` - `vX = vY - vX`, also checked with `vX` and `vY` being the same
+  register
 - `8xyE` - `vX = vY << 1` or `vX = vX << 1` depending on quirks
 
 The bottom part (that starts with "CARRY") checks behaviour of the following
@@ -351,7 +375,9 @@ cross).
 - `Shifting` - The shift opcodes (`8xy6` and `8xyE`) only operate on `vX`
   instead of storing the shifted version of `vY` in `vX` (more information
   [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#8xy6-and-8xye-shift)).
-  Test will show `ERR1` if the shift opcodes behave differently.
+  Test will show `ERR1` if the shift opcodes behave differently. The bit that
+  gets shifted out into `vF` must come from the register that was actually
+  shifted, otherwise you will see a cross.
 - `Jumping` - The "jump to some address plus `v0`" instruction (`Bnnn`) doesn't
   use `v0`, but `vX` instead where `X` is the highest nibble of `nnn` (more
   information [here](https://tobiasvl.github.io/blog/write-a-chip-8-emulator/#bnnn-jump-with-offset))

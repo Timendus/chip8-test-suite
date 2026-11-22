@@ -504,12 +504,16 @@
   # When shifting a register, the interpreter always shifts register X into
   # register X (instead of shifting register Y into register X)
   text 1 21 quirks-shift
-  v5 := 0
+  # v5 and v7 differ from v6 and v8 in the bit that gets shifted out, so the
+  # flag tells us which register was really shifted.
+  v5 := 128
   v6 := 8
-  v7 := 0
+  v7 := 1
   v8 := 32
   v5 <<= v6
+  v9 := vF
   v7 >>= v8
+  vC := vF
   i := scratchpad
   load v0
   i := flag-err
@@ -524,6 +528,15 @@
   end
   if v0 == XOCHIP begin
     if v5 != 0 then i := flag-ok
+  end
+  # The bit shifted out belongs to the register that was shifted, so it is 1
+  # when the quirk is on and 0 when it is off.
+  if v5 == 0 begin
+    if v9 != 1 then i := flag-err
+    if vC != 1 then i := flag-err
+  else
+    if v9 != 0 then i := flag-err
+    if vC != 0 then i := flag-err
   end
   x := 59
   y := 22
